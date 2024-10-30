@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2058674221416491309
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 5
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HeightGradient
+  m_Shader: {fileID: -6465566751694194690, guid: da9379b39ec00704d8099e0752e3add3, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 2
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _DeepForest_Height: 100
+    - _DeepWater_Height: 0
+    - _Forest_Height: 50
+    - _Grass_Height: 30
+    - _Height: 0
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _SandHeight: 20
+    - _Smoothness: 0
+    - _Water_Height: 2
+    m_Colors:
+    - _Bottom_Color: {r: 0.25930077, g: 0.764151, b: 0.24870947, a: 0}
+    - _DeepForest_Color: {r: 0.15186515, g: 0.5660378, b: 0.10946957, a: 0}
+    - _DeepWater_Color: {r: 0.109024554, g: 0.5197261, b: 0.6603774, a: 0}
+    - _Forest_Color: {r: 0.20727667, g: 0.7075471, b: 0.15686187, a: 0}
+    - _Grass_Color: {r: 0.34414428, g: 0.8490566, b: 0.29236376, a: 0}
+    - _Sand_Color: {r: 0.8301887, g: 0.7866965, b: 0.45033813, a: 0}
+    - _Top_Color: {r: 0.06127993, g: 0.62264144, b: 0.049928784, a: 0}
+    - _Water_Color: {r: 0.26593092, g: 0.6706346, b: 0.6792453, a: 1}
+  m_BuildTextureStacks: []
