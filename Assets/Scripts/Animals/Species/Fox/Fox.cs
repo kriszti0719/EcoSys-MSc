@@ -17,6 +17,10 @@ namespace Assets.Scripts.Animals.Species.Fox    // ???
         {
             return LayerMask.GetMask("Fox"); ;
         }
+        public override int getTargetLayerToEat()
+        {
+            return LayerMask.GetMask("Bunny"); ;
+        }
         protected override void setTargetLayerToEat()
         {
             sensor.targetMask = LayerMask.GetMask("Bunny");

@@ -246,7 +246,7 @@ public class AnimalSpawner : Spawner
             Transform[] children = this.GetComponentsInChildren<Transform>(true);
             int counter = Counter("Bunny");
 
-            string filePath = "c:\\Work\\EcosystemSimulation\\Data\\PopulationData.csv";
+            string filePath = "C:\\Work\\!GitHub\\EcoSys_MSc\\Data\\PopulationData.csv";
 
             // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
             if (!File.Exists(filePath))
@@ -267,7 +267,7 @@ public class AnimalSpawner : Spawner
     }
     public void RegisterDeath(Animal animal)
     {
-        string filePath = "c:\\Work\\EcosystemSimulation\\Data\\DeathData.csv";
+        string filePath = "C:\\Work\\!GitHub\\EcoSys_MSc\\Data\\DeathData.csv";
 
         // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
         if (!File.Exists(filePath))

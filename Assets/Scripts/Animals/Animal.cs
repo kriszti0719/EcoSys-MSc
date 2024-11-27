@@ -1,4 +1,5 @@
 using Assets.Scripts.Animals.Common.Behaviour;
+using Assets.Scripts.Animals.Species;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst.CompilerServices;
@@ -8,16 +9,17 @@ using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
+    public CauseOfDeath cause;
+
+    public Status status;
+    public Status prevStatus;
+
     public GameObject prefab;
     public Material color;
     public int breakCounter = 0;
     public List<GameObject> destructibles = new List<GameObject>();
     public GameObject targetRef;
     public List<GameObject> noTargetRefs = new List<GameObject>();
-
-    public CauseOfDeath cause;
-    public Status status;
-    public Status prevStatus;
 
     public bool isMale;
 
@@ -41,7 +43,7 @@ public abstract class Animal : MonoBehaviour
     public int maxStepCnt = 8;
     public int decCnt = 0;
     public int maxDecCnt = 2;
-    public int framesPerChange = 6; // 60 frame = 1 másodperc, ha 60 FPS
+    public int framesPerChange = 6; // 60 frame = 1 másodperc, HA 60 FPS
 
 
     protected virtual void Start()
@@ -126,14 +128,9 @@ public abstract class Animal : MonoBehaviour
         frameCounter++;
         if (frameCounter == framesPerChange)
         {
-            // Végezzen el egy mûveletet
             aging.Aging();
             Step();
             Decide();
-            //if (movement.isWandering)
-            //{
-            //    movement.WanderTo();
-            //}
 
             frameCounter = 0;
         }
@@ -243,6 +240,13 @@ public abstract class Animal : MonoBehaviour
     public void Decide()
     {
         decCnt++;
+
+        if(status == Status.CAUGHT && breakCounter == 0)
+        {
+            cause = CauseOfDeath.CONSUMED;
+            die.ToDie();
+            return;
+        }
 
         if (status != Status.DIE && eat.isStarvedToDeath())
         {
@@ -437,4 +441,5 @@ public abstract class Animal : MonoBehaviour
     public abstract void setTargetLayerToMate();
     protected abstract void setTargetLayerToEat();
     public abstract int getTargetLayerToMate();
+    public abstract int getTargetLayerToEat();
 }

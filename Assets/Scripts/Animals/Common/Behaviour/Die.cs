@@ -10,12 +10,18 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Die : MonoBehaviour
     {
         private Animal animal;
+        public bool isCaptured = false;
+
         void Start()
         {
             animal = GetComponent<Animal>();
         }
         public void ToDie()
         {
+            if(animal.status == Status.CAUGHT)
+            {
+                Destroy();
+            }
             animal.prevStatus = animal.status;
             animal.status = Status.DIE;
         }
@@ -32,9 +38,14 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
         }
 
-        protected void BeingEaten()
+        public void BeingEaten()
         {
+            animal.status = Status.CAUGHT;
             Destroy();
+        }
+        public void CatchPrey()
+        {
+            isCaptured = true;
         }
     }
 }

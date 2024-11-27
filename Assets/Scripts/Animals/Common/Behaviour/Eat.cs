@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Assets.Scripts.Animals.Species;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private Animal animal;
         public HungerBar hungerBar;
         private int maxHunger = 100;
-        private Plant food;
+        private Edible food;
         public int starving;
         public int currentHunger;
         void Start()
@@ -39,27 +40,40 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void StartEating()
         {
-            food = animal.targetRef.GetComponent<Plant>();
-            if (food != null)
+            if (animal.getTargetLayerToEat() == LayerMask.GetMask("BunnyFood"))
             {
+                food = animal.targetRef.GetComponent<Plant>();
+                if (food != null)
+                {
 
-                animal.breakCounter = food.eatDuration;
-                animal.status = Status.EATING;
+                    animal.breakCounter = food.getEatDuration();
+                    animal.status = Status.EATING;
+                }
+            }
+            else if(animal.getTargetLayerToEat() == LayerMask.GetMask("Bunny"))
+            {
+                food = animal.targetRef.GetComponent<Bunny>();
+                if (food != null)
+                {
+
+                    animal.breakCounter = food.getEatDuration();
+                    animal.status = Status.EATING;
+                    food.setStatusCaught();
+                }
             }
         }
         public void FinishEating()
         {
             if (food != null)
             {
-                food.Die();
+                food.Eaten();
             }
             food = null;
         }
         public void Eating()
         {
-            food.eatDuration--;
-            if (currentHunger + food.nutrition < maxHunger || food.eatDuration >= 0)
-                currentHunger += food.nutrition;
+            if (currentHunger + food.getNutrition() < maxHunger || animal.breakCounter >= 0)
+                currentHunger += food.getNutrition();
             else
             {
                 currentHunger = maxHunger;
@@ -67,7 +81,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public bool isFull()
         {
-            return (currentHunger == maxHunger || food.eatDuration == 0);
+            return (currentHunger == maxHunger || food.getEatDuration() == 0);
         }
         public bool isStarving()
         {
