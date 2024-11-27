@@ -60,7 +60,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
 
             if (accepted)
             {
-                bool canSee = animal.sensor.FieldOfViewCheck(LayerMask.GetMask("Bunny"), mate.transform.gameObject);
+                bool canSee = animal.sensor.FieldOfViewCheck(animal.getTargetLayerToMate(), mate.transform.gameObject);
                 animal.prevStatus = Status.SEARCHINGMATE;
 
                 if (!canSee)
@@ -71,7 +71,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 }
                 else
                 {
-                    animal.sensor.targetMask = LayerMask.GetMask("Bunny");
+                    animal.setTargetLayerToMate();
                     animal.targetRef = mate.transform.gameObject;
                     animal.status = Status.MOVING;
                 }

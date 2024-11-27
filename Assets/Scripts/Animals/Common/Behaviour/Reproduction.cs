@@ -1,3 +1,4 @@
+using Assets.Scripts.Datatypes;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,7 +35,7 @@ public class Reproduction : MonoBehaviour
     public void GiveBirth()
     {
         isPregnant = false;
-        animal.GetComponentInParent<AnimalSpawner>().SpawnAnimals(null, Random.Range(6, 9), animal, animal.reproduction.mate);
+        //animal.GetComponentInParent<AnimalSpawner>().SpawnAnimals(null, Random.Range(6, 9), animal, animal.reproduction.mate);
     }
     public void Mature()
     {

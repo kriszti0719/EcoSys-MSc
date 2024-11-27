@@ -21,7 +21,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Destroy()
         {
-            if (animal.status == Status.DIE)
+            if (animal.status == Status.DIE || animal.status == Status.CAUGHT)
             {
                 animal.GetComponentInParent<AnimalSpawner>().RegisterDeath(animal);
                 foreach (GameObject g in animal.destructibles)
@@ -30,6 +30,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 }
                 Destroy(gameObject);
             }
+        }
+
+        protected void BeingEaten()
+        {
+            Destroy();
         }
     }
 }

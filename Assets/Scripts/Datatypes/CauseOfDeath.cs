@@ -9,5 +9,6 @@ public enum CauseOfDeath
     THIRST,
     EATEN,
     AGE,
-    DROWN
+    DROWN,
+    CONSUMED
 }

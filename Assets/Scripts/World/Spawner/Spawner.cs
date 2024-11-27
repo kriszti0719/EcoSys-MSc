@@ -23,9 +23,6 @@ public abstract class Spawner : MonoBehaviour
     [Space]
     [SerializeField] public bool autoUpdate;
 
-    [Header("Prefabs")]
-    [SerializeField] protected GameObject prefab;
-    [SerializeField] protected int amount;
     public abstract void Generate();
 
     public void Clear()

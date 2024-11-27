@@ -13,7 +13,7 @@ public abstract class Animal : MonoBehaviour
     public int breakCounter = 0;
     public List<GameObject> destructibles = new List<GameObject>();
     public GameObject targetRef;
-    public List<GameObject> noTargetRefs = new List<GameObject>();   // TODO: idõvel felejtsen
+    public List<GameObject> noTargetRefs = new List<GameObject>();
 
     public CauseOfDeath cause;
     public Status status;
@@ -434,6 +434,7 @@ public abstract class Animal : MonoBehaviour
             decCnt = 0;
         }
     }
-    protected abstract void setTargetLayerToMate();
+    public abstract void setTargetLayerToMate();
     protected abstract void setTargetLayerToEat();
+    public abstract int getTargetLayerToMate();
 }

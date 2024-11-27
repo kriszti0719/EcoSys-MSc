@@ -17,5 +17,6 @@ public enum Status
     SEARCHINGFOOD,
     SEARCHINGDRINK,
     SEARCHINGMATE,
-    DIE
+    DIE,
+    CAUGHT
 }

@@ -7,9 +7,23 @@ using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCou
 using System.Collections.Generic;
 using System.IO;
 using Assets.Scripts.Animals.Common.Behaviour;
+using Assets.Scripts.Datatypes;
+using Assets.Scripts.Animals.Species.Fox;
 
 public class AnimalSpawner : Spawner
 {
+    [Header("Fox")]
+    [SerializeField] protected GameObject prefab;
+    [SerializeField] protected int amount;
+    [SerializeField] protected float animalSizeMin;
+    [SerializeField] protected float animalSizeMax;
+    [Header("Bunny")]
+    [SerializeField] protected GameObject prefab2;
+    [SerializeField] protected int amount2;
+    [SerializeField] protected float animalSizeMin2;
+    [SerializeField] protected float animalSizeMax2;
+
+    [Header("Canvas")]
     public GameObject staminaCanvas;
     public GameObject hungerCanvas;
     public GameObject thirstCanvas;
@@ -19,7 +33,7 @@ public class AnimalSpawner : Spawner
     public Material maleColor;
     public Material femaleColor;
 
-    private float animalSize;
+    private float currentAnimalSize;
 
     protected int step = 0;
 
@@ -28,27 +42,26 @@ public class AnimalSpawner : Spawner
     public override void Generate()
     {
         Clear();
-        SpawnAnimals(prefab, amount, null, null);
+        GenerateAnimal animal = new GenerateAnimal(prefab, null, null, Species.FOX, animalSizeMin, animalSizeMax);
+        SpawnAnimals(animal, amount);
+        animal = new GenerateAnimal(prefab2, null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
+        SpawnAnimals(animal, amount2);
     }
     protected virtual void Start()
     {
         StartCoroutine(RegisterPopulation());
     }
-    public void SpawnAnimals(GameObject gameObjprefab, int amount, Animal mother, Animal father)
+    private void SpawnAnimals(GenerateAnimal animal, int amount)
     {
         int cnt = amount;
         while(cnt > 0)
         {
-            GameObject instantiatedPrefab = (GameObject)PrefabUtility.InstantiatePrefab(this.prefab, transform);
-            placeAnimal(instantiatedPrefab, mother, father);
-            instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
-
-            setCollider(instantiatedPrefab);
+            GameObject instantiatedPrefab = (GameObject)PrefabUtility.InstantiatePrefab(animal.prefab, transform);
+            placeAnimal(instantiatedPrefab, animal);
 
             // Attach scripts:
             Movement instantiatedMovement = instantiatedPrefab.AddComponent<Movement>();
             Gravity instantiatedGravity = instantiatedPrefab.AddComponent<Gravity>();
-            Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
             Sensor instantiatedSensor = instantiatedPrefab.AddComponent<Sensor>();
             Reproduction instantiatedReproduction = instantiatedPrefab.AddComponent<Reproduction>();
             Rest instantiatedRest = instantiatedPrefab.AddComponent<Rest>();
@@ -58,40 +71,65 @@ public class AnimalSpawner : Spawner
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
             Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
 
-            //Boy OR Girl?
-            isMale(instantiatedBunny, instantiatedPrefab);
-
-            if(mother != null)
+            switch (animal.species)
             {
-                instantiatedBunny.SetTraits(mother, father);
-                instantiatedMovement.ChangeDirection(amount, cnt);
-            }
-            else
-            {
-                instantiatedBunny.SetTraits(animalSize);
+                case Species.BUNNY:
+                    instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
+                    Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
+
+                    isMale(instantiatedBunny, instantiatedPrefab);
+                    changeBunnyColor(instantiatedBunny.isMale, instantiatedPrefab);
+
+                    if(animal.mother != null)
+                    {
+                        instantiatedBunny.SetTraits(animal.mother, animal.father);
+                        instantiatedMovement.ChangeDirection(amount, cnt);
+                    }
+                    else
+                    {
+                        instantiatedBunny.SetTraits(currentAnimalSize);
+                    }
+                    setBars(instantiatedBunny, instantiatedPrefab, animal);
+                    break;
+                case Species.FOX:
+                    instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
+                    Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
+
+                    isMale(instantiatedFox, instantiatedPrefab);
+                    if (animal.mother != null)
+                    {
+                        instantiatedFox.SetTraits(animal.mother, animal.father);
+                        instantiatedMovement.ChangeDirection(amount, cnt);
+                    }
+                    else
+                    {
+                        instantiatedFox.SetTraits(currentAnimalSize);
+                    }
+                    setBars(instantiatedFox, instantiatedPrefab, animal);
+                    break;
             }
 
-            // Create a BarsContainer as a child of instantiatedPrefab
-            setBars(instantiatedBunny, instantiatedPrefab);
+            setCollider(instantiatedPrefab, animal);
 
             cnt--;
         }
     }
-    private void isMale(Bunny instantiatedBunny, GameObject instantiatedPrefab)
+    private void isMale(Animal instantiatedAnimal, GameObject instantiatedPrefab)
     {
         int randomValue = Random.Range(0, 2);
         if (randomValue == 0)
         {
-            instantiatedBunny.isMale = false;      //TODO: ezt bevinni
-            instantiatedBunny.SetAnimalData(prefab, femaleColor);
+            instantiatedAnimal.isMale = false;      //TODO: ezt bevinni
+            instantiatedAnimal.SetAnimalData(prefab, femaleColor);
         }
         else
         {
-            instantiatedBunny.isMale = true;
-            instantiatedBunny.SetAnimalData(prefab, maleColor);
+            instantiatedAnimal.isMale = true;
+            instantiatedAnimal.SetAnimalData(prefab, maleColor);
         }
-
-        //Change color
+    }
+    private void changeBunnyColor(bool isMale, GameObject instantiatedPrefab)
+    {
         Transform[] children = instantiatedPrefab.GetComponentsInChildren<Transform>(true);
         foreach (Transform child in children)
         {
@@ -102,55 +140,74 @@ public class AnimalSpawner : Spawner
             {
                 if (!(child.name.Contains("Nose")) && !(child.name.Contains("Eyes")))
                 {
-                    if (randomValue == 0)    // TODO: ne rnd, hanem fele-fele legyen
+                    if (isMale == true)
                     {
-                        renderer.material = femaleColor;
+                        renderer.material = maleColor;
                     }
                     else
                     {
-                        renderer.material = maleColor;
+                        renderer.material = femaleColor;
                     }
                 }
             }
         }
     }
-    private void setBars(Bunny instantiatedBunny, GameObject instantiatedPrefab)
+    private void setBars(Animal instantiatedAnimal, GameObject instantiatedPrefab, GenerateAnimal animal)
     {
+        int bottom = 0;
+        if(animal.species == Species.BUNNY)
+        {
+            bottom = 8;
+        }
+        else if(animal.species == Species.FOX)
+        {
+            bottom = 16;
+        }
+
         GameObject barsContainer = new GameObject("BarsContainer");
         barsContainer.transform.SetParent(instantiatedPrefab.transform);
-        instantiatedBunny.barsContainer = barsContainer;
+        instantiatedAnimal.barsContainer = barsContainer;
+        barsContainer.transform.rotation = instantiatedAnimal.transform.rotation;
 
         GameObject instantiatedStamina = (GameObject)PrefabUtility.InstantiatePrefab(this.staminaCanvas, barsContainer.transform);
-        instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + 20, instantiatedPrefab.transform.position.z);
+        instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 12, instantiatedPrefab.transform.position.z);
         instantiatedStamina.GetComponent<Billboard>().cam = mainCamera;
 
         GameObject instantiatedHunger = (GameObject)PrefabUtility.InstantiatePrefab(this.hungerCanvas, barsContainer.transform);
-        instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + 16, instantiatedPrefab.transform.position.z);
+        instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 8, instantiatedPrefab.transform.position.z);
         instantiatedHunger.GetComponent<Billboard>().cam = mainCamera;
 
         GameObject instantiatedThirst = (GameObject)PrefabUtility.InstantiatePrefab(this.thirstCanvas, barsContainer.transform);
-        instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + 12, instantiatedPrefab.transform.position.z);
+        instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 4, instantiatedPrefab.transform.position.z);
         instantiatedThirst.GetComponent<Billboard>().cam = mainCamera;
 
         GameObject instantiatedMating = (GameObject)PrefabUtility.InstantiatePrefab(this.matingCanvas, barsContainer.transform);
-        instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + 8, instantiatedPrefab.transform.position.z);
+        instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
         instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-        instantiatedBunny.SetBars(barsContainer);
+        instantiatedAnimal.SetBars(barsContainer);
     }
-    private void setCollider(GameObject instantiatedPrefab)
+    private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
         CapsuleCollider capsuleCollider = instantiatedPrefab.AddComponent<CapsuleCollider>();
-        capsuleCollider.height = 20;
-        capsuleCollider.radius = 8;
-    }
-    private void placeAnimal(GameObject instantiatedPrefab, Animal mother, Animal father)
-    {
-        if (mother != null & father != null)
+        if (animal.species == Species.BUNNY)
         {
-            instantiatedPrefab.transform.position = mother.transform.position;
-            instantiatedPrefab.transform.rotation = mother.transform.rotation;
-            instantiatedPrefab.transform.localScale = mother.transform.localScale;
+            capsuleCollider.height = (float)(2.5 /currentAnimalSize);
+            capsuleCollider.radius = (float)(2.5 / currentAnimalSize);
+        }
+        else if (animal.species == Species.FOX)
+        {
+            capsuleCollider.height = (float)(8 / currentAnimalSize);
+            capsuleCollider.radius = (float)(8 / currentAnimalSize);
+        }
+    }
+    private void placeAnimal(GameObject instantiatedPrefab, GenerateAnimal animal)
+    {
+        if (animal.mother != null & animal.father != null)
+        {
+            instantiatedPrefab.transform.position = animal.mother.transform.position;
+            instantiatedPrefab.transform.rotation = animal.mother.transform.rotation;
+            instantiatedPrefab.transform.localScale = animal.mother.transform.localScale;
         }
         else
         {
@@ -170,14 +227,14 @@ public class AnimalSpawner : Spawner
                 success = true;
 
                 // Instantiate the prefab and set its position, rotation, and scale:
-                instantiatedPrefab.transform.position = hit.point;
-                instantiatedPrefab.transform.Rotate(Vector3.up, Random.Range(rotationRange.x, rotationRange.y), Space.Self);
-                animalSize = Random.Range(minScale.x, maxScale.x);
+                currentAnimalSize = Random.Range(animal.sizeMin, animal.sizeMax);
                 instantiatedPrefab.transform.localScale = new Vector3(
-                    animalSize,
-                    animalSize,
-                    animalSize
+                    currentAnimalSize,
+                    currentAnimalSize,
+                    currentAnimalSize
                 );
+                instantiatedPrefab.transform.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
+                instantiatedPrefab.transform.Rotate(Vector3.up, Random.Range(rotationRange.x, rotationRange.y));
             }
         }
     }

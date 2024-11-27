@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class ForestSpawner : Spawner
 {
+    [Header("Prefabs")]
+    [SerializeField] protected GameObject prefab;
+    [SerializeField] protected int amount;
+
     [Header("Prefab 2")]
     [SerializeField] protected GameObject prefab2;
     [SerializeField] protected int amount2;
