@@ -1,18 +1,15 @@
 using Assets.Scripts.Animals.Common.Behaviour;
-using Assets.Scripts.Animals.Species;
-using System.Collections;
+using Assets.Scripts.Datatypes;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
     public CauseOfDeath cause;
-
     public Status status;
     public Status prevStatus;
+    public Species species;
 
     public GameObject prefab;
     public Material color;
@@ -44,8 +41,6 @@ public abstract class Animal : MonoBehaviour
     public int decCnt = 0;
     public int maxDecCnt = 2;
     public int framesPerChange = 6; // 60 frame = 1 másodperc, HA 60 FPS
-
-
     protected virtual void Start()
     {
         cause = CauseOfDeath.NONE;

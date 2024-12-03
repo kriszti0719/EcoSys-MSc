@@ -1,14 +1,9 @@
-using System.Diagnostics.Tracing;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using System.Collections;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
-using System.Collections.Generic;
 using System.IO;
 using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
-using Assets.Scripts.Animals.Species.Fox;
 
 public class AnimalSpawner : Spawner
 {
@@ -37,6 +32,8 @@ public class AnimalSpawner : Spawner
 
     protected int step = 0;
 
+    private string filePathDeathData;
+    private string filePathPopulation;
 
     // Start is called before the first frame update
     public override void Generate()
@@ -49,6 +46,24 @@ public class AnimalSpawner : Spawner
     }
     protected virtual void Start()
     {
+        // Fájl elérési út generálása egyszer, a program futásának kezdetén
+        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        filePathDeathData = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_DeathData.csv";
+
+        using (StreamWriter writer = new StreamWriter(filePathDeathData))
+        {
+            writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
+        }
+
+        filePathPopulation = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_PopulationData.csv";
+
+        if (!File.Exists(filePathPopulation))
+        {
+            using (StreamWriter writer = new StreamWriter(filePathPopulation))
+            {
+                writer.WriteLine("Time;BunnyPop;FoxPop");
+            }
+        }
         StartCoroutine(RegisterPopulation());
     }
     private void SpawnAnimals(GenerateAnimal animal, int amount)
@@ -244,45 +259,24 @@ public class AnimalSpawner : Spawner
         {
             step++;
             Transform[] children = this.GetComponentsInChildren<Transform>(true);
-            int counter = Counter("Bunny");
-
-            string filePath = "C:\\Work\\!GitHub\\EcoSys_MSc\\Data\\PopulationData.csv";
-
-            // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
-            if (!File.Exists(filePath))
-            {
-                using (StreamWriter writer = new StreamWriter(filePath))
-                {
-                    writer.WriteLine("Time,Bunnies");
-                }
-            }
+            int counterBunny = Counter("Bunny");
+            int counterFox = Counter("Fox");
 
             // Írás a fájlba
-            using (StreamWriter writer = new StreamWriter(filePath, true))
+            using (StreamWriter writer = new StreamWriter(filePathPopulation, true))
             {
-                writer.WriteLine($"{step},{counter}");
+                writer.WriteLine($"{step};{counterBunny};{counterFox}");
             }
             yield return new WaitForSeconds(10f);
         }
     }
     public void RegisterDeath(Animal animal)
     {
-        string filePath = "C:\\Work\\!GitHub\\EcoSys_MSc\\Data\\DeathData.csv";
-
-        // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
-        if (!File.Exists(filePath))
+        // Adatok hozzáfûzése a fájlhoz
+        using (StreamWriter writer = new StreamWriter(filePathDeathData, true))
         {
-            using (StreamWriter writer = new StreamWriter(filePath))
-            {
-                writer.WriteLine("Step\tDeathCause\tAge\tSpeed\tSight\tReproductiveUrge\tLifeSpan\tCharm\tPregnancyDuration\tStatus\tStarving\tDrying");
-            }
-        }
-
-        // Írás a fájlba
-        using (StreamWriter writer = new StreamWriter(filePath, true))
-        {
-            string dataLine = $"{step}\t{animal.cause.ToString()}\t{animal.aging.currentAge}\t{animal.movement.moveSpeed}\t{animal.sensor.radius}\t{animal.reproduction.reproductiveUrge}\t{animal.aging.lifeSpan}\t{animal.mating.Charm}\t{animal.reproduction.pregnancyDuration}\t{animal.prevStatus.ToString()}\t{animal.eat.starving}\t{animal.drink.drying}";
-            writer.WriteLine(dataLine);
+            string dataLine = $"{step};{animal.species.ToPrint()};{animal.cause.ToPrint()};{animal.aging.currentAge};{animal.movement.moveSpeed};{animal.sensor.radius};{animal.reproduction.reproductiveUrge};{animal.aging.lifeSpan};{animal.mating.Charm};{animal.reproduction.pregnancyDuration};{animal.prevStatus};{animal.eat.starving};{animal.drink.drying}";
+            writer.WriteLine(dataLine); // Pontosvesszõ használata
         }
     }
 }

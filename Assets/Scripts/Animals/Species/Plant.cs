@@ -1,11 +1,6 @@
 ﻿using Assets.Scripts;
-using Assets.Scripts.Animals.Species;
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class Plant : MonoBehaviour, Edible

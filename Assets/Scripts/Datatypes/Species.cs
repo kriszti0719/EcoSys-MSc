@@ -4,12 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Assets.Scripts.Datatypes
+
+public enum Species
 {
-    public enum Species
+    NONE,
+    BUNNY,
+    FOX
+}
+
+public static class SpeciesExtensions
+{
+    public static string ToPrint(this Species cause)
     {
-        NONE,
-        BUNNY,
-        FOX
+        return cause switch
+        {
+            Species.NONE => "None",
+            Species.BUNNY => "Bunny",
+            Species.FOX => "Fox",
+            _ => cause.ToString()
+        };
     }
 }

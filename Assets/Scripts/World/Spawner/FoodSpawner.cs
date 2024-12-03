@@ -31,6 +31,7 @@ public class FoodSpawner : Spawner
     [Header("Prefab 6")]
     [SerializeField] protected GameObject prefab6;
     [SerializeField] protected int amount6;
+    private string filePath;
 
     public override void Generate()
     {
@@ -44,6 +45,14 @@ public class FoodSpawner : Spawner
     }
     protected virtual void Start()
     {
+        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        filePath = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_FoodData.csv";
+
+        using (StreamWriter writer = new StreamWriter(filePath))
+        {
+            writer.WriteLine("Time;Food");
+        }
+
         StartCoroutine(ReSpawn());
         StartCoroutine(RegisterPopulation());
     }
@@ -146,21 +155,10 @@ public class FoodSpawner : Spawner
             Transform[] children = this.GetComponentsInChildren<Transform>(true);
             int counter = Counter("Bunch");
 
-            string filePath = "c:\\Work\\EcosystemSimulation\\Data\\FoodPopulationData.csv";
-
-            // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
-            if (!File.Exists(filePath))
-            {
-                using (StreamWriter writer = new StreamWriter(filePath))
-                {
-                    writer.WriteLine("Time,Food");
-                }
-            }
-
             // Írás a fájlba
             using (StreamWriter writer = new StreamWriter(filePath, true))
             {
-                writer.WriteLine($"{step},{counter}");
+                writer.WriteLine($"{step};{counter}");
             }
             yield return new WaitForSeconds(10f);
         }
