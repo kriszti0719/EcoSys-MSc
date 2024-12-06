@@ -46,16 +46,26 @@ public class AnimalSpawner : Spawner
     }
     protected virtual void Start()
     {
-        // Fájl elérési út generálása egyszer, a program futásának kezdetén
-        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        filePathDeathData = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_DeathData.csv";
+        // A projekt gyökérmappájának meghatározása
+        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
 
+        // Adatok tárolásához szükséges Data mappa a projekt gyökerében
+        string dataDirectory = Path.Combine(projectRoot, "Data");
+
+        // Ellenõrizzük, hogy a Data mappa létezik-e, és szükség esetén létrehozzuk
+        Directory.CreateDirectory(dataDirectory);
+
+        // Fájl elérési út generálása idõbélyeggel
+        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        filePathDeathData = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
+
+        // Create or open the file
         using (StreamWriter writer = new StreamWriter(filePathDeathData))
         {
             writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
         }
 
-        filePathPopulation = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_PopulationData.csv";
+        filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
 
         if (!File.Exists(filePathPopulation))
         {
@@ -131,7 +141,7 @@ public class AnimalSpawner : Spawner
     }
     private void isMale(Animal instantiatedAnimal, GameObject instantiatedPrefab)
     {
-        int randomValue = Random.Range(0, 2);
+        int randomValue = UnityEngine.Random.Range(0, 2);
         if (randomValue == 0)
         {
             instantiatedAnimal.isMale = false;      //TODO: ezt bevinni

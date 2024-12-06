@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Sensor : MonoBehaviour
@@ -37,7 +38,6 @@ public class Sensor : MonoBehaviour
             FieldOfViewCheck();
         }
     }
-
     public void FieldOfViewCheck()
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
@@ -49,7 +49,7 @@ public class Sensor : MonoBehaviour
         foreach (var targetCollider in rangeChecks)
         {
             Transform target = targetCollider.transform;
-            if (animal.noTargetRefs.Contains(target.gameObject))
+            if (animal.rejectedBy.Contains(target.gameObject))
             {
                 continue;
             }
@@ -105,32 +105,53 @@ public class Sensor : MonoBehaviour
     {
         secCntr++;
 
-        if (secCntr < 5)
+        if (secCntr < 1)
             return;
         secCntr = 0;
-
 
         // Ellenõrizzük a látómezõn belüli összes objektumot a ragadozó rétegen
         Collider[] predatorsInRange = Physics.OverlapSphere(transform.position, radius, animal.getPredatorLayers());
 
+        // Azokat a ragadozókat, akiket már nem látunk, eltávolítjuk
+        List<GameObject> toRemove = new List<GameObject>();
+
         foreach (var predatorCollider in predatorsInRange)
         {
             Transform predator = predatorCollider.transform;
-
-            // Ellenõrizzük, hogy a ragadozó a látómezõben van-e
-            //Vector3 directionToPredator = (predator.position - transform.position).normalized;
-
             Vector3 directionToPredator = (predator.position - transform.position).normalized;
             float distanceToPredator = Vector3.Distance(transform.position, predator.position);
+
             if (!Physics.Raycast(transform.position, directionToPredator, distanceToPredator, obstructionMask))
             {
-                // Ragadozó van a látótávolságon belül, nincs akadály -> futni kell
-                danger = true;
-                return;
+                // Ha a ragadozó még nincs a spottedThreats listában, hozzáadjuk
+                if (!animal.spottedThreats.Contains(predator.gameObject))
+                {
+                    animal.spottedThreats.Add(predator.gameObject);
+                }
             }
         }
-        danger = false;
-        // Nincs ragadozó a látómezõben
+
+        // Azok a ragadozók, akiket már nem látunk, eltávolítjuk a spottedThreats listából
+        foreach (var threat in animal.spottedThreats)
+        {
+            bool isStillVisible = predatorsInRange.Any(predatorCollider =>
+                predatorCollider.gameObject == threat &&
+                !Physics.Raycast(transform.position, (predatorCollider.transform.position - transform.position).normalized,
+                    Vector3.Distance(transform.position, predatorCollider.transform.position), obstructionMask)
+            );
+
+            if (!isStillVisible)
+            {
+                toRemove.Add(threat);
+            }
+        }
+
+        // Az eltávolítandó ragadozók törlése a listából
+        foreach (var threat in toRemove)
+        {
+            animal.spottedThreats.Remove(threat);
+        }
     }
+
 
 }

@@ -45,8 +45,18 @@ public class FoodSpawner : Spawner
     }
     protected virtual void Start()
     {
+        // A projekt gyökérmappájának meghatározása
+        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+
+        // Adatok tárolásához szükséges Data mappa a projekt gyökerében
+        string dataDirectory = Path.Combine(projectRoot, "Data");
+
+        // Ellenõrizzük, hogy a Data mappa létezik-e, és szükség esetén létrehozzuk
+        Directory.CreateDirectory(dataDirectory);
+
+        // Fájl elérési út generálása idõbélyeggel
         string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        filePath = $"C:\\Work\\GitHub\\EcoSys_MSc\\Data\\{timestamp}_FoodData.csv";
+        filePath = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
 
         using (StreamWriter writer = new StreamWriter(filePath))
         {

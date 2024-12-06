@@ -57,6 +57,12 @@ public class Movement : MonoBehaviour
                 StopWander();            
             MovingTowards();
         }
+        else if(animal.status == Status.FLEE)
+        {
+            if (wanderingCoroutine != null)
+                StopWander();
+            Flee();
+        }
         else if (animal.status == Status.DIE && !isDying)
         {
             if (wanderingCoroutine != null)
@@ -172,14 +178,8 @@ public class Movement : MonoBehaviour
 
         wanderInitialized = true;
     }
-    private void StartWalking()
-    {
-        isWalking = true;
-    }
-    private void StopWalking()
-    {
-        isWalking = false;
-    }
+    private void StartWalking() {   isWalking = true;   }
+    private void StopWalking()  {   isWalking = false;  }
     private void StartTurning()
     {
         rotateDir = Random.Range(0, 2);
@@ -287,6 +287,33 @@ public class Movement : MonoBehaviour
             }
         }
     }
+
+    private void Flee()
+    {
+        // Kiszámítjuk az elkerülési irányt
+        Vector3 fleeDirection = Vector3.zero;
+
+        foreach (var threat in animal.spottedThreats)
+        {
+            if (threat == null)
+                continue;
+
+            Vector3 directionFromThreat = transform.position - threat.transform.position;
+            directionFromThreat.y = 0; // Csak a horizontális síkban dolgozunk
+            fleeDirection += directionFromThreat.normalized;
+        }
+
+        fleeDirection = fleeDirection.normalized;
+
+        // Mozgás az elkerülési irányba
+        Quaternion targetRotation = Quaternion.LookRotation(fleeDirection);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);
+        transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+
+        // Menekülési állapot beállítása
+        isWalking = true;
+    }
+
     private IEnumerator Die()
     {
         yield return new WaitForSeconds(1f);

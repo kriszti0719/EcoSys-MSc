@@ -18,7 +18,8 @@ public abstract class Animal : MonoBehaviour
     public int breakCounter = 0;
     public List<GameObject> destructibles = new List<GameObject>();
     public GameObject targetRef;
-    public List<GameObject> noTargetRefs = new List<GameObject>();
+    public List<GameObject> spottedThreats;
+    public List<GameObject> rejectedBy = new List<GameObject>();
 
     public bool isMale;
 
@@ -120,7 +121,7 @@ public abstract class Animal : MonoBehaviour
     {
         this.prefab = prefab;
         this.color = color;
-        this.noTargetRefs.Add(this.GameObject());
+        this.rejectedBy.Add(this.GameObject());
         //TODO: set charm according to color
     }
     void Update()
@@ -134,7 +135,7 @@ public abstract class Animal : MonoBehaviour
             if (predators != null && predators.Any())
             {
                 sensor.CheckForPredators();
-                if (sensor.danger)
+                if (spottedThreats.Any())
                 {
                     if (status != Status.FLEE)
                     {
@@ -309,7 +310,7 @@ public abstract class Animal : MonoBehaviour
                             tmp.reproduction = targetRef.GetComponent<Reproduction>();
                             if (tmp != null && tmp.isMale == this.isMale)
                             {
-                                this.noTargetRefs.Add(targetRef);
+                                this.rejectedBy.Add(targetRef);
                                 this.targetRef = null;
                             }
                             else
@@ -323,7 +324,7 @@ public abstract class Animal : MonoBehaviour
                                 }
                                 else
                                 {
-                                    this.noTargetRefs.Add(targetRef);
+                                    this.rejectedBy.Add(targetRef);
                                     this.targetRef = null;
                                 }
                             }
