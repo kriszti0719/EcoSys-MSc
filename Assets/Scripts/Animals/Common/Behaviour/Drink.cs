@@ -37,7 +37,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void StartDrinking()
         {
             animal.breakCounter = drinkDuration;
-            animal.status = Status.DRINKING;
+            animal.status = Status.DRINK;
         }
         public void Drinking()
         {

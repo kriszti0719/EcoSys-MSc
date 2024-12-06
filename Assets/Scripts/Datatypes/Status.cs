@@ -4,19 +4,17 @@ using UnityEngine;
 
 public enum Status
 {
-    // Moving vs. Wandering
-    //  - moving: when it moves towards to a specific stuff,
-    //  - wandering: when there's no target, just moving around
-    RESTING,
-    MOVING,
-    WANDERING,
-    DRINKING,
-    EATING,
-    MATING,
-    WAITING,
-    SEARCHINGFOOD,
-    SEARCHINGDRINK,
-    SEARCHINGMATE,
+    WANDER,
+    MOVE_TOWARDS,
+    FLEE,
+    REST,
+    WAIT,
+    SEARCH_FOOD,
+    SEARCH_DRINK,
+    SEARCH_MATE,
+    EAT,
+    DRINK,
+    MATE,
     DIE,
     CAUGHT
 }

@@ -47,7 +47,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             animal.breakCounter = mateDuration;
             animal.prevStatus = animal.status;
-            animal.status = Status.MATING;
+            animal.status = Status.MATE;
         }
         public bool isAcceptable(Animal mate)
         {
@@ -61,19 +61,19 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             if (accepted)
             {
                 bool canSee = animal.sensor.FieldOfViewCheck(animal.getTargetLayerToMate(), mate.transform.gameObject);
-                animal.prevStatus = Status.SEARCHINGMATE;
+                animal.prevStatus = Status.SEARCH_MATE;
 
                 if (!canSee)
                 {
                     animal.sensor.targetMask = LayerMask.GetMask("None");
                     animal.targetRef = null;
-                    animal.status = Status.WAITING;
+                    animal.status = Status.WAIT;
                 }
                 else
                 {
                     animal.setTargetLayerToMate();
                     animal.targetRef = mate.transform.gameObject;
-                    animal.status = Status.MOVING;
+                    animal.status = Status.MOVE_TOWARDS;
                 }
             }
             return accepted;

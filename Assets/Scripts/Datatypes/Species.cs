@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using UnityEngine;
 
 public enum Species
 {
@@ -14,14 +14,24 @@ public enum Species
 
 public static class SpeciesExtensions
 {
-    public static string ToPrint(this Species cause)
+    public static string ToPrint(this Species species)
     {
-        return cause switch
+        return species switch
         {
             Species.NONE => "None",
             Species.BUNNY => "Bunny",
             Species.FOX => "Fox",
-            _ => cause.ToString()
+            _ => species.ToString()
+        };
+    }
+    public static int ToLayer(this Species species)
+    {
+        return species switch
+        {
+            Species.NONE => -1,
+            Species.BUNNY => LayerMask.GetMask("Bunny"),
+            Species.FOX => LayerMask.GetMask("Fox"),
+            _ => -1
         };
     }
 }

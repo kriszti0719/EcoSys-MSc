@@ -17,7 +17,8 @@ public class Sensor : MonoBehaviour
     /// Boolean indicating whether the player is within the field of view
     public bool canSeeTarget;
     public Animal animal;
-
+    public int secCntr = 0;
+    public bool danger = false;
 
     private void Start()
     {
@@ -73,7 +74,6 @@ public class Sensor : MonoBehaviour
         canSeeTarget = nearestTarget != null;
         animal.targetRef = canSeeTarget ? nearestTarget : null;
     }
-
     public bool FieldOfViewCheck(LayerMask _targetMask, GameObject _targetRef)
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, _targetMask);
@@ -82,10 +82,7 @@ public class Sensor : MonoBehaviour
         {
             Transform target = targetCollider.transform;
 
-            if (target.gameObject != _targetRef)
-            {
-                continue;
-            }
+            if (target.gameObject != _targetRef) { continue; }
 
             // Check if the target is in the field of view
             Vector3 directionToTarget = (target.position - transform.position).normalized;
@@ -104,4 +101,36 @@ public class Sensor : MonoBehaviour
         // The specified target is not within the field of view or range
         return false;
     }
+    public void CheckForPredators()
+    {
+        secCntr++;
+
+        if (secCntr < 5)
+            return;
+        secCntr = 0;
+
+
+        // Ellenõrizzük a látómezõn belüli összes objektumot a ragadozó rétegen
+        Collider[] predatorsInRange = Physics.OverlapSphere(transform.position, radius, animal.getPredatorLayers());
+
+        foreach (var predatorCollider in predatorsInRange)
+        {
+            Transform predator = predatorCollider.transform;
+
+            // Ellenõrizzük, hogy a ragadozó a látómezõben van-e
+            //Vector3 directionToPredator = (predator.position - transform.position).normalized;
+
+            Vector3 directionToPredator = (predator.position - transform.position).normalized;
+            float distanceToPredator = Vector3.Distance(transform.position, predator.position);
+            if (!Physics.Raycast(transform.position, directionToPredator, distanceToPredator, obstructionMask))
+            {
+                // Ragadozó van a látótávolságon belül, nincs akadály -> futni kell
+                danger = true;
+                return;
+            }
+        }
+        danger = false;
+        // Nincs ragadozó a látómezõben
+    }
+
 }

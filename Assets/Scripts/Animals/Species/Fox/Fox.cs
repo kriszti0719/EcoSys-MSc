@@ -5,7 +5,6 @@ public class Fox : Animal
 {
     protected override void Start()
     {
-        species = Species.FOX;
         base.Start();
     }
     public override int getTargetLayerToMate()
@@ -23,5 +22,14 @@ public class Fox : Animal
     public override void setTargetLayerToMate()
     {
         sensor.targetMask = LayerMask.GetMask("Fox");
+    }
+    public override int getPredatorLayers()
+    {
+        return -1;
+    }
+
+    public override void setSpeciesSpecificTraits()
+    {
+        species = Species.FOX;
     }
 }

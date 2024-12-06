@@ -41,7 +41,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 {
 
                     animal.breakCounter = food.getEatDuration();
-                    animal.status = Status.EATING;
+                    animal.status = Status.EAT;
                 }
             }
             else if(animal.getTargetLayerToEat() == LayerMask.GetMask("Bunny"))
@@ -51,7 +51,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 {
 
                     animal.breakCounter = food.getEatDuration();
-                    animal.status = Status.EATING;
+                    animal.status = Status.EAT;
                     food.setStatusCaught();
                 }
             }

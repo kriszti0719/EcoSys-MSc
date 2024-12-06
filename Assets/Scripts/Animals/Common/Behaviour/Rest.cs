@@ -102,7 +102,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             if (animal.status != Status.DIE)
             {
                 animal.prevStatus = animal.status;
-                animal.status = Status.RESTING;
+                animal.status = Status.REST;
                 if (currentStamina + time < maxStamina)
                 {
                     animal.breakCounter = time;
