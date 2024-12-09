@@ -142,7 +142,7 @@ public class FoodSpawner : Spawner
             Transform[] children = this.GetComponentsInChildren<Transform>(true);
             int counter = Counter("Bunch");
 
-            string filePath = "c:\\Work\\EcosystemSimulation\\Data\\FoodPopulationData.csv";
+            string filePath = "C:\\Work\\GitHub\\EcoSys-MSc\\FoodPopulationData.csv";
 
             // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
             if (!File.Exists(filePath))
