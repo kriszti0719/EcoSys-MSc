@@ -303,6 +303,13 @@ public class Movement : MonoBehaviour
             fleeDirection += directionFromThreat.normalized;
         }
 
+        if (fleeDirection == Vector3.zero)
+        {
+            // Ha nincs érvényes elkerülési irány, a mozgás leáll
+            isWalking = false;
+            return;
+        }
+
         fleeDirection = fleeDirection.normalized;
 
         // Mozgás az elkerülési irányba
@@ -313,6 +320,7 @@ public class Movement : MonoBehaviour
         // Menekülési állapot beállítása
         isWalking = true;
     }
+
 
     private IEnumerator Die()
     {

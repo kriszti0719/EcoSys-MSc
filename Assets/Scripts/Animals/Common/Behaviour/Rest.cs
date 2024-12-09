@@ -39,14 +39,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }       
         public void ChanceToRest()
         {
-            if (currentStamina <= 30 && currentStamina >= 10)
+            if (currentStamina <= 30 && currentStamina >= 10 && animal.status != Status.MOVE_TOWARDS)
             {
-                // According to sum other circumstances it can decide
-                //  - to move on OR
-                //  - to sleep
-                //  - to stop for a normal break
-                //  - to stop for a little break
-
                 int randomValue = UnityEngine.Random.Range(0, 4);
                 switch (randomValue)
                 {
@@ -60,14 +54,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                         break;
                 }
             }
-            else if (currentStamina <= 10 && currentStamina >= 0)
+            else if (currentStamina <= 10 && currentStamina >= 0 && animal.status != Status.MOVE_TOWARDS)
             {
-                // According to sum other circumstances it can decide
-                //  - to move on OR
-                //  - to sleep
-                //  - to stop for a normal break
-                //  - to stop for a little break
-
                 int randomValue = UnityEngine.Random.Range(0, 3);
                 switch (randomValue)
                 {
@@ -83,9 +71,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
             else if (currentStamina <= 0)
             {
-                // According to sum other circumstances it can decide
-                //  - to sleep
-                //  - to stop for a normal break
                 int randomValue = UnityEngine.Random.Range(0, 2);
                 if (randomValue == 0)
                 {

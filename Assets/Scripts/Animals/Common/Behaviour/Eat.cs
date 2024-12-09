@@ -10,6 +10,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private Edible food;
         public int starving;
         public int currentHunger;
+
+        private int finished = 0;
+        private int started = 0;
         void Start()
         {
             animal = GetComponent<Animal>();
@@ -36,6 +39,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (animal.getTargetLayerToEat() == LayerMask.GetMask("BunnyFood"))
             {
+                finished = 0;
+                if (started > 0)
+                {
+                    Debug.Log("started > 0: " + started);
+                }
+                started++;
+
                 food = animal.targetRef.GetComponent<Plant>();
                 if (food != null)
                 {
@@ -58,16 +68,21 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void FinishEating()
         {
+            started = 0;
             if (food != null)
             {
+                if(finished > 0) { Debug.Log("finished > 0"); }
+                finished++;
                 food.Eaten();
             }
             food = null;
         }
         public void Eating()
         {
-            if (currentHunger + food.getNutrition() < maxHunger || animal.breakCounter >= 0)
+            if (currentHunger + food.getNutrition() < maxHunger)
+            {
                 currentHunger += food.getNutrition();
+            }
             else
             {
                 currentHunger = maxHunger;
@@ -75,6 +90,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public bool isFull()
         {
+            if (currentHunger > maxHunger)
+            {
+                Debug.Log("RIP: currentHunger > maxHunger");
+            }
             return (currentHunger == maxHunger || food.getEatDuration() == 0);
         }
         public bool isStarving()

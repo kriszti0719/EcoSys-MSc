@@ -10,7 +10,6 @@ public enum CauseOfDeath
     NONE,
     HUNGER,
     THIRST,
-    EATEN,
     AGE,
     DROWN,
     CONSUMED
@@ -25,7 +24,6 @@ public static class CauseOfDeathExtensions
             CauseOfDeath.NONE => "None",
             CauseOfDeath.HUNGER => "Hunger",
             CauseOfDeath.THIRST => "Thirst",
-            CauseOfDeath.EATEN => "Eaten",
             CauseOfDeath.AGE => "Age",
             CauseOfDeath.DROWN => "Drowned",
             CauseOfDeath.CONSUMED => "Consumed",

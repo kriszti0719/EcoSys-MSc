@@ -1,4 +1,5 @@
 ﻿using Assets.Scripts;
+using Assets.Scripts.Animals.Common.Behaviour;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class Plant : MonoBehaviour, Edible
     public int nutrition = 5;
     public int eatDuration = 10;
     public CauseOfDeath cause;
+    public bool isDestroyed = false;
 
     private void Start()
     {
@@ -46,8 +48,12 @@ public class Plant : MonoBehaviour, Edible
 
     public void Eaten()
     {
-        cause = CauseOfDeath.EATEN;
-        //this.GetComponentInParent<FoodSpawner>().RegisterDeath(this);
-        Destroy(gameObject);
+        cause = CauseOfDeath.CONSUMED;
+
+        if(!isDestroyed)
+        {
+            Destroy(this.gameObject);
+        }
+         isDestroyed = true;
     }
 }
