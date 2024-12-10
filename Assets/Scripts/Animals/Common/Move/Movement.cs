@@ -44,7 +44,13 @@ public class Movement : MonoBehaviour
     }
     private void Update()
     {
-        if (animal.status == Status.WANDER || 
+        if (animal.status == Status.CAUGHT)
+        {
+            if (wanderingCoroutine != null)
+                StopWander();
+            animal.targetRef = null;
+        }
+        else if (animal.status == Status.WANDER || 
                 animal.status == Status.SEARCH_FOOD ||
                 animal.status == Status.SEARCH_DRINK ||
                 animal.status == Status.SEARCH_MATE)
@@ -75,8 +81,6 @@ public class Movement : MonoBehaviour
     {
         if (!isWandering)
         {
-            if (wanderingCoroutine != null)
-                Debug.Log("RIP");
             wanderingCoroutine = StartCoroutine(Wander());
             //isWandering = true;
         }
@@ -112,7 +116,8 @@ public class Movement : MonoBehaviour
     }
     private void RestartWander()
     {
-        StopCoroutine(wanderingCoroutine);
+        if(wanderingCoroutine != null)
+            StopCoroutine(wanderingCoroutine);
         isWandering = false;
         isRotatingLeft = false;
         isRotatingRight = false;
@@ -170,96 +175,6 @@ public class Movement : MonoBehaviour
         isWandering = false;
         wanderingCoroutine = null;
     }
-    private void StartWander()
-    {
-        walkTime = Random.Range(5, 7);
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 180);
-
-        wanderInitialized = true;
-    }
-    private void StartWalking() {   isWalking = true;   }
-    private void StopWalking()  {   isWalking = false;  }
-    private void StartTurning()
-    {
-        rotateDir = Random.Range(0, 2);
-        if (rotateDir == 0)
-        {
-            isRotatingLeft = true;
-        }
-        else
-        {
-            isRotatingRight = true;
-        }
-        turningEnded = false;
-    }
-    private void StopTurning()
-    {
-        isRotatingLeft = false;
-        isRotatingRight = false;
-
-        isWandering = false;
-        wanderingCoroutine = null;
-
-        turningEnded = true;
-    }
-    private void StartTurningAway()
-    {
-        rotAngle = Random.Range(90f, 140f);
-        rotTime = rotAngle / rotSpeed;
-
-        isRotatingLeft = true;
-
-        turningAwayEnded = false;
-    }
-    private void StopTurningAway()
-    {
-        isRotatingLeft = false;
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 50f);
-        walkTime = Random.Range(5, 10);
-        rotTime = rotAngle / rotSpeed;
-
-        turningAwayEnded = true;
-    }
-    public void WanderTo()
-    {
-        if (!wanderInitialized)
-        {
-            StartWander();
-
-            if (isTurningAway)
-            {
-                StartTurningAway();
-            }
-            else
-            {
-                rotTime = rotAngle / rotSpeed;
-                StartWalking();
-            }
-        }
-        else if (!turningAwayEnded && passedSeconds >= rotTime * 10)
-        {
-            StopTurningAway();
-            StartWalking();
-        }
-        else if (isWalking && (isTurningAway && passedSeconds >= (rotTime + walkTime) * 10) || (!isTurningAway && passedSeconds >= (walkTime) * 10))
-        {
-            StopWalking();
-            if (isTurningAway)
-            {
-                isTurningAway = false;
-            }
-            StartTurning();
-        }
-        else if (!turningEnded && (isTurningAway && passedSeconds >= (rotTime + walkTime + rotTime) * 10) || (isTurningAway && passedSeconds >= (walkTime + rotTime) * 10))
-        {
-            StopTurning();
-            passedSeconds = 0;
-            isTurningAway = false;
-        }
-        passedSeconds++;
-    }
     public void ChangeDirection(float amount, float all)
     {
         float direction = 360 / amount * all;
@@ -287,7 +202,6 @@ public class Movement : MonoBehaviour
             }
         }
     }
-
     private void Flee()
     {
         // Kiszámítjuk az elkerülési irányt
@@ -320,8 +234,6 @@ public class Movement : MonoBehaviour
         // Menekülési állapot beállítása
         isWalking = true;
     }
-
-
     private IEnumerator Die()
     {
         yield return new WaitForSeconds(1f);

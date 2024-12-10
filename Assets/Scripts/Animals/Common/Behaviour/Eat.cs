@@ -7,12 +7,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private Animal animal;
         public HungerBar hungerBar;
         private int maxHunger = 100;
-        private Edible food;
+        public Edible food;
         public int starving;
         public int currentHunger;
-
-        private int finished = 0;
-        private int started = 0;
         void Start()
         {
             animal = GetComponent<Animal>();
@@ -27,10 +24,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             hungerBar.SetHunger(currentHunger);
         }
-        public int getCurrentHunger()
-        {
-            return currentHunger;
-        }
         public void Step()
         {
             currentHunger--;
@@ -39,17 +32,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (animal.getTargetLayerToEat() == LayerMask.GetMask("BunnyFood"))
             {
-                finished = 0;
-                if (started > 0)
-                {
-                    Debug.Log("started > 0: " + started);
-                }
-                started++;
-
                 food = animal.targetRef.GetComponent<Plant>();
                 if (food != null)
                 {
-
                     animal.breakCounter = food.getEatDuration();
                     animal.status = Status.EAT;
                 }
@@ -59,33 +44,36 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 food = animal.targetRef.GetComponent<Bunny>();
                 if (food != null)
                 {
-
                     animal.breakCounter = food.getEatDuration();
                     animal.status = Status.EAT;
                     food.setStatusCaught();
                 }
+            } 
+            if(food == null)
+            {
+                throw new System.Exception("Food is null");
             }
         }
         public void FinishEating()
         {
-            started = 0;
             if (food != null)
             {
-                if(finished > 0) { Debug.Log("finished > 0"); }
-                finished++;
                 food.Eaten();
             }
             food = null;
         }
         public void Eating()
         {
-            if (currentHunger + food.getNutrition() < maxHunger)
+            if(food != null)
             {
-                currentHunger += food.getNutrition();
-            }
-            else
-            {
-                currentHunger = maxHunger;
+                if (currentHunger + food.getNutrition() < maxHunger)
+                {
+                    currentHunger += food.getNutrition();
+                }
+                else
+                {
+                    currentHunger = maxHunger;
+                }
             }
         }
         public bool isFull()
@@ -93,6 +81,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             if (currentHunger > maxHunger)
             {
                 Debug.Log("RIP: currentHunger > maxHunger");
+            }
+
+            if (food == null)
+            {
+                return (currentHunger == maxHunger);
             }
             return (currentHunger == maxHunger || food.getEatDuration() == 0);
         }

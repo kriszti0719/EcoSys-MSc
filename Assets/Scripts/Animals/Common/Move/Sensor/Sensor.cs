@@ -26,7 +26,6 @@ public class Sensor : MonoBehaviour
         animal = GetComponent<Animal>();
         StartCoroutine(FOVRoutine());
     }
-
     private IEnumerator FOVRoutine()
     {
         /// We only calculate just 5 times per second
@@ -50,6 +49,13 @@ public class Sensor : MonoBehaviour
         {
             Transform target = targetCollider.transform;
             if (animal.rejectedBy.Contains(target.gameObject))
+            {
+                continue;
+            }
+
+            // Check if the target is a valid animal and get its status
+            Animal targetAnimal = target.GetComponent<Animal>();
+            if (targetAnimal != null && targetAnimal.status == Status.CAUGHT)
             {
                 continue;
             }
@@ -105,7 +111,7 @@ public class Sensor : MonoBehaviour
     {
         secCntr++;
 
-        if (secCntr < 1)
+        if (secCntr < 40)
             return;
         secCntr = 0;
 
@@ -152,6 +158,4 @@ public class Sensor : MonoBehaviour
             animal.spottedThreats.Remove(threat);
         }
     }
-
-
 }

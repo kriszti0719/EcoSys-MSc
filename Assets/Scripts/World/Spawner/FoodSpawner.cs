@@ -81,20 +81,20 @@ public class FoodSpawner : Spawner
             {
                 SpawnBunnyFood(prefab4, 1);
             }
-            SpawnBunnyFood(prefab4, Mathf.RoundToInt((float)counter / 100f));
+            SpawnBunnyFood(prefab4, Mathf.RoundToInt((float)counter / 150f));
             counter = Counter("MiniBunch");
             if (counter == 1)
             {
                 SpawnBunnyFood(prefab5, 1);
             }
-            SpawnBunnyFood(prefab5, Mathf.RoundToInt((float)counter / 100f));
+            SpawnBunnyFood(prefab5, Mathf.RoundToInt((float)counter / 150f));
             counter = Counter("SmallBunch");
             if (counter == 1)
             {
                 SpawnBunnyFood(prefab6, 1);
             }
-            SpawnBunnyFood(prefab6, Mathf.RoundToInt((float)counter / 100f));
-            yield return new WaitForSeconds(3f);
+            SpawnBunnyFood(prefab6, Mathf.RoundToInt((float)counter / 150f));
+            yield return new WaitForSeconds(1f);
         }
     }    
     public void SpawnBunnyFood(GameObject prefab, int amount)

@@ -39,6 +39,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }       
         public void ChanceToRest()
         {
+            if(animal.eat.isStarving() || animal.drink.isDrying())
+            {
+                return;
+            }
+
             if (currentStamina <= 30 && currentStamina >= 10 && animal.status != Status.MOVE_TOWARDS)
             {
                 int randomValue = UnityEngine.Random.Range(0, 4);

@@ -35,31 +35,30 @@ public class AnimalSpawner : Spawner
     private string filePathDeathData;
     private string filePathPopulation;
 
+    private int BunnyCntr;
+    private int FoxCntr;
+
     // Start is called before the first frame update
     public override void Generate()
     {
         Clear();
-        GenerateAnimal animal = new GenerateAnimal(prefab, null, null, Species.FOX, animalSizeMin, animalSizeMax);
+        BunnyCntr = 0;
+        FoxCntr = 0;
+        GenerateAnimal animal = new GenerateAnimal(null, null, Species.FOX, animalSizeMin, animalSizeMax);
         SpawnAnimals(animal, amount);
-        animal = new GenerateAnimal(prefab2, null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
+        animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
         SpawnAnimals(animal, amount2);
     }
     protected virtual void Start()
     {
         // A projekt gyökérmappájának meghatározása
         string projectRoot = Directory.GetParent(Application.dataPath).FullName;
-
-        // Adatok tárolásához szükséges Data mappa a projekt gyökerében
         string dataDirectory = Path.Combine(projectRoot, "Data");
 
-        // Ellenõrizzük, hogy a Data mappa létezik-e, és szükség esetén létrehozzuk
         Directory.CreateDirectory(dataDirectory);
-
-        // Fájl elérési út generálása idõbélyeggel
         string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
         filePathDeathData = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
 
-        // Create or open the file
         using (StreamWriter writer = new StreamWriter(filePathDeathData))
         {
             writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
@@ -74,6 +73,8 @@ public class AnimalSpawner : Spawner
                 writer.WriteLine("Time;BunnyPop;FoxPop");
             }
         }
+        FoxCntr = amount;
+        BunnyCntr = amount2;
         StartCoroutine(RegisterPopulation());
     }
     private void SpawnAnimals(GenerateAnimal animal, int amount)
@@ -81,24 +82,35 @@ public class AnimalSpawner : Spawner
         int cnt = amount;
         while(cnt > 0)
         {
-            GameObject instantiatedPrefab = (GameObject)PrefabUtility.InstantiatePrefab(animal.prefab, transform);
+            GameObject prefabToInstantiate = animal.species switch
+            {
+                Species.FOX => prefab,
+                Species.BUNNY => prefab2,
+                _ => throw new System.ArgumentException($"Unhandled species: {animal.species}")
+            };
+            GameObject instantiatedPrefab = (GameObject)PrefabUtility.InstantiatePrefab(prefabToInstantiate, transform);
             placeAnimal(instantiatedPrefab, animal);
 
+
             // Attach scripts:
+            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
+            Eat instantiatedEat = instantiatedPrefab.AddComponent<Eat>();
+            Rest instantiatedRest = instantiatedPrefab.AddComponent<Rest>();
+            Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
+            Reproduction instantiatedReproduction = instantiatedPrefab.AddComponent<Reproduction>();
             Movement instantiatedMovement = instantiatedPrefab.AddComponent<Movement>();
             Gravity instantiatedGravity = instantiatedPrefab.AddComponent<Gravity>();
             Sensor instantiatedSensor = instantiatedPrefab.AddComponent<Sensor>();
-            Reproduction instantiatedReproduction = instantiatedPrefab.AddComponent<Reproduction>();
-            Rest instantiatedRest = instantiatedPrefab.AddComponent<Rest>();
-            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
-            Eat instantiatedEat = instantiatedPrefab.AddComponent<Eat>();
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
-            Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
+
+
 
             switch (animal.species)
             {
                 case Species.BUNNY:
+                    BunnyCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{BunnyCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
                     Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
 
@@ -117,6 +129,8 @@ public class AnimalSpawner : Spawner
                     setBars(instantiatedBunny, instantiatedPrefab, animal);
                     break;
                 case Species.FOX:
+                    FoxCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{FoxCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
                     Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
 
@@ -138,6 +152,11 @@ public class AnimalSpawner : Spawner
 
             cnt--;
         }
+    }
+    public void SpawnBabies(GameObject _gameObjprefab, int _amount, Animal _mother, MateTraits _father)
+    {
+        GenerateAnimal animal = new GenerateAnimal(_mother, _father, _mother.getSpecies());
+        SpawnAnimals(animal, _amount);
     }
     private void isMale(Animal instantiatedAnimal, GameObject instantiatedPrefab)
     {
@@ -215,15 +234,31 @@ public class AnimalSpawner : Spawner
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
         CapsuleCollider capsuleCollider = instantiatedPrefab.AddComponent<CapsuleCollider>();
-        if (animal.species == Species.BUNNY)
+        if(animal.mother == null)
         {
-            capsuleCollider.height = (float)(2.5 /currentAnimalSize);
-            capsuleCollider.radius = (float)(2.5 / currentAnimalSize);
+            if (animal.species == Species.BUNNY)
+            {
+                capsuleCollider.height = (float)(2.5 /currentAnimalSize);
+                capsuleCollider.radius = (float)(2.5 / currentAnimalSize);
+            }
+            else if (animal.species == Species.FOX)
+            {
+                capsuleCollider.height = (float)(8 / currentAnimalSize);
+                capsuleCollider.radius = (float)(8 / currentAnimalSize);
+            }
         }
-        else if (animal.species == Species.FOX)
+        else
         {
-            capsuleCollider.height = (float)(8 / currentAnimalSize);
-            capsuleCollider.radius = (float)(8 / currentAnimalSize);
+            if (animal.species == Species.BUNNY)
+            {
+                capsuleCollider.height = (float)(2.5 / animal.mother.transform.localScale.x);
+                capsuleCollider.radius = (float)(2.5 / animal.mother.transform.localScale.x);
+            }
+            else if (animal.species == Species.FOX)
+            {
+                capsuleCollider.height = (float)(8 / animal.mother.transform.localScale.x);
+                capsuleCollider.radius = (float)(8 / animal.mother.transform.localScale.x);
+            }
         }
     }
     private void placeAnimal(GameObject instantiatedPrefab, GenerateAnimal animal)
@@ -251,7 +286,6 @@ public class AnimalSpawner : Spawner
                     continue;
                 success = true;
 
-                // Instantiate the prefab and set its position, rotation, and scale:
                 currentAnimalSize = Random.Range(animal.sizeMin, animal.sizeMax);
                 instantiatedPrefab.transform.localScale = new Vector3(
                     currentAnimalSize,
@@ -269,8 +303,8 @@ public class AnimalSpawner : Spawner
         {
             step++;
             Transform[] children = this.GetComponentsInChildren<Transform>(true);
-            int counterBunny = Counter("Bunny");
-            int counterFox = Counter("Fox");
+            int counterBunny = Counter("BUNNY");
+            int counterFox = Counter("FOX");
 
             // Írás a fájlba
             using (StreamWriter writer = new StreamWriter(filePathPopulation, true))
@@ -285,7 +319,7 @@ public class AnimalSpawner : Spawner
         // Adatok hozzáfûzése a fájlhoz
         using (StreamWriter writer = new StreamWriter(filePathDeathData, true))
         {
-            string dataLine = $"{step};{animal.species.ToPrint()};{animal.cause.ToPrint()};{animal.aging.currentAge};{animal.movement.moveSpeed};{animal.sensor.radius};{animal.reproduction.reproductiveUrge};{animal.aging.lifeSpan};{animal.mating.Charm};{animal.reproduction.pregnancyDuration};{animal.prevStatus};{animal.eat.starving};{animal.drink.drying}";
+            string dataLine = $"{step};{animal.species.ToPrint()};{animal.cause.ToPrint()};{animal.aging.currentAge};{animal.movement.moveSpeed};{animal.sensor.radius};{animal.reproduction.reproductiveUrge};{animal.aging.lifeSpan};{animal.mating.charm};{animal.reproduction.pregnancyDuration};{animal.prevStatus};{animal.eat.starving};{animal.drink.drying}";
             writer.WriteLine(dataLine); // Pontosvesszõ használata
         }
     }

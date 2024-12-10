@@ -39,7 +39,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
             else if(secCnt == 0)
             {
-                animal.mating.enableMating = true;
+                if(!animal.reproduction.isPregnant)
+                {
+                    animal.mating.enableMating = true;
+                }
                 animal.reproduction.Mature();
                 currentAge += aging;
                 if (animal.status != Status.DIE && currentAge >= lifeSpan)
@@ -55,7 +58,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             animal.barsContainer.transform.SetParent(null);
             if (currentAge < 0.4)
-                animal.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+                animal.transform.localScale = new Vector3((float)size/3, (float)size / 3, (float)size / 3);
             else
                 animal.transform.localScale = new Vector3(size * currentAge, size * currentAge, size * currentAge);
             animal.barsContainer.transform.SetParent(animal.transform);

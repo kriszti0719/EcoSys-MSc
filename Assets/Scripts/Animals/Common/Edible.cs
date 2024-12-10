@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assets.Scripts
 {
-    internal interface Edible
+    public interface Edible
     {
         int getEatDuration();
         void setStatusCaught();

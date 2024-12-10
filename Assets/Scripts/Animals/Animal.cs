@@ -1,10 +1,13 @@
+using Assets.Scripts;
 using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
 using System.Collections.Generic;
 using System.Linq;
+using System.Transactions;
 using Unity.PlasticSCM.Editor.WebApi;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 public abstract class Animal : MonoBehaviour
 {
@@ -19,7 +22,7 @@ public abstract class Animal : MonoBehaviour
     public int breakCounter = 0;
     public List<GameObject> destructibles = new List<GameObject>();
     public GameObject targetRef;
-    public List<GameObject> spottedThreats;
+    public List<GameObject> spottedThreats = new List<GameObject>();
     public List<GameObject> rejectedBy = new List<GameObject>();
 
     public bool isMale;
@@ -45,6 +48,7 @@ public abstract class Animal : MonoBehaviour
     public int maxDecCnt = 2;
     public float timeBetweenSteps = 0.1f; // TizedMásodperc
     private float timer = 0f;
+    private int started = 0;
     protected virtual void Start()
     {
         cause = CauseOfDeath.NONE;
@@ -65,49 +69,42 @@ public abstract class Animal : MonoBehaviour
         mating = GetComponent<Mate>();
         movement = GetComponent<Movement>();
     }
-    public void SetTraits(Animal mother, Animal father)
+    public void SetTraits(Animal mother, MateTraits father)
     {
         SetComponents();
 
-        aging.setAging(0.01f, (mother.aging.size + father.aging.size) / 2f, MutateTrait((mother.aging.lifeSpan + father.aging.lifeSpan) / 2f));
-        eat.starving = Mathf.RoundToInt(MutateTrait((mother.eat.starving + father.eat.starving) / 2f));
-        drink.drying = Mathf.RoundToInt(MutateTrait((mother.drink.drying + father.drink.drying) / 2f));
-        movement.moveSpeed = MutateTrait((mother.movement.moveSpeed + father.movement.moveSpeed) / 2f);
-        sensor.radius = Mathf.RoundToInt(MutateTrait((mother.sensor.radius + father.sensor.radius) / 2f));
+        aging.setAging(0.01f, (mother.aging.size + father.size) / 2f, MutateTrait(mother.aging.lifeSpan, father.lifeSpan));
+        eat.starving = Mathf.RoundToInt(MutateTrait(mother.eat.starving, father.starving));
+        drink.drying = Mathf.RoundToInt(MutateTrait(mother.drink.drying, father.drying));
+        movement.moveSpeed = MutateTrait(mother.movement.moveSpeed, father.moveSpeed);
+        sensor.radius = Mathf.RoundToInt(MutateTrait(mother.sensor.radius, father.radius));
 
-        reproduction.setReproduction(Mathf.RoundToInt(MutateTrait((mother.reproduction.reproductiveUrge + father.reproduction.reproductiveUrge) / 2f)),
-                                    Mathf.RoundToInt(MutateTrait((mother.reproduction.pregnancyDuration + father.reproduction.pregnancyDuration) / 2f)),
+        reproduction.setReproduction(Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
+                                    Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration)),
                                     false);
         mating.enableMating = false;
-        mating.Charm = Mathf.RoundToInt(MutateTrait((mother.mating.Charm + father.mating.Charm) / 2f));
+        mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
 
         setSpeciesSpecificTraits();
     }
-    public void SetTraits(float rnd)
+    public abstract void SetTraits(float rnd);
+    protected float MutateTrait(float motherTrait, float fatherTrait)
     {
-        SetComponents();
+        // Átlag kiszámítása a szülõk tulajdonságai alapján
+        float averageTrait = (motherTrait + fatherTrait) / 2f;
 
-        aging.setAging(1, rnd, Random.Range(4f, 6f));
-        movement.moveSpeed = Random.Range(5f, 10f);
-        sensor.radius = Random.Range(30, 70);
-        reproduction.setReproduction(Random.Range(30, 50), 
-                                    Random.Range(30, 60),
-                                    true);
-        mating.enableMating = true;
-        mating.Charm = Random.Range(20, 100);
-        drink.drying = Random.Range(30, 40);
-        eat.starving = Random.Range(10, 50);
+        // Mutációs faktor: lehet +/- 20%-os eltérés
+        float mutationFactor = Random.Range(0.8f, 1.2f);
 
-        setSpeciesSpecificTraits();
-    }
-    protected float MutateTrait(float averageTrait)
-    {
-        float mutationFactor = Random.Range(0.9f, 1.1f);
+        // Javulási torzítás (enyhe fejlõdést ösztönöz)
+        float improvementBias = 1.05f;
 
-        // A véletlenszerû mutáció alkalmazása
-        float mutatedTrait = averageTrait * mutationFactor;
+        // Mutáció alkalmazása
+        float mutatedTrait = averageTrait * mutationFactor * improvementBias;
 
-        // Kerekítés és visszatérés
+        // Minimum érték biztosítása, hogy ne essen túl alacsonyra
+        mutatedTrait = Mathf.Max(mutatedTrait, 0.1f);
+
         return mutatedTrait;
     }
     public void SetBars(GameObject barsContainer)
@@ -125,7 +122,6 @@ public abstract class Animal : MonoBehaviour
         this.rejectedBy.Add(this.GameObject());
         //TODO: set charm according to color
     }
-
     void Update()
     {
         timer += Time.deltaTime;
@@ -136,7 +132,7 @@ public abstract class Animal : MonoBehaviour
             aging.Aging();
             Step();
             Decide();
-            if (predators != null && predators.Any())
+            if (status != Status.CAUGHT && status != Status.DIE && predators != null && predators.Any())
             {
                 sensor.CheckForPredators();
                 if (spottedThreats.Any())
@@ -146,13 +142,11 @@ public abstract class Animal : MonoBehaviour
                         prevStatus = status;
                         status = Status.FLEE;
                     }
-                    // ...
                 }
                 else if(status == Status.FLEE)
                 {
-                    Status tmp = status;
-                    status = prevStatus;
-                    prevStatus = tmp;
+                    status = Status.WANDER;
+                    prevStatus = Status.FLEE;
                 }
             }
         }
@@ -162,12 +156,13 @@ public abstract class Animal : MonoBehaviour
         stepCnt++;
         if (stepCnt == maxStepCnt)   
         {
+            if (breakCounter != 0)
+            {
+                breakCounter--;
+            }
+            stepCnt = 0;
             if (transform.localPosition.y < 20 && targetRef == null) {  oxygen--;  }
             else {  oxygen = maxOxygen;  }
-
-            if (breakCounter != 0)
-                breakCounter--;
-
             if (reproduction.isStillPregnant())
             {
                 reproduction.StepPregnancy();
@@ -208,7 +203,7 @@ public abstract class Animal : MonoBehaviour
                         mating.Mating();
                         if (breakCounter == 0)
                         {
-                            mating.isSuccess();
+                            mating.Success();
                         }
                         break;
                     }
@@ -225,10 +220,6 @@ public abstract class Animal : MonoBehaviour
                 case Status.DIE: { break; }
                 default:
                     {
-                        rest.Step();
-                        eat.Step();
-                        drink.Step();
-                        mating.Step();
                         break;
                     }
             }
@@ -236,19 +227,13 @@ public abstract class Animal : MonoBehaviour
             eat.updateBar();
             drink.updateBar();
             mating.updateBar();
-            stepCnt = 0;
         }
     }
     public void Decide()
     {
         decCnt++;
 
-        if(status == Status.CAUGHT && breakCounter == 0)
-        {
-            cause = CauseOfDeath.CONSUMED;
-            die.ToDie();
-        }
-        else if (status != Status.DIE && eat.isStarvedToDeath())
+        if (status != Status.DIE && eat.isStarvedToDeath())
         {
             cause = CauseOfDeath.HUNGER;
             die.ToDie();
@@ -272,7 +257,7 @@ public abstract class Animal : MonoBehaviour
         if (decCnt == maxDecCnt)
         {   
             switch (status)
-            {                
+            {
                 case Status.SEARCH_MATE:
                     {
                         if(eat.isStarving())
@@ -295,13 +280,23 @@ public abstract class Animal : MonoBehaviour
                             {
                                 this.rejectedBy.Add(targetRef);
                                 this.targetRef = null;
+                                break;
                             }
                             else
                             {
                                 if (tmp != null && tmp.mating.isAcceptable(this))
                                 {
                                     reproduction.mate = tmp;
+                                    reproduction.mateTraits = new MateTraits(tmp);
                                     tmp.reproduction.mate = this;
+                                    tmp.reproduction.mateTraits = new MateTraits(this);
+                                    if (reproduction.mate == null ||
+                                        tmp.reproduction.mate == null ||
+                                        tmp.reproduction.mateTraits == null ||
+                                        reproduction.mate == null)
+                                    {
+                                        throw new System.Exception("BigRip");
+                                    }
                                     prevStatus = status;
                                     status = Status.MOVE_TOWARDS;
                                 }
@@ -320,6 +315,7 @@ public abstract class Animal : MonoBehaviour
                         rest.ChanceToRest();
                         if (targetRef != null)
                         {
+                            prevStatus = status;
                             status = Status.MOVE_TOWARDS;
                         }
                         break;
@@ -329,46 +325,65 @@ public abstract class Animal : MonoBehaviour
                         rest.ChanceToRest();
                         if (sensor.targetMask == LayerMask.GetMask("None"))
                         {
-                            if (eat.currentHunger < drink.currentThirst && eat.isHungry())
+                            if (reproduction.isFertile && mating.enableMating && !eat.isHungry() && !drink.isThirsty())
                             {
-                                setTargetLayerToEat();
-                                status = Status.SEARCH_FOOD;
+                                setTargetLayerToMate();
+                                status = Status.SEARCH_MATE;
                             }
                             else if (drink.isThirsty())
                             {
                                 sensor.targetMask = LayerMask.GetMask("Drink");
                                 status = Status.SEARCH_DRINK;
                             }
-                            else if (reproduction.isFertile && mating.enableMating)
+                            else
                             {
-                                setTargetLayerToMate();
-                                status = Status.SEARCH_MATE;
+                                setTargetLayerToEat();
+                                status = Status.SEARCH_FOOD;
                             }
                         }
                         break;
                     }
                 case Status.MOVE_TOWARDS:
                     {
-                        rest.ChanceToRest();
                         if (targetRef != null)
                         {
+                            Animal targetAnimal = targetRef.GetComponent<Animal>();
+                            if (targetAnimal != null)
+                            {
+                                if (targetAnimal.status == Status.CAUGHT)
+                                {
+                                    rejectedBy.Add(targetRef);
+                                    targetRef = null;
+                                    prevStatus = Status.WANDER;
+                                    status = Status.SEARCH_FOOD;
+                                    break;
+                                }
+                            }
+
                             float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
                             if (distanceToTarget < 7f)
                             {
-                                if(prevStatus == Status.SEARCH_MATE)
+                                if (reproduction.mate != null)
                                 {
-                                    Animal mate = targetRef.GetComponent<Animal>();
-                                    if (mate != null)
+                                    if(reproduction.mate.status == Status.WAIT)
+                                        reproduction.mate.mating.ToMate();
+                                    mating.ToMate();
+                                    rejectedBy = new List<GameObject>
                                     {
-                                        if(mate.status == Status.WAIT)
-                                            mate.mating.ToMate();
-                                        mating.ToMate();
-                                    }
+                                        this.gameObject
+                                    };
+                                    break;
                                 }
+
                                 if (distanceToTarget < 5f)
                                 {
                                     if (prevStatus == Status.SEARCH_FOOD)
                                     {
+                                        //if (started > 0)
+                                        //{
+                                        //    throw new System.Exception("Already did that");
+                                        //}
+                                        //started++;
                                         eat.StartEating();
                                     }
                                     else if (prevStatus == Status.SEARCH_DRINK)
@@ -387,13 +402,13 @@ public abstract class Animal : MonoBehaviour
                         if (eat.isStarving())
                         {
                             setTargetLayerToEat();
-                            prevStatus = status;
+                            prevStatus = Status.REST;
                             status = Status.SEARCH_FOOD;
                         }
                         else if (drink.isDrying())
                         {
                             sensor.targetMask = LayerMask.GetMask("Drink");
-                            prevStatus = status;
+                            prevStatus = Status.REST;
                             status = Status.SEARCH_DRINK;
                         }
                         else if (rest.isRested() || breakCounter == 0)
@@ -405,9 +420,10 @@ public abstract class Animal : MonoBehaviour
                     }
                 case Status.EAT:
                     {
-                        if (eat.isFull() || breakCounter == 0 || targetRef == null)
+                        if (targetRef == null | breakCounter == 0 | eat.food == null | eat.isFull())
                         {
                             breakCounter = 0;
+                            //started--;
                             eat.FinishEating();
                             targetRef = null;
                             sensor.targetMask = LayerMask.GetMask("None");
@@ -430,9 +446,23 @@ public abstract class Animal : MonoBehaviour
                     {
                         if (breakCounter == 0)
                         {
-                            targetRef = null;
-                            sensor.targetMask = LayerMask.GetMask("None");                            
-                            status = Status.WANDER;
+                            if(prevStatus == Status.EAT)
+                            {
+                                status = Status.EAT;
+                                prevStatus = Status.SEARCH_FOOD;
+                            }
+                            else if(prevStatus == Status.DRINK)
+                            {
+                                status = Status.DRINK;
+                                prevStatus = Status.SEARCH_DRINK;
+                            }
+                            else
+                            {
+                                targetRef = null;
+                                sensor.targetMask = LayerMask.GetMask("None");
+                                prevStatus = Status.MATE;
+                                status = Status.WANDER;
+                            }
                         }
                         break;
                     }
@@ -450,4 +480,8 @@ public abstract class Animal : MonoBehaviour
     public abstract int getTargetLayerToEat();
     public abstract int getPredatorLayers();
     public abstract void setSpeciesSpecificTraits();
+    public Species getSpecies()
+    {
+        return species;
+    }
 }
