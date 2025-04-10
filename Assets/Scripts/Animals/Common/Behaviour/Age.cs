@@ -18,11 +18,14 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public float currentAge;
         public float lifeSpan;
         public float size;
+
+        public event Action OnAgeLimitReached;
         void Start()
         {
             animal = GetComponent<Animal>();
             secCnt = 0;
         }
+        private bool AgeLimitReached() => currentAge >= lifeSpan;
         public void setAging(float _age, float _size, float _lifeSpan)
         {
             this.currentAge = _age;
@@ -42,10 +45,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 animal.mating.enableMating = true;
                 animal.reproduction.Mature();
                 currentAge += aging;
-                if (animal.status != Status.DIE && currentAge >= lifeSpan)
+                if (AgeLimitReached())
                 {
-                    animal.cause = CauseOfDeath.AGE;
-                    animal.die.ToDie();
+                    OnAgeLimitReached?.Invoke();
                 }
                 secCnt = 200;
             }

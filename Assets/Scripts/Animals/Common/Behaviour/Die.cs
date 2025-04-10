@@ -14,6 +14,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             animal = GetComponent<Animal>();
         }
+<<<<<<< Updated upstream
         public void ToDie()
         {
             animal.prevStatus = animal.status;
@@ -22,14 +23,23 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void Destroy()
         {
             if (animal.status == Status.DIE)
+=======
+        public void Destroy()
+        {
+            animal.GetComponentInParent<AnimalSpawner>().RegisterDeath(animal);
+            foreach (GameObject g in animal.destructibles)
+>>>>>>> Stashed changes
             {
-                animal.GetComponentInParent<AnimalSpawner>().RegisterDeath(animal);
-                foreach (GameObject g in animal.destructibles)
-                {
-                    Destroy(g);
-                }
-                Destroy(gameObject);
+                Destroy(g);
             }
+<<<<<<< Updated upstream
+=======
+            Destroy(gameObject);
+        }
+        public void CatchPrey()
+        {
+            isCaptured = true;
+>>>>>>> Stashed changes
         }
     }
 }

@@ -18,11 +18,16 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         [SerializeField]
         private int currentStamina;
 
+        public event Action OnRestFull;
+        public event Action OnRestDepleted;
+
         void Start()
         {
             restAmount = Mathf.RoundToInt(maxStamina * 0.05f);
             animal = GetComponent<Animal>();
         }
+        private bool IsRested() => currentStamina == maxStamina;
+        private bool IsDepleted() => currentStamina == 0;
         public void setBar(GameObject barsContainer) {
 
             this.staminaBar = barsContainer.GetComponentInChildren<StaminaBar>();
@@ -35,74 +40,42 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            currentStamina--;
-        }       
-        public void ChanceToRest()
+            if (animal.status == Status.REST || animal.status == Status.EAT || animal.status == Status.DRINK)
+                currentStamina = Mathf.Min(currentStamina + restAmount, maxStamina);
+            else
+                currentStamina--;
+            if(IsRested())
+            {
+                OnRestDepleted?.Invoke();
+            }
+            else if (IsDepleted())
+            {
+                OnRestDepleted?.Invoke();
+            }
+        }
+        public bool ChanceToRest()
         {
-            if (currentStamina <= 30 && currentStamina >= 10)
-            {
-                // According to sum other circumstances it can decide
-                //  - to move on OR
-                //  - to sleep
-                //  - to stop for a normal break
-                //  - to stop for a little break
+            if (currentStamina > 30) return false;
 
-                int randomValue = UnityEngine.Random.Range(0, 4);
-                switch (randomValue)
-                {
-                    case 0:
-                        ToRest(20);
-                        break;
-                    case 1:
-                        ToRest(50);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else if (currentStamina <= 10 && currentStamina >= 0)
-            {
-                // According to sum other circumstances it can decide
-                //  - to move on OR
-                //  - to sleep
-                //  - to stop for a normal break
-                //  - to stop for a little break
+            float restProbability = Mathf.Clamp01(1f - (currentStamina / 30f)); // Minél alacsonyabb a stamina, annál nagyobb az esély
 
-                int randomValue = UnityEngine.Random.Range(0, 3);
-                switch (randomValue)
-                {
-                    case 0:
-                        ToRest(20);
-                        break;
-                    case 1:
-                        ToRest(50);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else if (currentStamina <= 0)
+            if (UnityEngine.Random.value < restProbability)
             {
-                // According to sum other circumstances it can decide
-                //  - to sleep
-                //  - to stop for a normal break
-                int randomValue = UnityEngine.Random.Range(0, 2);
-                if (randomValue == 0)
-                {
-                    ToRest(100);
-                }
-                else if (randomValue == 1)
-                {
-                    ToRest(50);
-                }
+                int restAmount = (currentStamina == 0) ? 100 : UnityEngine.Random.value < 0.5f ? 50 : 20;
+                ToRest(restAmount);
+                return true;
             }
+            return false;
         }
         public void ToRest(int time)
         {
             if (animal.status != Status.DIE)
             {
+<<<<<<< Updated upstream
                 animal.prevStatus = animal.status;
                 animal.status = Status.RESTING;
+=======
+>>>>>>> Stashed changes
                 if (currentStamina + time < maxStamina)
                 {
                     animal.breakCounter = time;
@@ -112,23 +85,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                     animal.breakCounter = maxStamina - currentStamina;
                 }
             }
-        }
-        public void Resting()
-        {
-            if (currentStamina + restAmount < maxStamina)
-                currentStamina += restAmount;
-            else
-            {
-                currentStamina = maxStamina;
-            }
-        }
-        public bool isRested()
-        {
-            return currentStamina >= maxStamina;
-        }
-        public bool isFainted()
-        {
-            return currentStamina <= 0;
         }
     }
 }
