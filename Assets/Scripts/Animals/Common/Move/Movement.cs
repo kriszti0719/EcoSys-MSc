@@ -48,14 +48,14 @@ public class Movement : MonoBehaviour
     }
     private void Update()
     {
-        if (animal.status == Status.WANDERING || 
-                animal.status == Status.SEARCHINGFOOD ||
-                animal.status == Status.SEARCHINGDRINK ||
-                animal.status == Status.SEARCHINGMATE)
+        if (animal.status == Status.WANDER || 
+                animal.status == Status.SEARCH_FOOD ||
+                animal.status == Status.SEARCH_DRINK ||
+                animal.status == Status.SEARCH_MATE)
         {
             Wandering();
         }
-        else if (animal.status == Status.MOVING)
+        else if (animal.status == Status.MOVE_TOWARDS)
         {
             if (wanderingCoroutine != null)
                 StopWander();            

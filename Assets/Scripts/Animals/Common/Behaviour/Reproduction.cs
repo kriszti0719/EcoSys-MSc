@@ -6,6 +6,7 @@ public class Reproduction : MonoBehaviour
 {
     private Animal animal;
     public Animal mate;
+    public MateTraits mateTraits;
     public bool isPregnant = false;
 
     public bool isFertile;
@@ -33,8 +34,34 @@ public class Reproduction : MonoBehaviour
     }
     public void GiveBirth()
     {
+        var spawner = animal.GetComponentInParent<AnimalSpawner>();
+        if (spawner == null)
+        {
+            Debug.LogError("AnimalSpawner not found in parent hierarchy for " + animal.name);
+            return;
+        }
+        if (mateTraits == null)
+        {
+            //throw new System.Exception("FatherTraits is null");
+            if (mate != null)
+            {
+                mateTraits = new MateTraits(mate);
+            }
+            else
+            {
+                return;
+            }
+
+        }
+        int rnd = animal.species switch
+        {
+            Species.FOX => Random.Range(4, 7),
+            Species.BUNNY => Random.Range(6, 9),
+            _ => throw new System.ArgumentException($"Unhandled species: {animal.species}")
+        };
+
+        spawner.SpawnBabies(null, rnd, animal, mateTraits);
         isPregnant = false;
-        animal.GetComponentInParent<AnimalSpawner>().SpawnAnimals(null, Random.Range(6, 9), animal, animal.reproduction.mate);
     }
     public void Mature()
     {

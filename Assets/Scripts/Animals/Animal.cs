@@ -1,7 +1,5 @@
 using Assets.Scripts.Animals.Common.Behaviour;
-using Assets.Scripts.Datatypes;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -19,7 +17,8 @@ public abstract class Animal : MonoBehaviour
     public int breakCounter = 0;
     public List<GameObject> destructibles = new List<GameObject>();
     public GameObject targetRef;
-    public List<GameObject> noTargetRefs = new List<GameObject>();
+    public List<GameObject> spottedThreats = new List<GameObject>();
+    public List<GameObject> rejectedBy = new List<GameObject>();
 
     public bool isMale;
 
@@ -47,11 +46,15 @@ public abstract class Animal : MonoBehaviour
     public int framesPerChange = 6; // 60 frame = 1 másodperc, HA 60 FPS
     public event System.Action OnDeath;
     private bool IsDying() => status == Status.DIE && !movement.isDying;
-    public abstract void setTargetLayerToMate();
-    public abstract void setTargetLayerToEat();
+    public Species getSpecies()
+    {
+        return species;
+    }
     public abstract int getTargetLayerToMate();
     public abstract int getTargetLayerToEat();
     public abstract int getPredatorLayers();
+    public abstract void setTargetLayerToMate();
+    public abstract void setTargetLayerToEat();
     public abstract void setSpeciesSpecificTraits();
     protected virtual void Start()
     {
@@ -89,24 +92,23 @@ public abstract class Animal : MonoBehaviour
 
         aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
     }
-    public void SetTraits(Animal mother, Animal father)
+    public void SetTraits(Animal mother, MateTraits father)
     {
         SetComponents();
 
-        aging.setAging(0.01f, (mother.aging.size + father.aging.size) / 2f, MutateTrait((mother.aging.lifeSpan + father.aging.lifeSpan) / 2f));
-        eat.critical = Mathf.RoundToInt(MutateTrait((mother.eat.critical + father.eat.critical) / 2f));
-        drink.critical = Mathf.RoundToInt(MutateTrait((mother.drink.critical + father.drink.critical) / 2f));
-        movement.moveSpeed = MutateTrait((mother.movement.moveSpeed + father.movement.moveSpeed) / 2f);
-        sensor.radius = Mathf.RoundToInt(MutateTrait((mother.sensor.radius + father.sensor.radius) / 2f));
+        aging.setAging(0.01f, (mother.aging.size + father.size) / 2f, MutateTrait(mother.aging.lifeSpan, father.lifeSpan));
+        eat.critical = Mathf.RoundToInt(MutateTrait(mother.eat.critical, father.starving));
+        drink.critical = Mathf.RoundToInt(MutateTrait(mother.drink.critical, father.drying));
+        movement.moveSpeed = MutateTrait(mother.movement.moveSpeed, father.moveSpeed);
+        sensor.radius = Mathf.RoundToInt(MutateTrait(mother.sensor.radius, father.radius));
 
-        reproduction.setReproduction(Mathf.RoundToInt(MutateTrait((mother.reproduction.reproductiveUrge + father.reproduction.reproductiveUrge) / 2f)),
-                                    Mathf.RoundToInt(MutateTrait((mother.reproduction.pregnancyDuration + father.reproduction.pregnancyDuration) / 2f)),
+        reproduction.setReproduction(Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
+                                    Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration)),
                                     false);
         mating.enableMating = false;
-        mating.Charm = Mathf.RoundToInt(MutateTrait((mother.mating.Charm + father.mating.Charm) / 2f));
+        mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
 
         setSpeciesSpecificTraits();
-        SubscribeToNeeds();
     }
     public void SetTraits(float rnd)
     {
@@ -119,21 +121,21 @@ public abstract class Animal : MonoBehaviour
                                     Random.Range(30, 60),
                                     true);
         mating.enableMating = true;
-        mating.Charm = Random.Range(20, 100);
+        mating.charm = Random.Range(20, 100);
         drink.critical = Random.Range(25, 35);
         eat.critical = Random.Range(15, 25);
 
         setSpeciesSpecificTraits();
         SubscribeToNeeds();
     }
-    protected float MutateTrait(float averageTrait)
+    protected float MutateTrait(float motherTrait, float fatherTrait)
     {
-        float mutationFactor = Random.Range(0.9f, 1.1f);
+        float averageTrait = (motherTrait + fatherTrait) / 2f;
+        float mutationFactor = Random.Range(0.8f, 1.2f);
+        float improvementBias = 1.05f;
+        float mutatedTrait = averageTrait * mutationFactor * improvementBias;
+        mutatedTrait = Mathf.Max(mutatedTrait, 0.1f);
 
-        // A véletlenszerû mutáció alkalmazása
-        float mutatedTrait = averageTrait * mutationFactor;
-
-        // Kerekítés és visszatérés
         return mutatedTrait;
     }
     public void SetBars(GameObject barsContainer)
@@ -148,7 +150,7 @@ public abstract class Animal : MonoBehaviour
     {
         this.prefab = prefab;
         this.color = color;
-        this.noTargetRefs.Add(this.GameObject());
+        this.rejectedBy.Add(this.GameObject()); ;
         //TODO: set charm according to color
     }
     void Update()
@@ -237,7 +239,7 @@ public abstract class Animal : MonoBehaviour
                             Animal tmp = targetRef.GetComponent<Animal>();
                             if (tmp == null || tmp.isMale == this.isMale || !tmp.mating.IsAcceptable(this))
                             {
-                                noTargetRefs.Add(targetRef);
+                                this.rejectedBy.Add(targetRef);
                                 targetRef = null;
                             }
                             else

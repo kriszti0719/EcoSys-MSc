@@ -1,5 +1,6 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class Sensor : MonoBehaviour
@@ -17,14 +18,14 @@ public class Sensor : MonoBehaviour
     /// Boolean indicating whether the player is within the field of view
     public bool canSeeTarget;
     public Animal animal;
-
+    public int secCntr = 0;
+    public bool danger = false;
 
     private void Start()
     {
         animal = GetComponent<Animal>();
         StartCoroutine(FOVRoutine());
     }
-
     private IEnumerator FOVRoutine()
     {
         /// We only calculate just 5 times per second
@@ -36,7 +37,6 @@ public class Sensor : MonoBehaviour
             FieldOfViewCheck();
         }
     }
-
     public void FieldOfViewCheck()
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
@@ -48,7 +48,14 @@ public class Sensor : MonoBehaviour
         foreach (var targetCollider in rangeChecks)
         {
             Transform target = targetCollider.transform;
-            if (animal.noTargetRefs.Contains(target.gameObject))
+            if (animal.rejectedBy.Contains(target.gameObject))
+            {
+                continue;
+            }
+
+            // Check if the target is a valid animal and get its status
+            Animal targetAnimal = target.GetComponent<Animal>();
+            if (targetAnimal != null && targetAnimal.status == Status.CAUGHT)
             {
                 continue;
             }
@@ -73,7 +80,6 @@ public class Sensor : MonoBehaviour
         canSeeTarget = nearestTarget != null;
         animal.targetRef = canSeeTarget ? nearestTarget : null;
     }
-
     public bool FieldOfViewCheck(LayerMask _targetMask, GameObject _targetRef)
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, _targetMask);
@@ -82,10 +88,7 @@ public class Sensor : MonoBehaviour
         {
             Transform target = targetCollider.transform;
 
-            if (target.gameObject != _targetRef)
-            {
-                continue;
-            }
+            if (target.gameObject != _targetRef) { continue; }
 
             // Check if the target is in the field of view
             Vector3 directionToTarget = (target.position - transform.position).normalized;
@@ -103,5 +106,56 @@ public class Sensor : MonoBehaviour
 
         // The specified target is not within the field of view or range
         return false;
+    }
+    public void CheckForPredators()
+    {
+        secCntr++;
+
+        if (secCntr < 40)
+            return;
+        secCntr = 0;
+
+        // Ellenõrizzük a látómezõn belüli összes objektumot a ragadozó rétegen
+        Collider[] predatorsInRange = Physics.OverlapSphere(transform.position, radius, animal.getPredatorLayers());
+
+        // Azokat a ragadozókat, akiket már nem látunk, eltávolítjuk
+        List<GameObject> toRemove = new List<GameObject>();
+
+        foreach (var predatorCollider in predatorsInRange)
+        {
+            Transform predator = predatorCollider.transform;
+            Vector3 directionToPredator = (predator.position - transform.position).normalized;
+            float distanceToPredator = Vector3.Distance(transform.position, predator.position);
+
+            if (!Physics.Raycast(transform.position, directionToPredator, distanceToPredator, obstructionMask))
+            {
+                // Ha a ragadozó még nincs a spottedThreats listában, hozzáadjuk
+                if (!animal.spottedThreats.Contains(predator.gameObject))
+                {
+                    animal.spottedThreats.Add(predator.gameObject);
+                }
+            }
+        }
+
+        // Azok a ragadozók, akiket már nem látunk, eltávolítjuk a spottedThreats listából
+        foreach (var threat in animal.spottedThreats)
+        {
+            bool isStillVisible = predatorsInRange.Any(predatorCollider =>
+                predatorCollider.gameObject == threat &&
+                !Physics.Raycast(transform.position, (predatorCollider.transform.position - transform.position).normalized,
+                    Vector3.Distance(transform.position, predatorCollider.transform.position), obstructionMask)
+            );
+
+            if (!isStillVisible)
+            {
+                toRemove.Add(threat);
+            }
+        }
+
+        // Az eltávolítandó ragadozók törlése a listából
+        foreach (var threat in toRemove)
+        {
+            animal.spottedThreats.Remove(threat);
+        }
     }
 }

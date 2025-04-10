@@ -18,7 +18,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public MatingUrgeBar matingBar;
         private int maxMatingUrge = 100;
         [SerializeField]
-        public int Charm;
+        public int charm;
         void Start()
         {
             animal = GetComponent<Animal>();
@@ -60,7 +60,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             //float acceptanceChance = Mathf.Clamp01(0.5f + charmDifference * 0.01f + matingUrgeDifference); 
             //float randomValue = Random.value;
 
-            bool accepted = (mate.mating.Charm + (100 - currentMatingUrge)) < Charm;
+            bool accepted = (mate.mating.charm + (100 - currentMatingUrge)) < charm;
             return accepted;
         }
         public void IsSuccess()

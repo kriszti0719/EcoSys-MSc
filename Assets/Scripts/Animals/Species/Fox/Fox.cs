@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using Assets.Scripts.Datatypes;
-
 public class Fox : Animal
 {
     protected override void Start()

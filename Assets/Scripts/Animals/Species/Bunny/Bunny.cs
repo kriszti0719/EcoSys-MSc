@@ -1,5 +1,4 @@
 using Assets.Scripts;
-using Assets.Scripts.Datatypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -59,8 +58,15 @@ public class Bunny : Animal, IEdible
     {
         while (currentDuration > 0)
         {
-            yield return new WaitForSeconds(1f);
-            currentDuration--;
+            if (OnConsumed != null)
+            {
+                yield return new WaitForSeconds(1f);
+                currentDuration--;
+            }
+            else
+            {
+                yield break;
+            }
         }
         OnConsumed?.Invoke();
         Consumed();

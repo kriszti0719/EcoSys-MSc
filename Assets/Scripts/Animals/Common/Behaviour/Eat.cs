@@ -61,7 +61,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void FinishEating()
         {
-            food.StopBeingConsumed();
             food = null;
         }
     }
