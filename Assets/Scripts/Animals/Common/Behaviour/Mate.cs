@@ -52,11 +52,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void ToMate()
         {
             animal.breakCounter = mateDuration;
-<<<<<<< Updated upstream
-            animal.prevStatus = animal.status;
-            animal.status = Status.MATING;
-=======
->>>>>>> Stashed changes
         }
         public bool IsAcceptable(Animal mate)
         {
@@ -66,28 +61,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             //float randomValue = Random.value;
 
             bool accepted = (mate.mating.Charm + (100 - currentMatingUrge)) < Charm;
-<<<<<<< Updated upstream
-
-            if (accepted)
-            {
-                bool canSee = animal.sensor.FieldOfViewCheck(LayerMask.GetMask("Bunny"), mate.transform.gameObject);
-                animal.prevStatus = Status.SEARCHINGMATE;
-
-                if (!canSee)
-                {
-                    animal.sensor.targetMask = LayerMask.GetMask("None");
-                    animal.targetRef = null;
-                    animal.status = Status.WAITING;
-                }
-                else
-                {
-                    animal.sensor.targetMask = LayerMask.GetMask("Bunny");
-                    animal.targetRef = mate.transform.gameObject;
-                    animal.status = Status.MOVING;
-                }
-            }
-=======
->>>>>>> Stashed changes
             return accepted;
         }
         public void IsSuccess()

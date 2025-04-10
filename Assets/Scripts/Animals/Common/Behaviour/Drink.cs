@@ -61,19 +61,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void StartDrinking()
         {
             animal.breakCounter = drinkDuration;
-<<<<<<< Updated upstream
-            animal.status = Status.DRINKING;
-        }
-        public void Drinking()
-        {
-            if (currentThirst + drinkAmount < maxThirst)
-                currentThirst += drinkAmount;
-            else
-            {
-                currentThirst = maxThirst;
-            }
-=======
->>>>>>> Stashed changes
         }
         public void FinishDrinking()
         {

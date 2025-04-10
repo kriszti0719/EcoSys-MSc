@@ -1,11 +1,4 @@
 ﻿using System;
-<<<<<<< Updated upstream
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-=======
->>>>>>> Stashed changes
 using UnityEngine;
 
 namespace Assets.Scripts.Animals.Common.Behaviour
@@ -15,13 +8,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private Animal animal;
         public HungerBar hungerBar;
         private int maxHunger = 100;
-<<<<<<< Updated upstream
-        private Plant food;
-        public int starving;
-=======
         public IEdible food;
         public int critical;
->>>>>>> Stashed changes
         public int currentHunger;
 
         public event Action OnHungerCritical;
@@ -69,50 +57,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void StartEating()
         {
-<<<<<<< Updated upstream
-            food = animal.targetRef.GetComponent<Plant>();
-            if (food != null)
-            {
-
-                animal.breakCounter = food.eatDuration;
-                animal.status = Status.EATING;
-            }
-        }
-        public void FinishEating()
-        {
-            if (food != null)
-            {
-                food.Die();
-            }
-            food = null;
-        }
-        public void Eating()
-        {
-            food.eatDuration--;
-            if (currentHunger + food.nutrition < maxHunger || food.eatDuration >= 0)
-                currentHunger += food.nutrition;
-            else
-            {
-                currentHunger = maxHunger;
-            }
-        }
-        public bool isFull()
-        {
-            return (currentHunger == maxHunger || food.eatDuration == 0);
-        }
-        public bool isStarving()
-        {
-            return currentHunger <= starving;
-        }
-        public bool isHungry()
-        {
-            return currentHunger < 70;
-        }
-        public bool isStarvedToDeath()
-        {
-            return currentHunger == 0;
-        }
-=======
             food.AboutToBeConsumed();
         }
         public void FinishEating()
@@ -120,6 +64,5 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             food.StopBeingConsumed();
             food = null;
         }
->>>>>>> Stashed changes
     }
 }

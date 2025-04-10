@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Reflection;
 using UnityEngine;
 
 public enum CauseOfDeath
@@ -9,10 +12,6 @@ public enum CauseOfDeath
     HUNGER,
     THIRST,
     AGE,
-<<<<<<< Updated upstream
-    DROWN
-}
-=======
     CONSUMED
 }
 
@@ -32,4 +31,3 @@ public static class CauseOfDeathExtensions
         };
     }
 }
->>>>>>> Stashed changes
