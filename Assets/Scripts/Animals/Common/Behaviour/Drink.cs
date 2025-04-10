@@ -15,11 +15,19 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private int drinkAmount = 10;
         private int maxThirst = 200;
         public int currentThirst;
-        public int drying;
+        public int critical;
+
+        public event Action OnThirstCritical;
+        public event Action OnThirstFull;
+        public event Action OnThirstDepleted;
         void Start()
         {
             animal = GetComponent<Animal>();
         }
+        private bool IsFull() => currentThirst == maxThirst;
+        private bool IsCritical() => currentThirst <= critical;
+        private bool IsDepleted() => currentThirst == 0;
+        public bool IsThirsty() => currentThirst < 70;
         public void setBar(GameObject barsContainer)
         {
             this.thirstBar = barsContainer.GetComponentInChildren<ThirstBar>();
@@ -32,11 +40,28 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            currentThirst--;
+            if (animal.status == Status.DRINK)
+                currentThirst = Mathf.Min(currentThirst + drinkAmount, maxThirst);
+            else
+                currentThirst--;
+
+            if (IsDepleted())
+            {
+                OnThirstDepleted?.Invoke();
+            }
+            else if (IsFull())
+            {
+                OnThirstFull?.Invoke();
+            }
+            else if (IsCritical())
+            {
+                OnThirstCritical?.Invoke();
+            }
         }
         public void StartDrinking()
         {
             animal.breakCounter = drinkDuration;
+<<<<<<< Updated upstream
             animal.status = Status.DRINKING;
         }
         public void Drinking()
@@ -47,26 +72,12 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 currentThirst = maxThirst;
             }
+=======
+>>>>>>> Stashed changes
         }
         public void FinishDrinking()
         {
             return;
-        }
-        public bool isDrying()
-        {
-            return currentThirst <= drying;
-        }
-        public bool isFull()
-        {
-            return currentThirst == maxThirst;
-        }
-        public bool isThirsty()
-        {
-            return currentThirst < 70;
-        }
-        public bool isDriedToDeath()
-        {
-            return currentThirst == 0;
         }
     }
 }

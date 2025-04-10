@@ -42,6 +42,10 @@ public class Movement : MonoBehaviour
         animal = GetComponent<Animal>();
         rotSpeed = moveSpeed * 30;
     }
+    void Start()
+    {
+        animal.OnDeath += HandleDeathAnimation;
+    }
     private void Update()
     {
         if (animal.status == Status.WANDERING || 
@@ -57,13 +61,13 @@ public class Movement : MonoBehaviour
                 StopWander();            
             MovingTowards();
         }
-        else if (animal.status == Status.DIE && !isDying)
-        {
-            if (wanderingCoroutine != null)
-                StopWander();
-            isDying = true;
-            StartCoroutine(Die());
-        }
+    }
+    public void HandleDeathAnimation()
+    {
+        if (wanderingCoroutine != null)
+            StopWander();
+        isDying = true;
+        StartCoroutine(Die());
     }
     private void Wandering()
     {

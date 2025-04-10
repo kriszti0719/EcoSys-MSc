@@ -57,6 +57,7 @@ public class AnimalSpawner : Spawner
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
             Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
+            EventHandler instantiatedeventHandler = instantiatedPrefab.AddComponent<EventHandler>();
 
             //Boy OR Girl?
             isMale(instantiatedBunny, instantiatedPrefab);
@@ -215,6 +216,7 @@ public class AnimalSpawner : Spawner
         // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
         if (!File.Exists(filePath))
         {
+<<<<<<< Updated upstream
             using (StreamWriter writer = new StreamWriter(filePath))
             {
                 writer.WriteLine("Step\tDeathCause\tAge\tSpeed\tSight\tReproductiveUrge\tLifeSpan\tCharm\tPregnancyDuration\tStatus\tStarving\tDrying");
@@ -226,6 +228,10 @@ public class AnimalSpawner : Spawner
         {
             string dataLine = $"{step}\t{animal.cause.ToString()}\t{animal.aging.currentAge}\t{animal.movement.moveSpeed}\t{animal.sensor.radius}\t{animal.reproduction.reproductiveUrge}\t{animal.aging.lifeSpan}\t{animal.mating.Charm}\t{animal.reproduction.pregnancyDuration}\t{animal.prevStatus.ToString()}\t{animal.eat.starving}\t{animal.drink.drying}";
             writer.WriteLine(dataLine);
+=======
+            //string dataLine = $"{step};{animal.species.ToPrint()};{animal.cause.ToPrint()};{animal.aging.currentAge};{animal.movement.moveSpeed};{animal.sensor.radius};{animal.reproduction.reproductiveUrge};{animal.aging.lifeSpan};{animal.mating.Charm};{animal.reproduction.pregnancyDuration};{animal.prevStatus};{animal.eat.starving};{animal.drink.drying}";
+            //writer.WriteLine(dataLine); // Pontosvesszõ használata
+>>>>>>> Stashed changes
         }
     }
 }

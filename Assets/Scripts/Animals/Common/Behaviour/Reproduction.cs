@@ -43,7 +43,7 @@ public class Reproduction : MonoBehaviour
             isFertile = true;
         }
     }
-    public bool isStillPregnant()
+    public bool IsPregnant()
     {
         return (isPregnant && currentPregnancy > 0);
     }

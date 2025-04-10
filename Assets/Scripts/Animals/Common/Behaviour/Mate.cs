@@ -35,21 +35,30 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            currentMatingUrge--;
+            if(animal.status == Status.MATE)
+            {
+                currentMatingUrge = maxMatingUrge;
+                enableMating = false;
+            }
+            else
+            {
+                currentMatingUrge--;
+            }
         }
         public void Mating()
         {
-            if (currentMatingUrge != maxMatingUrge)
-                currentMatingUrge = maxMatingUrge;
-            enableMating = false;
+            
         }
         public void ToMate()
         {
             animal.breakCounter = mateDuration;
+<<<<<<< Updated upstream
             animal.prevStatus = animal.status;
             animal.status = Status.MATING;
+=======
+>>>>>>> Stashed changes
         }
-        public bool isAcceptable(Animal mate)
+        public bool IsAcceptable(Animal mate)
         {
             //int charmDifference = mate.charm - charm; // Jó eséllyel pozitív, de lehet - is
             //float matingUrgeDifference = currentMatingUrge / 100f;
@@ -57,6 +66,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             //float randomValue = Random.value;
 
             bool accepted = (mate.mating.Charm + (100 - currentMatingUrge)) < Charm;
+<<<<<<< Updated upstream
 
             if (accepted)
             {
@@ -76,9 +86,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                     animal.status = Status.MOVING;
                 }
             }
+=======
+>>>>>>> Stashed changes
             return accepted;
         }
-        public void isSuccess()
+        public void IsSuccess()
         {
             if (!animal.isMale)     //TODO:  && !isPregnant
             {
