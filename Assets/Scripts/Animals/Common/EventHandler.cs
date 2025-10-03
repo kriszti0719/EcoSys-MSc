@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using UnityEngine;
+using UnityEngine.UIElements.Experimental;
 
 public abstract class EventHandler : MonoBehaviour
 {
@@ -21,8 +22,9 @@ public abstract class EventHandler : MonoBehaviour
     }
     public void HandleHungerFull()
     {
-        animal.breakCounter = 0;
         if (animal.status == Status.EAT) animal.eat.FinishEating();
+        animal.breakCounter = 0;
+        HandleBreakEnded();
     }
     public void HandleHungerDepleted()
     {
@@ -42,8 +44,9 @@ public abstract class EventHandler : MonoBehaviour
     }
     public void HandleThirstFull()
     {
-        animal.breakCounter = 0;
         if (animal.status == Status.EAT) animal.drink.FinishDrinking();
+        animal.breakCounter = 0;
+        HandleBreakEnded();
     }
     public void HandleThirstDepleted()
     {
@@ -56,7 +59,10 @@ public abstract class EventHandler : MonoBehaviour
     public void HandleRestFull()
     {
         if (animal.status == Status.REST)
+        {
             animal.breakCounter = 0;
+            HandleBreakEnded();
+        }
     }
     public void HandleRestDepleted()
     {
@@ -70,11 +76,37 @@ public abstract class EventHandler : MonoBehaviour
             (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
         }
     }
-
     public void HandleFoodConsumed()
     {
         animal.targetRef = null;
         animal.sensor.targetMask = LayerMask.GetMask("None");
         (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
+    }
+    public void HandleBreakEnded()
+    {
+        switch (animal.status)
+        {
+            case Status.CAUGHT:
+            {
+                animal.die.Destroy();
+                break;
+            }
+            case Status.REST:
+            {
+                animal.status = animal.prevStatus;
+                break;
+            }
+            case Status.EAT:
+            case Status.DRINK:
+            case Status.MATE:
+            {
+                animal.targetRef = null;
+                animal.sensor.targetMask = LayerMask.GetMask("None");
+                (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
+                animal.mating.IsSuccess();
+                break;
+            }
+        }
+
     }
 }

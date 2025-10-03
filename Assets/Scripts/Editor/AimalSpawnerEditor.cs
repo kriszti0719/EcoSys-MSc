@@ -1,3 +1,4 @@
+using Assets.Scripts.Animals.Common;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -17,7 +18,7 @@ public class AimalSpawnerEditor : Editor
                 spa.Generate();
             }
         }
-        //If that button is pressed:
+        //If that button is pressed:   3568
         if (GUILayout.Button("Generate"))
         {
             spa.Generate();

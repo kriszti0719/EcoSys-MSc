@@ -18,7 +18,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Destroy()
         {
-            animal.GetComponentInParent<AnimalSpawner>().RegisterDeath(animal);
+            DebugLogger.RegisterDeath(step: animal.GetComponentInParent<LoggerSettings>().getStep(), animal: animal);
             foreach (GameObject g in animal.destructibles)
             {
                 Destroy(g);

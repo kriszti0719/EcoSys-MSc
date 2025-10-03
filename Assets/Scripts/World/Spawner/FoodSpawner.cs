@@ -1,3 +1,4 @@
+using Assets.Scripts.Animals.Common;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -30,6 +31,10 @@ public class FoodSpawner : Spawner
 
     public override void Generate()
     {
+        DebugLogger.Error("Null reference during eating, FOX[ID=87]");
+        DebugLogger.Warning("Over 90% of rabbits are hungry");
+        DebugLogger.Notice("Bunny Population dropped below 50");
+        DebugLogger.Info("153 bunnies are active");
         Clear();
         SpawnBush(prefab, amount);
         SpawnBush(prefab2, amount2);

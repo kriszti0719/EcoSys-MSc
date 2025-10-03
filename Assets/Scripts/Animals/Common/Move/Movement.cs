@@ -1,3 +1,4 @@
+using Assets.Scripts.Animals.Common;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -74,7 +75,7 @@ public class Movement : MonoBehaviour
         if (!isWandering)
         {
             if (wanderingCoroutine != null)
-                Debug.Log("RIP");
+                Assets.Scripts.Animals.Common.DebugLogger.Warning("wanderingCoroutine should be null at this point");
             wanderingCoroutine = StartCoroutine(Wander());
             //isWandering = true;
         }

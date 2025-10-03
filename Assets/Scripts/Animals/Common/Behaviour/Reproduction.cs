@@ -1,3 +1,4 @@
+using Assets.Scripts.Animals.Common;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,21 +35,21 @@ public class Reproduction : MonoBehaviour
     }
     public void GiveBirth()
     {
-        var spawner = animal.GetComponentInParent<AnimalSpawner>();
+        var spawner = animal.GetComponentInParent<LoggerSettings>();
         if (spawner == null)
         {
-            Debug.LogError("AnimalSpawner not found in parent hierarchy for " + animal.name);
+            DebugLogger.Error("AnimalSpawner not found in parent hierarchy for " + animal.name);
             return;
         }
         if (mateTraits == null)
         {
-            //throw new System.Exception("FatherTraits is null");
             if (mate != null)
             {
                 mateTraits = new MateTraits(mate);
             }
             else
             {
+                DebugLogger.Error("Mate wasn't saved. Can't randomize traits for the kids.");
                 return;
             }
 

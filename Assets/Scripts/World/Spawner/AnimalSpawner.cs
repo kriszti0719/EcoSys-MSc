@@ -8,8 +8,6 @@ using Assets.Scripts.Datatypes;
 public class AnimalSpawner : Spawner
 {
     [Header("Fox")]
-    [SerializeField] protected GameObject prefab;
-    [SerializeField] protected int amount;
     [SerializeField] protected float animalSizeMin;
     [SerializeField] protected float animalSizeMax;
     [Header("Bunny")]
@@ -126,7 +124,7 @@ public class AnimalSpawner : Spawner
                     {
                         instantiatedBunny.SetTraits(currentAnimalSize);
                     }
-                    setBars(instantiatedBunny, instantiatedPrefab, animal);
+                    //setBars(instantiatedBunny, instantiatedPrefab, animal);
                     break;
                 case Species.FOX:
                     FoxCntr++;
@@ -144,7 +142,7 @@ public class AnimalSpawner : Spawner
                     {
                         instantiatedFox.SetTraits(currentAnimalSize);
                     }
-                    setBars(instantiatedFox, instantiatedPrefab, animal);
+                    //setBars(instantiatedFox, instantiatedPrefab, animal);
                     break;
             }
 
@@ -196,41 +194,41 @@ public class AnimalSpawner : Spawner
             }
         }
     }
-    private void setBars(Animal instantiatedAnimal, GameObject instantiatedPrefab, GenerateAnimal animal)
-    {
-        int bottom = 0;
-        if (animal.species == Species.BUNNY)
-        {
-            bottom = 8;
-        }
-        else if (animal.species == Species.FOX)
-        {
-            bottom = 16;
-        }
+    //private void setBars(Animal instantiatedAnimal, GameObject instantiatedPrefab, GenerateAnimal animal)
+    //{
+    //    int bottom = 0;
+    //    if (animal.species == Species.BUNNY)
+    //    {
+    //        bottom = 8;
+    //    }
+    //    else if (animal.species == Species.FOX)
+    //    {
+    //        bottom = 16;
+    //    }
 
-        GameObject barsContainer = new GameObject("BarsContainer");
-        barsContainer.transform.SetParent(instantiatedPrefab.transform);
-        instantiatedAnimal.barsContainer = barsContainer;
-        barsContainer.transform.rotation = instantiatedAnimal.transform.rotation;
+    //    GameObject barsContainer = new GameObject("BarsContainer");
+    //    barsContainer.transform.SetParent(instantiatedPrefab.transform);
+    //    instantiatedAnimal.barsContainer = barsContainer;
+    //    barsContainer.transform.rotation = instantiatedAnimal.transform.rotation;
 
-        GameObject instantiatedStamina = (GameObject)PrefabUtility.InstantiatePrefab(this.staminaCanvas, barsContainer.transform);
-        instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 12, instantiatedPrefab.transform.position.z);
-        instantiatedStamina.GetComponent<Billboard>().cam = mainCamera;
+    //    GameObject instantiatedStamina = (GameObject)PrefabUtility.InstantiatePrefab(this.staminaCanvas, barsContainer.transform);
+    //    instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 12, instantiatedPrefab.transform.position.z);
+    //    instantiatedStamina.GetComponent<Billboard>().cam = mainCamera;
 
-        GameObject instantiatedHunger = (GameObject)PrefabUtility.InstantiatePrefab(this.hungerCanvas, barsContainer.transform);
-        instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 8, instantiatedPrefab.transform.position.z);
-        instantiatedHunger.GetComponent<Billboard>().cam = mainCamera;
+    //    GameObject instantiatedHunger = (GameObject)PrefabUtility.InstantiatePrefab(this.hungerCanvas, barsContainer.transform);
+    //    instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 8, instantiatedPrefab.transform.position.z);
+    //    instantiatedHunger.GetComponent<Billboard>().cam = mainCamera;
 
-        GameObject instantiatedThirst = (GameObject)PrefabUtility.InstantiatePrefab(this.thirstCanvas, barsContainer.transform);
-        instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 4, instantiatedPrefab.transform.position.z);
-        instantiatedThirst.GetComponent<Billboard>().cam = mainCamera;
+    //    GameObject instantiatedThirst = (GameObject)PrefabUtility.InstantiatePrefab(this.thirstCanvas, barsContainer.transform);
+    //    instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 4, instantiatedPrefab.transform.position.z);
+    //    instantiatedThirst.GetComponent<Billboard>().cam = mainCamera;
 
-        GameObject instantiatedMating = (GameObject)PrefabUtility.InstantiatePrefab(this.matingCanvas, barsContainer.transform);
-        instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
-        instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
+    //    GameObject instantiatedMating = (GameObject)PrefabUtility.InstantiatePrefab(this.matingCanvas, barsContainer.transform);
+    //    instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
+    //    instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-        instantiatedAnimal.SetBars(barsContainer);
-    }
+    //    instantiatedAnimal.SetBars(barsContainer);
+    //}
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
         CapsuleCollider capsuleCollider = instantiatedPrefab.AddComponent<CapsuleCollider>();

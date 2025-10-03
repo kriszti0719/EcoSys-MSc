@@ -46,7 +46,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 currentStamina--;
             if(IsRested())
             {
-                OnRestDepleted?.Invoke();
+                OnRestFull?.Invoke();
             }
             else if (IsDepleted())
             {

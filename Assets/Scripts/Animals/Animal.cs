@@ -1,4 +1,5 @@
 using Assets.Scripts.Animals.Common.Behaviour;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
@@ -36,6 +37,8 @@ public abstract class Animal : MonoBehaviour
     public Movement movement;
     public EventHandler eventHandler;
 
+    public event Action OnBreakEnded;
+
     public GameObject barsContainer;
 
     public int frameCounter = 0;
@@ -56,6 +59,7 @@ public abstract class Animal : MonoBehaviour
     public abstract void setTargetLayerToMate();
     public abstract void setTargetLayerToEat();
     public abstract void setSpeciesSpecificTraits();
+    private bool IsBreakEnded() => breakCounter == 0;
     protected virtual void Start()
     {
         cause = CauseOfDeath.NONE;
@@ -77,20 +81,22 @@ public abstract class Animal : MonoBehaviour
         movement = GetComponent<Movement>();
         eventHandler = GetComponent<EventHandler>();
     }
-    protected void SubscribeToNeeds()
+    protected void Subscribe()
     {
-        eat.OnHungerCritical += eventHandler.HandleHungerCritical;
-        eat.OnHungerFull += eventHandler.HandleHungerFull;
-        eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
+        //eat.OnHungerCritical += eventHandler.HandleHungerCritical;
+        //eat.OnHungerFull += eventHandler.HandleHungerFull;
+        //eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
 
-        drink.OnThirstCritical += eventHandler.HandleThirstCritical;
-        drink.OnThirstFull += eventHandler.HandleThirstFull;
-        drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
+        //drink.OnThirstCritical += eventHandler.HandleThirstCritical;
+        //drink.OnThirstFull += eventHandler.HandleThirstFull;
+        //drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
 
-        rest.OnRestFull += eventHandler.HandleRestFull;
-        rest.OnRestDepleted += eventHandler.HandleRestDepleted;
+        //rest.OnRestFull += eventHandler.HandleRestFull;
+        //rest.OnRestDepleted += eventHandler.HandleRestDepleted;
 
-        aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
+        //aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
+
+        //OnBreakEnded += eventHandler.HandleBreakEnded;
     }
     public void SetTraits(Animal mother, MateTraits father)
     {
@@ -114,24 +120,24 @@ public abstract class Animal : MonoBehaviour
     {
         SetComponents();
 
-        aging.setAging(1, rnd, Random.Range(4f, 6f));
-        movement.moveSpeed = Random.Range(1f, 10f);
-        sensor.radius = Random.Range(30, 70);
-        reproduction.setReproduction(Random.Range(30, 50), 
-                                    Random.Range(30, 60),
+        aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
+        movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
+        sensor.radius = UnityEngine.Random.Range(30, 70);
+        reproduction.setReproduction(UnityEngine.Random.Range(30, 50), 
+                                    UnityEngine.Random.Range(30, 60),
                                     true);
         mating.enableMating = true;
-        mating.charm = Random.Range(20, 100);
-        drink.critical = Random.Range(25, 35);
-        eat.critical = Random.Range(15, 25);
+        mating.charm = UnityEngine.Random.Range(20, 100);
+        drink.critical = UnityEngine.Random.Range(25, 35);
+        eat.critical = UnityEngine.Random.Range(15, 25);
 
         setSpeciesSpecificTraits();
-        SubscribeToNeeds();
+        Subscribe();
     }
     protected float MutateTrait(float motherTrait, float fatherTrait)
     {
         float averageTrait = (motherTrait + fatherTrait) / 2f;
-        float mutationFactor = Random.Range(0.8f, 1.2f);
+        float mutationFactor = UnityEngine.Random.Range(0.8f, 1.2f);
         float improvementBias = 1.05f;
         float mutatedTrait = averageTrait * mutationFactor * improvementBias;
         mutatedTrait = Mathf.Max(mutatedTrait, 0.1f);
@@ -140,11 +146,11 @@ public abstract class Animal : MonoBehaviour
     }
     public void SetBars(GameObject barsContainer)
     {
-        rest.setBar(barsContainer);
-        eat.setBar(barsContainer);        
-        drink.setBar(barsContainer);
-        mating.setBar(barsContainer);
-        this.destructibles.Add(barsContainer);
+        //rest.setBar(barsContainer);
+        //eat.setBar(barsContainer);        
+        //drink.setBar(barsContainer);
+        //mating.setBar(barsContainer);
+        //this.destructibles.Add(barsContainer);
     }
     public void SetAnimalData(GameObject prefab, Material color)
     {
@@ -185,6 +191,10 @@ public abstract class Animal : MonoBehaviour
         if (stepCnt == maxStepCnt)   
         {
             breakCounter = System.Math.Max(0, breakCounter - 1);
+            if (IsBreakEnded())
+            {
+                OnBreakEnded?.Invoke();
+            }
             oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
 
             if (!(status == Status.DIE || status == Status.CAUGHT))
@@ -201,18 +211,9 @@ public abstract class Animal : MonoBehaviour
                 mating.updateBar();
             }
 
-            if (status == Status.MATE && (breakCounter == 0))
-                mating.IsSuccess();
-
             if (status != Status.DIE)
             {
                 if (oxygen == 0) cause = CauseOfDeath.DROWN;
-            }
-
-            if (status == Status.CAUGHT && breakCounter == 0)
-            {
-                die.Destroy();
-                return;
             }
 
             if (IsDying())
@@ -334,21 +335,12 @@ public abstract class Animal : MonoBehaviour
                         }
                         break;
                     }
-                case Status.REST:
-                    {
-                        if (breakCounter == 0)
-                        {
-                            status = prevStatus;
-                        }
-                        break;
-                    }
                 case Status.EAT:
                 case Status.DRINK:
                 case Status.MATE:
                     {
-                        if (targetRef == null || breakCounter == 0)
+                        if (targetRef == null)
                         {
-                            targetRef = null;
                             sensor.targetMask = LayerMask.GetMask("None");
                             (prevStatus, status) = (status, Status.WANDER);
                         }
