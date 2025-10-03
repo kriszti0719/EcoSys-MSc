@@ -46,7 +46,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 currentStamina--;
             if(IsRested())
             {
-                OnRestDepleted?.Invoke();
+                OnRestFull?.Invoke();
             }
             else if (IsDepleted())
             {
@@ -71,11 +71,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (animal.status != Status.DIE)
             {
-<<<<<<< Updated upstream
-                animal.prevStatus = animal.status;
-                animal.status = Status.RESTING;
-=======
->>>>>>> Stashed changes
                 if (currentStamina + time < maxStamina)
                 {
                     animal.breakCounter = time;

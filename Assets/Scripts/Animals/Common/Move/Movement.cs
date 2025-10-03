@@ -1,3 +1,4 @@
+using Assets.Scripts.Animals.Common;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -48,14 +49,14 @@ public class Movement : MonoBehaviour
     }
     private void Update()
     {
-        if (animal.status == Status.WANDERING || 
-                animal.status == Status.SEARCHINGFOOD ||
-                animal.status == Status.SEARCHINGDRINK ||
-                animal.status == Status.SEARCHINGMATE)
+        if (animal.status == Status.WANDER || 
+                animal.status == Status.SEARCH_FOOD ||
+                animal.status == Status.SEARCH_DRINK ||
+                animal.status == Status.SEARCH_MATE)
         {
             Wandering();
         }
-        else if (animal.status == Status.MOVING)
+        else if (animal.status == Status.MOVE_TOWARDS)
         {
             if (wanderingCoroutine != null)
                 StopWander();            
@@ -74,7 +75,7 @@ public class Movement : MonoBehaviour
         if (!isWandering)
         {
             if (wanderingCoroutine != null)
-                Debug.Log("RIP");
+                Assets.Scripts.Animals.Common.DebugLogger.Warning("wanderingCoroutine should be null at this point");
             wanderingCoroutine = StartCoroutine(Wander());
             //isWandering = true;
         }

@@ -10,36 +10,24 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Die : MonoBehaviour
     {
         private Animal animal;
+        public bool isCaptured = false;
+
         void Start()
         {
             animal = GetComponent<Animal>();
         }
-<<<<<<< Updated upstream
-        public void ToDie()
-        {
-            animal.prevStatus = animal.status;
-            animal.status = Status.DIE;
-        }
         public void Destroy()
         {
-            if (animal.status == Status.DIE)
-=======
-        public void Destroy()
-        {
-            animal.GetComponentInParent<AnimalSpawner>().RegisterDeath(animal);
+            DebugLogger.RegisterDeath(step: animal.GetComponentInParent<LoggerSettings>().getStep(), animal: animal);
             foreach (GameObject g in animal.destructibles)
->>>>>>> Stashed changes
             {
                 Destroy(g);
             }
-<<<<<<< Updated upstream
-=======
             Destroy(gameObject);
         }
         public void CatchPrey()
         {
             isCaptured = true;
->>>>>>> Stashed changes
         }
     }
 }
