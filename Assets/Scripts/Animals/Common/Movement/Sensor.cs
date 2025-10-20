@@ -5,17 +5,15 @@ using UnityEngine;
 
 public class Sensor : MonoBehaviour
 {
-    /// The radius of the field of view
-    public int radius;
-    /// The angle of the field of view (limited between 0 and 360 degrees)
     [Range(0, 360)]
     public int angle = 160;
-    /// Reference to the target GameObject: food, water, mate...
-    /// The layer mask for filtering targets
+    public int radius;
+    public int camouflage;
+    public int stealth;
+    // The layer masks for filtering targets and obstructions:
     public LayerMask targetMask;
-    /// The layer mask for filtering obstructions
     public LayerMask obstructionMask;
-    /// Boolean indicating whether the player is within the field of view
+
     public bool canSeeTarget;
     public Animal animal;
     public int secCntr = 0;
@@ -25,6 +23,13 @@ public class Sensor : MonoBehaviour
     {
         animal = GetComponent<Animal>();
         StartCoroutine(FOVRoutine());
+    }
+    public void setSensor(int _radius, int _camouflage, int _stealth, int _angle = 160)
+    {
+        angle = _angle;
+        radius = _radius;
+        stealth = _stealth;
+        camouflage = _camouflage;
     }
     private IEnumerator FOVRoutine()
     {
@@ -40,8 +45,6 @@ public class Sensor : MonoBehaviour
     public void FieldOfViewCheck()
     {
         Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, targetMask);
-
-        // Initialize variables to keep track of the nearest target and its distance
         GameObject nearestTarget = null;
         float nearestDistance = Mathf.Infinity;
 
@@ -49,30 +52,32 @@ public class Sensor : MonoBehaviour
         {
             Transform target = targetCollider.transform;
             if (animal.rejectedBy.Contains(target.gameObject))
-            {
                 continue;
-            }
 
-            // Check if the target is a valid animal and get its status
+            //If already has been caught
             Animal targetAnimal = target.GetComponent<Animal>();
             if (targetAnimal != null && targetAnimal.status == Status.CAUGHT)
-            {
                 continue;
-            }
 
             Vector3 directionToTarget = (target.position - transform.position).normalized;
-
-            // Check if the target is within the angle of the field of view
             if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)
             {
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
                 // Check if the target is the nearest and is not obstructed
-                if (distanceToTarget < nearestDistance &&
-                    !Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
-                    nearestTarget = target.gameObject;
-                    nearestDistance = distanceToTarget;
+                    float camouflage = targetAnimal != null ? targetAnimal.sensor.camouflage : 0f;
+                    float detectionChance = Mathf.Clamp01(1f - camouflage);
+
+                    if (Random.value > detectionChance)
+                        continue;
+
+                    if (distanceToTarget < nearestDistance)
+                    {
+                        nearestTarget = target.gameObject;
+                        nearestDistance = distanceToTarget;
+                    }
                 }
             }
         }
@@ -90,36 +95,22 @@ public class Sensor : MonoBehaviour
 
             if (target.gameObject != _targetRef) { continue; }
 
-            // Check if the target is in the field of view
             Vector3 directionToTarget = (target.position - transform.position).normalized;
             if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)
             {
-                // Check if there is no obstruction between the AI and the target
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
-                    // The specified target is within the field of view and range
                     return true;
                 }
             }
         }
-
-        // The specified target is not within the field of view or range
         return false;
     }
     public void CheckForPredators()
     {
-        secCntr++;
-
-        if (secCntr < 40)
-            return;
-        secCntr = 0;
-
-        // Ellenõrizzük a látómezõn belüli összes objektumot a ragadozó rétegen
         Collider[] predatorsInRange = Physics.OverlapSphere(transform.position, radius, animal.getPredatorLayers());
-
-        // Azokat a ragadozókat, akiket már nem látunk, eltávolítjuk
-        List<GameObject> toRemove = new List<GameObject>();
+        List<GameObject> toRemove = new List<GameObject>(); // TODO: ha az angle ismét funkciót kap, akkor X ideig még jó lenne menekülni, mert amint hátat fordít megállna a nyúl
 
         foreach (var predatorCollider in predatorsInRange)
         {
@@ -129,15 +120,26 @@ public class Sensor : MonoBehaviour
 
             if (!Physics.Raycast(transform.position, directionToPredator, distanceToPredator, obstructionMask))
             {
-                // Ha a ragadozó még nincs a spottedThreats listában, hozzáadjuk
-                if (!animal.spottedThreats.Contains(predator.gameObject))
+                Animal predatorAnimal = predator.GetComponent<Animal>();
+                int camouflage = predatorAnimal != null ? predatorAnimal.sensor.camouflage : 0;
+                int stealth = predatorAnimal != null ? predatorAnimal.sensor.stealth : 0;
+
+                float distanceFactor = Mathf.Clamp01(1f - (distanceToPredator / radius)); // closer -> easier
+                float detectionChance = Mathf.Clamp01(distanceFactor * (1f - (camouflage + stealth) / 200f)); // combine (distance + camouflage + stealth)
+                float roll = Random.value;
+
+                // --- Perception roll ---
+                if (roll < detectionChance)
                 {
-                    animal.spottedThreats.Add(predator.gameObject);
+                    if (!animal.spottedThreats.Contains(predator.gameObject))
+                    {
+                        animal.spottedThreats.Add(predator.gameObject);
+                    }
                 }
             }
         }
 
-        // Azok a ragadozók, akiket már nem látunk, eltávolítjuk a spottedThreats listából
+        // Remove predators that are no longer visible
         foreach (var threat in animal.spottedThreats)
         {
             bool isStillVisible = predatorsInRange.Any(predatorCollider =>
@@ -152,7 +154,7 @@ public class Sensor : MonoBehaviour
             }
         }
 
-        // Az eltávolítandó ragadozók törlése a listából
+        // Remove no longer visible threats
         foreach (var threat in toRemove)
         {
             animal.spottedThreats.Remove(threat);

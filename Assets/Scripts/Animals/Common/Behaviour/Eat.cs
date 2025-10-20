@@ -55,9 +55,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 OnHungerCritical?.Invoke();
             }
         }
-        public void StartEating()
+        public bool TryEating()
         {
-            food.AboutToBeConsumed();
+            return food.DamageHealth();
         }
         public void FinishEating()
         {

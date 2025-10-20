@@ -23,8 +23,8 @@ public abstract class Animal : MonoBehaviour
 
     public bool isMale;
 
-    int maxOxygen = 10;
-    public int oxygen;
+    int maxHealth = 100;
+    public int currentHealth;
 
     public Sensor sensor;
     public Reproduction reproduction;
@@ -36,6 +36,8 @@ public abstract class Animal : MonoBehaviour
     public Mate mating;
     public Movement movement;
     public EventHandler eventHandler;
+
+    public int bravery;
 
     public event Action OnBreakEnded;
 
@@ -64,7 +66,6 @@ public abstract class Animal : MonoBehaviour
     {
         cause = CauseOfDeath.NONE;
         status = Status.WANDER;
-        oxygen = maxOxygen;
         movement.StartMoving();
     }
     protected void SetComponents()
@@ -102,15 +103,25 @@ public abstract class Animal : MonoBehaviour
     {
         SetComponents();
 
-        aging.setAging(0.01f, (mother.aging.size + father.size) / 2f, MutateTrait(mother.aging.lifeSpan, father.lifeSpan));
-        eat.critical = Mathf.RoundToInt(MutateTrait(mother.eat.critical, father.starving));
-        drink.critical = Mathf.RoundToInt(MutateTrait(mother.drink.critical, father.drying));
+        aging.setAging(
+            _age: 0.01f,
+            _size: (mother.aging.size + father.size) / 2f,
+            _lifeSpan: MutateTrait(mother.aging.lifeSpan, father.lifeSpan)
+        );
+        bravery = Mathf.RoundToInt(MutateTrait(mother.bravery, father.bravery));
+        eat.critical = Mathf.RoundToInt(MutateTrait(mother.eat.critical, father.eat_critical));
+        drink.critical = Mathf.RoundToInt(MutateTrait(mother.drink.critical, father.drink_critical));
         movement.moveSpeed = MutateTrait(mother.movement.moveSpeed, father.moveSpeed);
-        sensor.radius = Mathf.RoundToInt(MutateTrait(mother.sensor.radius, father.radius));
-
-        reproduction.setReproduction(Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
-                                    Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration)),
-                                    false);
+        sensor.setSensor(
+            _radius: Mathf.RoundToInt(MutateTrait(mother.sensor.radius, father.radius)),
+            _camouflage: Mathf.RoundToInt(MutateTrait(mother.sensor.camouflage, father.camouflage)),
+            _stealth: Mathf.RoundToInt(MutateTrait(mother.sensor.stealth, father.stealth))
+        );
+        reproduction.setReproduction(
+            _reproductiveUrge: Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
+            _pregnancyDuration: Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration)),
+            _isFertile: false
+        );
         mating.enableMating = false;
         mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
 
@@ -121,11 +132,19 @@ public abstract class Animal : MonoBehaviour
         SetComponents();
 
         aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
+        bravery = UnityEngine.Random.Range(20, 40);
         movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
-        sensor.radius = UnityEngine.Random.Range(30, 70);
-        reproduction.setReproduction(UnityEngine.Random.Range(30, 50), 
-                                    UnityEngine.Random.Range(30, 60),
-                                    true);
+        sensor.setSensor(
+            _radius: UnityEngine.Random.Range(30, 70),
+            _camouflage: UnityEngine.Random.Range(30, 60),
+            _stealth: UnityEngine.Random.Range(20, 50)
+        );
+
+        reproduction.setReproduction(
+            _reproductiveUrge: UnityEngine.Random.Range(30, 50),
+            _pregnancyDuration: UnityEngine.Random.Range(30, 60),
+            _isFertile: true
+        );
         mating.enableMating = true;
         mating.charm = UnityEngine.Random.Range(20, 100);
         drink.critical = UnityEngine.Random.Range(25, 35);
@@ -172,10 +191,16 @@ public abstract class Animal : MonoBehaviour
                 sensor.CheckForPredators();
                 if (sensor.danger && status != Status.FLEE)
                 {
-                    (prevStatus, status) = (Status.WANDER, Status.FLEE);
-                    targetRef = null;
-                    sensor.targetMask = LayerMask.GetMask("None");
+                    // --- Bravery roll ---
+                    float fleeChance = Mathf.Clamp01(1f - bravery / 100f);
+                    float roll = UnityEngine.Random.value;
 
+                    if (roll < fleeChance)
+                    {
+                        (prevStatus, status) = (Status.WANDER, Status.FLEE);
+                        targetRef = null;
+                        sensor.targetMask = LayerMask.GetMask("None");
+                    }
                 }
                 else if (!sensor.danger && status == Status.FLEE)
                 {
@@ -188,14 +213,30 @@ public abstract class Animal : MonoBehaviour
     public void Step()
     {
         stepCnt++;
-        if (stepCnt == maxStepCnt)   
+        if (stepCnt == maxStepCnt)
         {
             breakCounter = System.Math.Max(0, breakCounter - 1);
             if (IsBreakEnded())
             {
                 OnBreakEnded?.Invoke();
             }
-            oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
+
+            currentHealth = (transform.localPosition.y < 20 && targetRef == null)
+                ? Mathf.Max(0, currentHealth - 10)
+                : Mathf.Min(100, currentHealth + 10);
+
+            if (currentHealth == 0 && status != Status.DIE)
+            {
+                if ((transform.localPosition.y < 20 && targetRef == null))
+                {
+                    cause = CauseOfDeath.DROWN;
+                }
+                else
+                {
+                    ;
+                }
+            }
+
 
             if (!(status == Status.DIE || status == Status.CAUGHT))
             {
@@ -211,11 +252,6 @@ public abstract class Animal : MonoBehaviour
                 mating.updateBar();
             }
 
-            if (status != Status.DIE)
-            {
-                if (oxygen == 0) cause = CauseOfDeath.DROWN;
-            }
-
             if (IsDying())
             {
                 OnDeath?.Invoke();
@@ -229,9 +265,9 @@ public abstract class Animal : MonoBehaviour
         decCnt++;
 
         if (decCnt == maxDecCnt)
-        {   
+        {
             switch (status)
-            {                
+            {
                 case Status.SEARCH_MATE:
                     {
                         if (rest.ChanceToRest()) prevStatus = status = Status.REST;
@@ -306,7 +342,7 @@ public abstract class Animal : MonoBehaviour
                                 Animal mate = targetRef.GetComponent<Animal>();
                                 if (mate != null)
                                 {
-                                    if(mate.status == Status.WAIT)
+                                    if (mate.status == Status.WAIT)
                                     {
                                         mate.mating.ToMate();
                                         (mate.status, mate.prevStatus) = (mate.prevStatus, Status.WANDER);
@@ -319,8 +355,9 @@ public abstract class Animal : MonoBehaviour
                             {
                                 if (prevStatus == Status.SEARCH_FOOD)
                                 {
-                                    eat.StartEating();
-                                    status = Status.EAT;
+
+                                    if(eat.TryEating())
+                                        status = Status.EAT;
                                 }
                                 else if (sensor.targetMask == LayerMask.GetMask("Drink"))
                                 {

@@ -75,4 +75,21 @@ public class Bunny : Animal, IEdible
     {
         die.Destroy();
     }
+    public bool DamageHealth(int damage = 10)
+    {
+        // --- Damage roll ---
+        float roll = UnityEngine.Random.Range(0.75f, 1.25f);
+        int actualDamage = Mathf.RoundToInt(damage * roll);
+
+        currentHealth = Mathf.Max(0, currentHealth - actualDamage);
+
+        if (currentHealth == 0)
+        {
+            AboutToBeConsumed();
+            return true;
+        }
+
+        return false;
+    }
+
 }

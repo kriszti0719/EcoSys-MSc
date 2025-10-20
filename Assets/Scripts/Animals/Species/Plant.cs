@@ -45,4 +45,10 @@ public class Plant : MonoBehaviour, IEdible
         //this.GetComponentInParent<FoodSpawner>().RegisterDeath(this);
         Destroy(gameObject);
     }
+
+    public bool DamageHealth(int damage = 10)
+    {
+        AboutToBeConsumed();
+        return true;
+    }
 }
