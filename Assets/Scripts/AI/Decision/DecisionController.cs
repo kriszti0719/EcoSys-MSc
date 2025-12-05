@@ -1,0 +1,16 @@
+public class DecisionController
+{
+    public DecisionMode mode;
+    public ClassicFSMDecision classic;
+    public FCMDecision fcm;
+
+    public Status Decide(Animal a)
+    {
+        switch (mode)
+        {
+            case DecisionMode.ClassicFSM: return classic.Decide(a);
+            case DecisionMode.FCM: return fcm.Decide(a);
+            default: return Status.WANDER;
+        }
+    }
+}
