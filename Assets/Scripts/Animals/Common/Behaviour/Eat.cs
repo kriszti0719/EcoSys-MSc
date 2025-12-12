@@ -16,7 +16,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public event Action OnHungerFull;
         public event Action OnHungerDepleted;
 
-        void Start() {  animal = GetComponent<Animal>(); }
+        void Start() { animal = GetComponent<Animal>(); }
         private bool IsFull() => currentHunger == maxHunger;
         private bool IsCritical() => currentHunger <= critical;
         private bool IsDepleted() => currentHunger == 0;
@@ -48,16 +48,20 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
             else if (IsFull())
             {
-                OnHungerFull?.Invoke(); 
+                OnHungerFull?.Invoke();
             }
             else if (IsCritical())
             {
                 OnHungerCritical?.Invoke();
             }
         }
-        public bool TryEating()
+        //public bool TryEating()
+        //{
+        //    return food.DamageHealth();
+        //}
+        public void StartEating()
         {
-            return food.DamageHealth();
+            food.AboutToBeConsumed();
         }
         public void FinishEating()
         {

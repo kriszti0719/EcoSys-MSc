@@ -46,9 +46,9 @@ public class Plant : MonoBehaviour, IEdible
         Destroy(gameObject);
     }
 
-    public bool DamageHealth(int damage = 10)
-    {
-        AboutToBeConsumed();
-        return true;
-    }
+    //public bool DamageHealth(int damage = 10)
+    //{
+    //    AboutToBeConsumed();
+    //    return true;
+    //}
 }

@@ -75,7 +75,7 @@ public class Movement : MonoBehaviour
         if (!isWandering)
         {
             if (wanderingCoroutine != null)
-                Assets.Scripts.Animals.Common.DebugLogger.Warning("wanderingCoroutine should be null at this point");
+                DebugLogger.Warning("wanderingCoroutine should be null at this point");
             wanderingCoroutine = StartCoroutine(Wander());
             //isWandering = true;
         }

@@ -141,28 +141,12 @@ public class FoodSpawner : Spawner
     IEnumerator RegisterPopulation()
     {
         int step = 0;
+        DebugLogger.setLogPath();
+
         while (true)
         {
             step++;
-            Transform[] children = this.GetComponentsInChildren<Transform>(true);
-            int counter = Counter("Bunch");
-
-            string filePath = "C:\\Work\\GitHub\\EcoSys-MSc\\FoodPopulationData.csv";
-
-            // Ellenõrizd, hogy a fájl létezik-e, és ha nem, hozd létre
-            if (!File.Exists(filePath))
-            {
-                using (StreamWriter writer = new StreamWriter(filePath))
-                {
-                    writer.WriteLine("Time,Food");
-                }
-            }
-
-            // Írás a fájlba
-            using (StreamWriter writer = new StreamWriter(filePath, true))
-            {
-                writer.WriteLine($"{step},{counter}");
-            }
+            DebugLogger.RegisterFood(step: step, cnt: Counter("Bunch"));
             yield return new WaitForSeconds(10f);
         }
     }

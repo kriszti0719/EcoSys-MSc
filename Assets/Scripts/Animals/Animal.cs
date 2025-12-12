@@ -11,7 +11,7 @@ public abstract class Animal : MonoBehaviour
     public Status status;
     public Status prevStatus;
     public Species species;
-    public List<Species> predators;
+    public List<Species> predators = new List<Species>();
 
     public GameObject prefab;
     public Material color;
@@ -23,8 +23,10 @@ public abstract class Animal : MonoBehaviour
 
     public bool isMale;
 
-    int maxHealth = 100;
-    public int currentHealth;
+    //int maxHealth = 100;
+    //public int currentHealth;
+    int maxOxygen = 10;
+    public int oxygen;
 
     public Sensor sensor;
     public Reproduction reproduction;
@@ -66,6 +68,7 @@ public abstract class Animal : MonoBehaviour
     {
         cause = CauseOfDeath.NONE;
         status = Status.WANDER;
+        oxygen = maxOxygen; // TODO: delete
         movement.StartMoving();
     }
     protected void SetComponents()
@@ -165,11 +168,11 @@ public abstract class Animal : MonoBehaviour
     }
     public void SetBars(GameObject barsContainer)
     {
-        //rest.setBar(barsContainer);
-        //eat.setBar(barsContainer);        
-        //drink.setBar(barsContainer);
-        //mating.setBar(barsContainer);
-        //this.destructibles.Add(barsContainer);
+        rest.setBar(barsContainer);
+        eat.setBar(barsContainer);
+        drink.setBar(barsContainer);
+        mating.setBar(barsContainer);
+        this.destructibles.Add(barsContainer);
     }
     public void SetAnimalData(GameObject prefab, Material color)
     {
@@ -221,21 +224,27 @@ public abstract class Animal : MonoBehaviour
                 OnBreakEnded?.Invoke();
             }
 
-            currentHealth = (transform.localPosition.y < 20 && targetRef == null)
-                ? Mathf.Max(0, currentHealth - 10)
-                : Mathf.Min(100, currentHealth + 10);
-
-            if (currentHealth == 0 && status != Status.DIE)
+            oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
+            if (status != Status.DIE)
             {
-                if ((transform.localPosition.y < 20 && targetRef == null))
-                {
-                    cause = CauseOfDeath.DROWN;
-                }
-                else
-                {
-                    ;
-                }
+                if (oxygen == 0) cause = CauseOfDeath.DROWN;
             }
+            
+            //currentHealth = (transform.localPosition.y < 20 && targetRef == null)
+            //    ? Mathf.Max(0, currentHealth - 10)
+            //    : Mathf.Min(100, currentHealth + 10);
+
+            //if (currentHealth == 0 && status != Status.DIE)
+            //{
+            //    if ((transform.localPosition.y < 20 && targetRef == null))
+            //    {
+            //        cause = CauseOfDeath.DROWN;
+            //    }
+            //    else
+            //    {
+            //        ;
+            //    }
+            //}
 
 
             if (!(status == Status.DIE || status == Status.CAUGHT))
@@ -355,10 +364,14 @@ public abstract class Animal : MonoBehaviour
                             {
                                 if (prevStatus == Status.SEARCH_FOOD)
                                 {
+                                    eat.StartEating();
+                                    status = Status.EAT;
 
-                                    if(eat.TryEating())
-                                        status = Status.EAT;
                                 }
+                                //{
+                                //    if (eat.TryEating())
+                                //        status = Status.EAT;
+                                //}
                                 else if (sensor.targetMask == LayerMask.GetMask("Drink"))
                                 {
                                     drink.StartDrinking();

@@ -12,6 +12,6 @@ namespace Assets.Scripts
         event Action OnConsumed;
         int getNutrition();
         void AboutToBeConsumed();
-        bool DamageHealth(int damage = 10);
+        //bool DamageHealth(int damage = 10);
     }
 }

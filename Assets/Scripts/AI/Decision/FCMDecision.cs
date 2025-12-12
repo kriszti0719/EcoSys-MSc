@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class FCMDecision
@@ -14,7 +15,7 @@ public class FCMDecision
         float hungerNormalized = 1f - (a.eat.currentHunger / 100f);
         float thirstNormalized = 1f - (a.drink.currentThirst / 100f);
         float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina);
-        float fearNormalized = a.sensor.predatorVisible ? 1f : 0f;
+        float fearNormalized = a.spottedThreats.Any() ? 1f : 0f;
         float mateNormalized = a.reproduction.reproductiveUrge / 100f;
 
         model.SetInput("Hunger", hungerNormalized);
