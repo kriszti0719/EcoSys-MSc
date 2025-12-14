@@ -1,9 +1,5 @@
-using Assets.Scripts.Animals.Common;
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class Movement : MonoBehaviour
 {

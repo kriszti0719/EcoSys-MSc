@@ -1,14 +1,6 @@
-﻿using Assets.Scripts.Animals.Common.Behaviour;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using UnityEngine;
 
-using UnityEngine;
-using UnityEngine.UIElements.Experimental;
-
-public abstract class EventHandler : MonoBehaviour
+public class EventHandler : MonoBehaviour
 {
     private Animal animal;
     void Start() {  animal = GetComponent<Animal>(); }

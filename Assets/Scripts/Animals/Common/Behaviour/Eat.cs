@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using static UnityEngine.Video.VideoPlayer;
 
 namespace Assets.Scripts.Animals.Common.Behaviour
 {
@@ -61,6 +62,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         //}
         public void StartEating()
         {
+            food = animal.targetRef.GetComponent<IEdible>();
+            food.OnConsumed += animal.eventHandler.HandleFoodConsumed;
             food.AboutToBeConsumed();
         }
         public void FinishEating()

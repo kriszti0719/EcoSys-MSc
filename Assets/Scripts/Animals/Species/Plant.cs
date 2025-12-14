@@ -6,7 +6,7 @@ using UnityEngine;
 public class Plant : MonoBehaviour, IEdible
 {
     private int nutrition = 5;
-    private int eatDuration = 10;
+    private int eatDuration = 5;
     private int currentDuration;
     public CauseOfDeath cause = CauseOfDeath.NONE;
     public void Start()
@@ -45,10 +45,4 @@ public class Plant : MonoBehaviour, IEdible
         //this.GetComponentInParent<FoodSpawner>().RegisterDeath(this);
         Destroy(gameObject);
     }
-
-    //public bool DamageHealth(int damage = 10)
-    //{
-    //    AboutToBeConsumed();
-    //    return true;
-    //}
 }

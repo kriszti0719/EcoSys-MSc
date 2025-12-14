@@ -10,41 +10,57 @@ using UnityEngine;
 
 public static class DebugLogger
 {
-    private static string filePathDeathData;
+    private static string filePathDeath;
     private static string filePathPopulation;
-    private static string filePathFoodPopulation;
+    private static string filePathFood;
+    private static string filePathDeathLatest;
+    private static string filePathPopulationLatest;
+    private static string filePathFoodLatest;
 
     public static void setLogPath()
     {
-        if(filePathDeathData == null)   // TODO: This is just a quickfix, we're gonna need sg better than this --> SINGLETON-sg?
+        if(filePathDeath == null)   // TODO: This is just a quickfix, we're gonna need sg better than this --> SINGLETON-sg?
         {
             string projectRoot = Directory.GetParent(Application.dataPath).FullName;
             string dataDirectory = Path.Combine(projectRoot, ".logs");
 
             Directory.CreateDirectory(dataDirectory);
             string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            filePathDeathData = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
+            filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
-            filePathFoodPopulation = Path.Combine(dataDirectory, $"{timestamp}_FoodPopulationData.csv");
+            filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
+            filePathDeathLatest = Path.Combine(dataDirectory, $"latest_DeathData.csv");
+            filePathPopulationLatest = Path.Combine(dataDirectory, $"latest_PopulationData.csv");
+            filePathFoodLatest = Path.Combine(dataDirectory, $"latest_FoodData.csv");
 
-            using (StreamWriter writer = new StreamWriter(filePathDeathData))
+            using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
                 writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
             }
-
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
                 writer.WriteLine("Time;BunnyPop;FoxPop");
             }
-
-            using (StreamWriter writer = new StreamWriter(filePathFoodPopulation))
+            using (StreamWriter writer = new StreamWriter(filePathFood))
+            {
+                writer.WriteLine("Time;Food");
+            }
+            using (StreamWriter writer = new StreamWriter(filePathDeathLatest))
+            {
+                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
+            }
+            using (StreamWriter writer = new StreamWriter(filePathPopulationLatest))
+            {
+                writer.WriteLine("Time;BunnyPop;FoxPop");
+            }
+            using (StreamWriter writer = new StreamWriter(filePathFoodLatest))
             {
                 writer.WriteLine("Time;Food");
             }
 
             Info(filePathPopulation);
-            Info(filePathFoodPopulation);
-            Info(filePathDeathData);
+            Info(filePathFood);
+            Info(filePathDeath);
         }
     }
     public enum LogLevel { Off, Error, Warn, Notice, Info }
@@ -79,10 +95,18 @@ public static class DebugLogger
         {
             writer.WriteLine($"{step};{counterBunny};{counterFox}");
         }
+        using (StreamWriter writer = new StreamWriter(filePathPopulationLatest, true))
+        {
+            writer.WriteLine($"{step};{counterBunny};{counterFox}");
+        }
     }
     public static void RegisterFood(int cnt, int step = 1)
     {
-        using (StreamWriter writer = new StreamWriter(filePathFoodPopulation, true))
+        using (StreamWriter writer = new StreamWriter(filePathFood, true))
+        {
+            writer.WriteLine($"{step};{cnt}");
+        }
+        using (StreamWriter writer = new StreamWriter(filePathFoodLatest, true))
         {
             writer.WriteLine($"{step};{cnt}");
         }
@@ -90,7 +114,23 @@ public static class DebugLogger
 
     public static void RegisterDeath(int step, Animal animal)
     {
-        using (StreamWriter writer = new StreamWriter(filePathDeathData, true))
+        using (StreamWriter writer = new StreamWriter(filePathDeath, true))
+        {
+            string dataLine = $"{step};" +
+                $"{animal.species.ToPrint()};" +
+                $"{animal.cause.ToPrint()};" +
+                $"{animal.aging.currentAge}" +
+                $";{animal.movement.moveSpeed};" +
+                $"{animal.sensor.radius};" +
+                $"{animal.reproduction.reproductiveUrge};" +
+                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
+                $"{animal.reproduction.pregnancyDuration};" +
+                $"{animal.prevStatus};" +
+                $"{animal.eat.critical};" +
+                $"{animal.drink.critical}";
+            writer.WriteLine(dataLine);
+        }
+        using (StreamWriter writer = new StreamWriter(filePathDeathLatest, true))
         {
             string dataLine = $"{step};" +
                 $"{animal.species.ToPrint()};" +

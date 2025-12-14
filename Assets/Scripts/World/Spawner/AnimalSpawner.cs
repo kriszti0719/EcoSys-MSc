@@ -1,9 +1,8 @@
-﻿using UnityEditor;
-using UnityEngine;
-using System.Collections;
-using System.IO;
-using Assets.Scripts.Animals.Common.Behaviour;
+﻿using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
+using System.Collections;
+using UnityEditor;
+using UnityEngine;
 
 public class AnimalSpawner : Spawner
 {
@@ -70,18 +69,20 @@ public class AnimalSpawner : Spawner
 
 
             // Attach scripts:
-            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
             Eat instantiatedEat = instantiatedPrefab.AddComponent<Eat>();
+            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
             Rest instantiatedRest = instantiatedPrefab.AddComponent<Rest>();
             Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
+            
             Reproduction instantiatedReproduction = instantiatedPrefab.AddComponent<Reproduction>();
             Movement instantiatedMovement = instantiatedPrefab.AddComponent<Movement>();
             Gravity instantiatedGravity = instantiatedPrefab.AddComponent<Gravity>();
             Sensor instantiatedSensor = instantiatedPrefab.AddComponent<Sensor>();
+            
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
 
-
+            EventHandler instantiatedEventHandler = instantiatedPrefab.AddComponent<EventHandler>();
 
             switch (animal.species)
             {
@@ -282,7 +283,7 @@ public class AnimalSpawner : Spawner
         while (true)
         {
             step++;
-            DebugLogger.RegisterPopulation(step, counterFox: amount, counterBunny: amount2);
+            DebugLogger.RegisterPopulation(step, counterFox: Counter("FOX"), counterBunny: Counter("BUNNY"));
             yield return new WaitForSeconds(10f);
         }
     }

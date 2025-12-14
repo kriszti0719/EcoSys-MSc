@@ -23,8 +23,6 @@ public abstract class Animal : MonoBehaviour
 
     public bool isMale;
 
-    //int maxHealth = 100;
-    //public int currentHealth;
     int maxOxygen = 10;
     public int oxygen;
 
@@ -64,17 +62,10 @@ public abstract class Animal : MonoBehaviour
     public abstract void setTargetLayerToEat();
     public abstract void setSpeciesSpecificTraits();
     private bool IsBreakEnded() => breakCounter == 0;
-    protected virtual void Start()
-    {
-        cause = CauseOfDeath.NONE;
-        status = Status.WANDER;
-        oxygen = maxOxygen; // TODO: delete
-        movement.StartMoving();
-    }
     protected void SetComponents()
     {
         sensor = GetComponent<Sensor>();
-        sensor.targetMask = sensor.targetMask = LayerMask.GetMask("None");
+        sensor.targetMask = LayerMask.GetMask("None");
         reproduction = GetComponent<Reproduction>();
         rest = GetComponent<Rest>();
         drink = GetComponent<Drink>();
@@ -85,22 +76,30 @@ public abstract class Animal : MonoBehaviour
         movement = GetComponent<Movement>();
         eventHandler = GetComponent<EventHandler>();
     }
-    protected void Subscribe()
+    public void SetTraits(float rnd)
     {
-        //eat.OnHungerCritical += eventHandler.HandleHungerCritical;
-        //eat.OnHungerFull += eventHandler.HandleHungerFull;
-        //eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
+        SetComponents();
 
-        //drink.OnThirstCritical += eventHandler.HandleThirstCritical;
-        //drink.OnThirstFull += eventHandler.HandleThirstFull;
-        //drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
+        aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
+        bravery = UnityEngine.Random.Range(20, 40);
+        movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
+        sensor.setSensor(
+            _radius: UnityEngine.Random.Range(30, 70),
+            _camouflage: UnityEngine.Random.Range(30, 60),
+            _stealth: UnityEngine.Random.Range(20, 50)
+        );
 
-        //rest.OnRestFull += eventHandler.HandleRestFull;
-        //rest.OnRestDepleted += eventHandler.HandleRestDepleted;
+        reproduction.setReproduction(
+            _reproductiveUrge: UnityEngine.Random.Range(30, 50),
+            _pregnancyDuration: UnityEngine.Random.Range(30, 60),
+            _isFertile: true
+        );
+        mating.enableMating = true;
+        mating.charm = UnityEngine.Random.Range(20, 100);
+        drink.critical = UnityEngine.Random.Range(25, 35);
+        eat.critical = UnityEngine.Random.Range(15, 25);
 
-        //aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
-
-        //OnBreakEnded += eventHandler.HandleBreakEnded;
+        setSpeciesSpecificTraits();
     }
     public void SetTraits(Animal mother, MateTraits father)
     {
@@ -130,32 +129,6 @@ public abstract class Animal : MonoBehaviour
 
         setSpeciesSpecificTraits();
     }
-    public void SetTraits(float rnd)
-    {
-        SetComponents();
-
-        aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
-        bravery = UnityEngine.Random.Range(20, 40);
-        movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
-        sensor.setSensor(
-            _radius: UnityEngine.Random.Range(30, 70),
-            _camouflage: UnityEngine.Random.Range(30, 60),
-            _stealth: UnityEngine.Random.Range(20, 50)
-        );
-
-        reproduction.setReproduction(
-            _reproductiveUrge: UnityEngine.Random.Range(30, 50),
-            _pregnancyDuration: UnityEngine.Random.Range(30, 60),
-            _isFertile: true
-        );
-        mating.enableMating = true;
-        mating.charm = UnityEngine.Random.Range(20, 100);
-        drink.critical = UnityEngine.Random.Range(25, 35);
-        eat.critical = UnityEngine.Random.Range(15, 25);
-
-        setSpeciesSpecificTraits();
-        Subscribe();
-    }
     protected float MutateTrait(float motherTrait, float fatherTrait)
     {
         float averageTrait = (motherTrait + fatherTrait) / 2f;
@@ -181,6 +154,31 @@ public abstract class Animal : MonoBehaviour
         this.rejectedBy.Add(this.GameObject()); ;
         //TODO: set charm according to color
     }
+    protected void Subscribe()
+    {
+        eat.OnHungerCritical += eventHandler.HandleHungerCritical;
+        eat.OnHungerFull += eventHandler.HandleHungerFull;
+        eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
+
+        drink.OnThirstCritical += eventHandler.HandleThirstCritical;
+        drink.OnThirstFull += eventHandler.HandleThirstFull;
+        drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
+
+        rest.OnRestFull += eventHandler.HandleRestFull;
+        rest.OnRestDepleted += eventHandler.HandleRestDepleted;
+
+        aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
+
+        OnBreakEnded += eventHandler.HandleBreakEnded;
+    }
+    protected virtual void Start()
+    {
+        Subscribe();
+        cause = CauseOfDeath.NONE;
+        status = Status.WANDER;
+        oxygen = maxOxygen; // TODO: delete
+        movement.StartMoving();
+    }
     void Update()
     {
         frameCounter++;
@@ -189,27 +187,6 @@ public abstract class Animal : MonoBehaviour
             aging.Aging();
             Step();
             Decide();
-            if (predators?.Any() == true)
-            {
-                sensor.CheckForPredators();
-                if (sensor.danger && status != Status.FLEE)
-                {
-                    // --- Bravery roll ---
-                    float fleeChance = Mathf.Clamp01(1f - bravery / 100f);
-                    float roll = UnityEngine.Random.value;
-
-                    if (roll < fleeChance)
-                    {
-                        (prevStatus, status) = (Status.WANDER, Status.FLEE);
-                        targetRef = null;
-                        sensor.targetMask = LayerMask.GetMask("None");
-                    }
-                }
-                else if (!sensor.danger && status == Status.FLEE)
-                {
-                    (status, prevStatus) = (prevStatus, status);
-                }
-            }
             frameCounter = 0;
         }
     }
@@ -218,33 +195,21 @@ public abstract class Animal : MonoBehaviour
         stepCnt++;
         if (stepCnt == maxStepCnt)
         {
-            breakCounter = System.Math.Max(0, breakCounter - 1);
-            if (IsBreakEnded())
+            if(breakCounter != 0)
             {
-                OnBreakEnded?.Invoke();
+                breakCounter = System.Math.Max(0, breakCounter - 1);
+                if (IsBreakEnded())
+                {
+                    OnBreakEnded?.Invoke();
+                }
             }
 
             oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
-            if (status != Status.DIE)
-            {
-                if (oxygen == 0) cause = CauseOfDeath.DROWN;
-            }
-            
-            //currentHealth = (transform.localPosition.y < 20 && targetRef == null)
-            //    ? Mathf.Max(0, currentHealth - 10)
-            //    : Mathf.Min(100, currentHealth + 10);
 
-            //if (currentHealth == 0 && status != Status.DIE)
-            //{
-            //    if ((transform.localPosition.y < 20 && targetRef == null))
-            //    {
-            //        cause = CauseOfDeath.DROWN;
-            //    }
-            //    else
-            //    {
-            //        ;
-            //    }
-            //}
+            if (oxygen == 0)
+            {
+                if (status != Status.DIE) cause = CauseOfDeath.DROWN;
+            }
 
 
             if (!(status == Status.DIE || status == Status.CAUGHT))
@@ -271,6 +236,28 @@ public abstract class Animal : MonoBehaviour
     }
     public void Decide()
     {
+        if (predators?.Any() == true)
+        {
+            sensor.CheckForPredators();
+            if (sensor.danger && status != Status.FLEE)
+            {
+                // --- Bravery roll ---
+                float fleeChance = Mathf.Clamp01(1f - bravery / 100f);
+                float roll = UnityEngine.Random.value;
+
+                if (roll < fleeChance)
+                {
+                    (prevStatus, status) = (Status.WANDER, Status.FLEE);
+                    targetRef = null;
+                    sensor.targetMask = LayerMask.GetMask("None");
+                }
+            }
+            else if (!sensor.danger && status == Status.FLEE)
+            {
+                (status, prevStatus) = (prevStatus, status);
+            }
+        }
+
         decCnt++;
 
         if (decCnt == maxDecCnt)
@@ -368,10 +355,6 @@ public abstract class Animal : MonoBehaviour
                                     status = Status.EAT;
 
                                 }
-                                //{
-                                //    if (eat.TryEating())
-                                //        status = Status.EAT;
-                                //}
                                 else if (sensor.targetMask == LayerMask.GetMask("Drink"))
                                 {
                                     drink.StartDrinking();
