@@ -47,7 +47,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Mating()
         {
-            
+            animal.triedForBaby++;
         }
         public void ToMate()
         {

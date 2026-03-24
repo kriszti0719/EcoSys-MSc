@@ -7,6 +7,11 @@ using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
+    public int triedForBaby = 0;
+    public int gaveBirth = 0;
+    public int kids = 0;
+    // TODO: remove
+
     public CauseOfDeath cause;
     public Status status;
     public Status prevStatus;
@@ -46,9 +51,9 @@ public abstract class Animal : MonoBehaviour
     public int frameCounter = 0;
     public int stepCnt = 0;
     public int maxStepCnt = 8;
-    public int decCnt = 0;
-    public int maxDecCnt = 2;
-    public int framesPerChange = 6; // 60 frame = 1 másodperc, HA 60 FPS
+    public int decideCnt = 0;
+    public int maxDecideCnt = 2;
+    public int framesPerChange = 60; // 60 frame = 1 másodperc, HA 60 FPS
     public event System.Action OnDeath;
     private bool IsDying() => status == Status.DIE && !movement.isDying;
     public Species getSpecies()
@@ -258,9 +263,9 @@ public abstract class Animal : MonoBehaviour
             }
         }
 
-        decCnt++;
+        decideCnt++;
 
-        if (decCnt == maxDecCnt)
+        if (decideCnt == maxDecideCnt)
         {
             switch (status)
             {
@@ -384,7 +389,7 @@ public abstract class Animal : MonoBehaviour
                         break;
                     }
             }
-            decCnt = 0;
+            decideCnt = 0;
         }
     }
 }

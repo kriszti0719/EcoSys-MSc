@@ -62,6 +62,8 @@ public class Reproduction : MonoBehaviour
         };
 
         spawner.SpawnBabies(null, rnd, animal, mateTraits);
+        animal.gaveBirth++;
+        animal.kids += rnd;
         isPregnant = false;
     }
     public void Mature()

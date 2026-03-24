@@ -13,7 +13,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Age : MonoBehaviour
     {
         private Animal animal;
-        private float aging = 0.5f;
+        private float aging = 1f;
         private float secCnt;
         public float currentAge;
         public float lifeSpan;
@@ -38,7 +38,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 Grow();
                 currentAge += aging / 100f;
-                secCnt = 2;
+                secCnt = 1;
             }
             else if(secCnt == 0)
             {
@@ -49,7 +49,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 {
                     OnAgeLimitReached?.Invoke();
                 }
-                secCnt = 200;
+                secCnt = 100;
             }
             secCnt--;
         }
@@ -61,7 +61,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             else
                 animal.transform.localScale = new Vector3(size * currentAge, size * currentAge, size * currentAge);
             animal.barsContainer.transform.SetParent(animal.transform);
-
         }
     }
 }
