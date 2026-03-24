@@ -6,7 +6,7 @@ using UnityEngine;
 public class Plant : MonoBehaviour, IEdible
 {
     private int nutrition = 5;
-    private int eatDuration = 10;
+    private int eatDuration = 5;
     private int currentDuration;
     public CauseOfDeath cause = CauseOfDeath.NONE;
     public void Start()

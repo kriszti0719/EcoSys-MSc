@@ -1,9 +1,8 @@
-﻿using UnityEditor;
-using UnityEngine;
-using System.Collections;
-using System.IO;
-using Assets.Scripts.Animals.Common.Behaviour;
+﻿using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
+using System.Collections;
+using UnityEditor;
+using UnityEngine;
 
 public class AnimalSpawner : Spawner
 {
@@ -36,7 +35,7 @@ public class AnimalSpawner : Spawner
     private int BunnyCntr;
     private int FoxCntr;
 
-    // Start is called before the first frame update
+    public int getStep() => step;
     public override void Generate()
     {
         Clear();
@@ -49,30 +48,9 @@ public class AnimalSpawner : Spawner
     }
     protected virtual void Start()
     {
-        // A projekt gyökérmappájának meghatározása
-        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
-        string dataDirectory = Path.Combine(projectRoot, "Data");
-
-        Directory.CreateDirectory(dataDirectory);
-        string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
-        filePathDeathData = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
-
-        using (StreamWriter writer = new StreamWriter(filePathDeathData))
-        {
-            writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
-        }
-
-        filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
-
-        if (!File.Exists(filePathPopulation))
-        {
-            using (StreamWriter writer = new StreamWriter(filePathPopulation))
-            {
-                writer.WriteLine("Time;BunnyPop;FoxPop");
-            }
-        }
         FoxCntr = amount;
         BunnyCntr = amount2;
+
         StartCoroutine(RegisterPopulation());
     }
     private void SpawnAnimals(GenerateAnimal animal, int amount)
@@ -91,18 +69,20 @@ public class AnimalSpawner : Spawner
 
 
             // Attach scripts:
-            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
             Eat instantiatedEat = instantiatedPrefab.AddComponent<Eat>();
+            Drink instantiatedDrink = instantiatedPrefab.AddComponent<Drink>();
             Rest instantiatedRest = instantiatedPrefab.AddComponent<Rest>();
             Mate instantiatedMate = instantiatedPrefab.AddComponent<Mate>();
+            
             Reproduction instantiatedReproduction = instantiatedPrefab.AddComponent<Reproduction>();
             Movement instantiatedMovement = instantiatedPrefab.AddComponent<Movement>();
             Gravity instantiatedGravity = instantiatedPrefab.AddComponent<Gravity>();
             Sensor instantiatedSensor = instantiatedPrefab.AddComponent<Sensor>();
+            
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
 
-
+            EventHandler instantiatedEventHandler = instantiatedPrefab.AddComponent<EventHandler>();
 
             switch (animal.species)
             {
@@ -124,7 +104,7 @@ public class AnimalSpawner : Spawner
                     {
                         instantiatedBunny.SetTraits(currentAnimalSize);
                     }
-                    //setBars(instantiatedBunny, instantiatedPrefab, animal);
+                    setBars(instantiatedBunny, instantiatedPrefab, animal);
                     break;
                 case Species.FOX:
                     FoxCntr++;
@@ -142,7 +122,7 @@ public class AnimalSpawner : Spawner
                     {
                         instantiatedFox.SetTraits(currentAnimalSize);
                     }
-                    //setBars(instantiatedFox, instantiatedPrefab, animal);
+                    setBars(instantiatedFox, instantiatedPrefab, animal);
                     break;
             }
 
@@ -194,41 +174,41 @@ public class AnimalSpawner : Spawner
             }
         }
     }
-    //private void setBars(Animal instantiatedAnimal, GameObject instantiatedPrefab, GenerateAnimal animal)
-    //{
-    //    int bottom = 0;
-    //    if (animal.species == Species.BUNNY)
-    //    {
-    //        bottom = 8;
-    //    }
-    //    else if (animal.species == Species.FOX)
-    //    {
-    //        bottom = 16;
-    //    }
+    private void setBars(Animal instantiatedAnimal, GameObject instantiatedPrefab, GenerateAnimal animal)
+    {
+        int bottom = 0;
+        if (animal.species == Species.BUNNY)
+        {
+            bottom = 8;
+        }
+        else if (animal.species == Species.FOX)
+        {
+            bottom = 16;
+        }
 
-    //    GameObject barsContainer = new GameObject("BarsContainer");
-    //    barsContainer.transform.SetParent(instantiatedPrefab.transform);
-    //    instantiatedAnimal.barsContainer = barsContainer;
-    //    barsContainer.transform.rotation = instantiatedAnimal.transform.rotation;
+        GameObject barsContainer = new GameObject("BarsContainer");
+        barsContainer.transform.SetParent(instantiatedPrefab.transform);
+        instantiatedAnimal.barsContainer = barsContainer;
+        barsContainer.transform.rotation = instantiatedAnimal.transform.rotation;
 
-    //    GameObject instantiatedStamina = (GameObject)PrefabUtility.InstantiatePrefab(this.staminaCanvas, barsContainer.transform);
-    //    instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 12, instantiatedPrefab.transform.position.z);
-    //    instantiatedStamina.GetComponent<Billboard>().cam = mainCamera;
+        GameObject instantiatedStamina = (GameObject)PrefabUtility.InstantiatePrefab(this.staminaCanvas, barsContainer.transform);
+        instantiatedStamina.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 12, instantiatedPrefab.transform.position.z);
+        instantiatedStamina.GetComponent<Billboard>().cam = mainCamera;
 
-    //    GameObject instantiatedHunger = (GameObject)PrefabUtility.InstantiatePrefab(this.hungerCanvas, barsContainer.transform);
-    //    instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 8, instantiatedPrefab.transform.position.z);
-    //    instantiatedHunger.GetComponent<Billboard>().cam = mainCamera;
+        GameObject instantiatedHunger = (GameObject)PrefabUtility.InstantiatePrefab(this.hungerCanvas, barsContainer.transform);
+        instantiatedHunger.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 8, instantiatedPrefab.transform.position.z);
+        instantiatedHunger.GetComponent<Billboard>().cam = mainCamera;
 
-    //    GameObject instantiatedThirst = (GameObject)PrefabUtility.InstantiatePrefab(this.thirstCanvas, barsContainer.transform);
-    //    instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 4, instantiatedPrefab.transform.position.z);
-    //    instantiatedThirst.GetComponent<Billboard>().cam = mainCamera;
+        GameObject instantiatedThirst = (GameObject)PrefabUtility.InstantiatePrefab(this.thirstCanvas, barsContainer.transform);
+        instantiatedThirst.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom + 4, instantiatedPrefab.transform.position.z);
+        instantiatedThirst.GetComponent<Billboard>().cam = mainCamera;
 
-    //    GameObject instantiatedMating = (GameObject)PrefabUtility.InstantiatePrefab(this.matingCanvas, barsContainer.transform);
-    //    instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
-    //    instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
+        GameObject instantiatedMating = (GameObject)PrefabUtility.InstantiatePrefab(this.matingCanvas, barsContainer.transform);
+        instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
+        instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-    //    instantiatedAnimal.SetBars(barsContainer);
-    //}
+        instantiatedAnimal.SetBars(barsContainer);
+    }
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
         CapsuleCollider capsuleCollider = instantiatedPrefab.AddComponent<CapsuleCollider>();
@@ -295,30 +275,20 @@ public class AnimalSpawner : Spawner
             }
         }
     }
+
     IEnumerator RegisterPopulation()
     {
+        DebugLogger.setLogPath();
+
         while (true)
         {
             step++;
-            Transform[] children = this.GetComponentsInChildren<Transform>(true);
-            int counterBunny = Counter("BUNNY");
-            int counterFox = Counter("FOX");
-
-            // Írás a fájlba
-            using (StreamWriter writer = new StreamWriter(filePathPopulation, true))
-            {
-                writer.WriteLine($"{step};{counterBunny};{counterFox}");
-            }
+            DebugLogger.RegisterPopulation(step, counterFox: Counter("FOX"), counterBunny: Counter("BUNNY"));
             yield return new WaitForSeconds(10f);
         }
     }
     public void RegisterDeath(Animal animal)
     {
-        // Adatok hozzáfûzése a fájlhoz
-        using (StreamWriter writer = new StreamWriter(filePathDeathData, true))
-        {
-            //string dataLine = $"{step};{animal.species.ToPrint()};{animal.cause.ToPrint()};{animal.aging.currentAge};{animal.movement.moveSpeed};{animal.sensor.radius};{animal.reproduction.reproductiveUrge};{animal.aging.lifeSpan};{animal.mating.charm};{animal.reproduction.pregnancyDuration};{animal.prevStatus};{animal.eat.starving};{animal.drink.drying}";
-            //writer.WriteLine(dataLine); // Pontosvesszõ használata
-        }
+        DebugLogger.RegisterDeath(step: step, animal: animal);
     }
 }

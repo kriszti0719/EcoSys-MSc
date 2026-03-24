@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.World;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,12 +6,12 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(Assets.Scripts.World.LoggerSettings))]
+[CustomEditor(typeof(AnimalSpawner))]
 class LoggerManager : Editor
 {
     public override void OnInspectorGUI()
     {
-        LoggerSettings ls = (LoggerSettings)target;
+        AnimalSpawner ls = (AnimalSpawner)target;
 
         if (DrawDefaultInspector())
         {

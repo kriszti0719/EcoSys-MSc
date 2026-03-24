@@ -35,7 +35,7 @@ public class Reproduction : MonoBehaviour
     }
     public void GiveBirth()
     {
-        var spawner = animal.GetComponentInParent<LoggerSettings>();
+        var spawner = animal.GetComponentInParent<AnimalSpawner>();
         if (spawner == null)
         {
             DebugLogger.Error("AnimalSpawner not found in parent hierarchy for " + animal.name);

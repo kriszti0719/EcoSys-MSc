@@ -14,9 +14,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         [SerializeField]
         private int restAmount;             // X mp alatt mennyit pihen
         public StaminaBar staminaBar;      //StaminaBar
-        private int maxStamina = 100;
+        public int maxStamina = 100;
         [SerializeField]
-        private int currentStamina;
+        public int currentStamina;
 
         public event Action OnRestFull;
         public event Action OnRestDepleted;
