@@ -35,7 +35,7 @@ public static class DebugLogger
 
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
+                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
             }
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
@@ -78,6 +78,7 @@ public static class DebugLogger
     public static void Warning(string message) => Log(msg: message, level_str: "Warning: ", level: LogLevel.Warn);
     public static void Info(string message) => Log(msg: message, level_str: "Notice: ", level: LogLevel.Info);
     public static void Notice(string message) => Log(msg: message, level_str: "Info: ", level: LogLevel.Notice);
+    public static void ShowNotification(string message) => Notifier.Show( message );
     private static string GetColorForLevel(LogLevel level)
     {
         switch (level)
@@ -111,7 +112,6 @@ public static class DebugLogger
             writer.WriteLine($"{step};{cnt}");
         }
     }
-
     public static void RegisterDeath(int step, Animal animal)
     {
         using (StreamWriter writer = new StreamWriter(filePathDeath, true))
@@ -127,7 +127,11 @@ public static class DebugLogger
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +
-                $"{animal.drink.critical}";
+                $"{animal.drink.critical}" +
+                $"{animal.triedForBaby}" +
+                $"{animal.gaveBirth}" +
+                $"{animal.kids}"
+                ;
             writer.WriteLine(dataLine);
         }
         using (StreamWriter writer = new StreamWriter(filePathDeathLatest, true))
@@ -143,8 +147,21 @@ public static class DebugLogger
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +
-                $"{animal.drink.critical}";
+                $"{animal.drink.critical}" +
+                $"{animal.triedForBaby}" +
+                $"{animal.gaveBirth}" +
+                $"{animal.kids}"
+                ;
             writer.WriteLine(dataLine);
         }
+    }
+}
+
+public static class Notifier
+{
+    public static void Show(string message)
+    {
+        System.Diagnostics.Process.Start("powershell",
+            $"-Command \"Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('{message}')\"");
     }
 }

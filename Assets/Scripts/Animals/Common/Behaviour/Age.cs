@@ -14,7 +14,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     {
         private Animal animal;
         private float aging = 1f;
-        private float secCnt;
+        public float secCnt;
         public float currentAge;
         public float lifeSpan;
         public float size;

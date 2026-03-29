@@ -32,15 +32,20 @@ public class AnimalSpawner : Spawner
     private string filePathDeathData;
     private string filePathPopulation;
 
-    private int BunnyCntr;
+    private int BunnyNameCntr;
+    private int FoxNameCntr;
+
     private int FoxCntr;
+    private int BunnyCntr;
+
+
 
     public int getStep() => step;
     public override void Generate()
     {
         Clear();
-        BunnyCntr = 0;
-        FoxCntr = 0;
+        BunnyNameCntr = 0;
+        FoxNameCntr = 0;
         GenerateAnimal animal = new GenerateAnimal(null, null, Species.FOX, animalSizeMin, animalSizeMax);
         SpawnAnimals(animal, amount);
         animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
@@ -48,6 +53,9 @@ public class AnimalSpawner : Spawner
     }
     protected virtual void Start()
     {
+        FoxNameCntr = amount;
+        BunnyNameCntr = amount2;
+
         FoxCntr = amount;
         BunnyCntr = amount2;
 
@@ -87,8 +95,8 @@ public class AnimalSpawner : Spawner
             switch (animal.species)
             {
                 case Species.BUNNY:
-                    BunnyCntr++;
-                    instantiatedPrefab.name = $"{animal.species}_{BunnyCntr}";
+                    BunnyNameCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{BunnyNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
                     Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
 
@@ -107,8 +115,8 @@ public class AnimalSpawner : Spawner
                     setBars(instantiatedBunny, instantiatedPrefab, animal);
                     break;
                 case Species.FOX:
-                    FoxCntr++;
-                    instantiatedPrefab.name = $"{animal.species}_{FoxCntr}";
+                    FoxNameCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{FoxNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
                     Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
 
@@ -283,12 +291,13 @@ public class AnimalSpawner : Spawner
         while (true)
         {
             step++;
-            DebugLogger.RegisterPopulation(step, counterFox: Counter("FOX"), counterBunny: Counter("BUNNY"));
+
+            if (FoxCntr != 0) FoxCntr = Counter("FOX");
+            if (BunnyCntr != 0) BunnyCntr = Counter("BUNNY");
+            if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
+
+            DebugLogger.RegisterPopulation(step, FoxCntr, BunnyCntr);
             yield return new WaitForSeconds(10f);
         }
-    }
-    public void RegisterDeath(Animal animal)
-    {
-        DebugLogger.RegisterDeath(step: step, animal: animal);
     }
 }
