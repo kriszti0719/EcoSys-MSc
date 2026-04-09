@@ -10,6 +10,7 @@ public class ScheduledTask
     public string name;
     public float interval;
     public float timer;
+    [System.NonSerialized]
     public Action action;
 
     public ScheduledTask(float _interval, float _timer, Action _action, string _name = "")

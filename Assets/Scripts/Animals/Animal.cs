@@ -28,9 +28,6 @@ public abstract class Animal : MonoBehaviour
 
     public bool isMale;
 
-    public int framesPerChange = 60; // 60 frame = 1 másodperc, HA 60 FPS
-    public int frameCounter = 0;
-
     int maxOxygen = 10;
     public int oxygen;
 
@@ -180,17 +177,6 @@ public abstract class Animal : MonoBehaviour
         status = Status.WANDER;
         oxygen = maxOxygen; // TODO: delete
         movement.StartMoving();
-    }
-    void Update()
-    {
-        frameCounter++;
-        if (frameCounter == framesPerChange)
-        {
-            aging.Aging();
-            Step();
-            Decide();
-            frameCounter = 0;
-        }
     }
     public void Step()
     {

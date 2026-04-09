@@ -42,7 +42,7 @@ public class AnimalSpawner : Spawner
     [Header("Counter")]
     public int maxStepCnt = 8;
     public int maxDecideCnt = 2;
-    public int maxAfingCnt = 50;
+    public int maxAgeCnt = 50;
 
     public override void Generate()
     {
@@ -55,11 +55,18 @@ public class AnimalSpawner : Spawner
 
         animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
         SpawnAnimals(animal, amount2);
-
-        AddTasks();
     }
     private void AddTasks()
     {
+        ScheduledTask registerPopulation = new ScheduledTask(
+            _name: "Register Population",
+            _interval: 10f,
+            _timer: 0f,
+            _action: () =>
+            {
+                RegisterPopulation();
+            });
+        scheduledTasks.Add(registerPopulation);
         ScheduledTask decide = new ScheduledTask(
             _name: "Decide",
             _interval: maxDecideCnt,
@@ -80,16 +87,16 @@ public class AnimalSpawner : Spawner
                     a.Step();
             });
         scheduledTasks.Add(step);
-        ScheduledTask aging = new ScheduledTask(
+        ScheduledTask age = new ScheduledTask(
             _name: "Age",
-            _interval: maxStepCnt,
+            _interval: maxAgeCnt,
             _timer: 0f,
             _action: () =>
             {
                 foreach (var a in animals)
-                    a.Step();
+                    a.aging.Aging();
             });
-        scheduledTasks.Add(step);
+        scheduledTasks.Add(age);
     }
     public override void Clear()
     {
@@ -109,7 +116,8 @@ public class AnimalSpawner : Spawner
         FoxCntr = amount;
         BunnyCntr = amount2;
 
-        StartCoroutine(RegisterPopulation());
+        DebugLogger.setLogPath();
+        AddTasks();
     }
     void Update()
     {
@@ -351,21 +359,14 @@ public class AnimalSpawner : Spawner
             }
         }
     }
-    IEnumerator RegisterPopulation()
+    public void RegisterPopulation()
     {
-        DebugLogger.setLogPath();
+        step++;
+        if (FoxCntr != 0) FoxCntr = Counter("FOX");
+        if (BunnyCntr != 0) BunnyCntr = Counter("BUNNY");
+        if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
 
-        while (true)
-        {
-            step++;
-
-            if (FoxCntr != 0) FoxCntr = Counter("FOX");
-            if (BunnyCntr != 0) BunnyCntr = Counter("BUNNY");
-            if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
-
-            DebugLogger.RegisterPopulation(step, FoxCntr, BunnyCntr);
-            yield return new WaitForSeconds(10f);
-        }
+        DebugLogger.RegisterPopulation(step, FoxCntr, BunnyCntr);
     }
     public void RemoveAnimal(Animal animal)
     {

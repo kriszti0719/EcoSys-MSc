@@ -13,7 +13,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Age : MonoBehaviour
     {
         private Animal animal;
-        private float aging = 1f;
+        private float aging = 0.5f;
         public float secCnt;
         public float currentAge;
         public float lifeSpan;
@@ -34,24 +34,19 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Aging()
         {
-            if (currentAge <= 1 & secCnt == 0)
+            if (currentAge <= 1)
             {
                 Grow();
                 currentAge += aging / 100f;
-                secCnt = 1;
             }
-            else if(secCnt == 0)
+
+            animal.mating.enableMating = true;
+            animal.reproduction.Mature();
+            currentAge += aging;
+            if (AgeLimitReached())
             {
-                animal.mating.enableMating = true;
-                animal.reproduction.Mature();
-                currentAge += aging;
-                if (AgeLimitReached())
-                {
-                    OnAgeLimitReached?.Invoke();
-                }
-                secCnt = 100;
+                OnAgeLimitReached?.Invoke();
             }
-            secCnt--;
         }
         private void Grow()
         {
