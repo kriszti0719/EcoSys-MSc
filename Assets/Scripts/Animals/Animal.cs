@@ -28,6 +28,9 @@ public abstract class Animal : MonoBehaviour
 
     public bool isMale;
 
+    public int framesPerChange = 60; // 60 frame = 1 másodperc, HA 60 FPS
+    public int frameCounter = 0;
+
     int maxOxygen = 10;
     public int oxygen;
 
@@ -48,12 +51,6 @@ public abstract class Animal : MonoBehaviour
 
     public GameObject barsContainer;
 
-    public int frameCounter = 0;
-    public int stepCnt = 0;
-    public int maxStepCnt = 8;
-    public int decideCnt = 0;
-    public int maxDecideCnt = 2;
-    public int framesPerChange = 60; // 60 frame = 1 másodperc, HA 60 FPS
     public event System.Action OnDeath;
     private bool IsDying() => status == Status.DIE && !movement.isDying;
     public Species getSpecies()
@@ -197,46 +194,40 @@ public abstract class Animal : MonoBehaviour
     }
     public void Step()
     {
-        stepCnt++;
-        if (stepCnt == maxStepCnt)
+        if(breakCounter != 0)
         {
-            if(breakCounter != 0)
+            breakCounter = System.Math.Max(0, breakCounter - 1);
+            if (IsBreakEnded())
             {
-                breakCounter = System.Math.Max(0, breakCounter - 1);
-                if (IsBreakEnded())
-                {
-                    OnBreakEnded?.Invoke();
-                }
+                OnBreakEnded?.Invoke();
             }
+        }
 
-            oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
+        oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
 
-            if (oxygen == 0)
-            {
-                if (status != Status.DIE) cause = CauseOfDeath.DROWN;
-            }
+        if (oxygen == 0)
+        {
+            if (status != Status.DIE) cause = CauseOfDeath.DROWN;
+        }
 
 
-            if (!(status == Status.DIE || status == Status.CAUGHT))
-            {
-                rest.Step();
-                eat.Step();
-                drink.Step();
-                if (reproduction.isFertile) mating.Step();
-                if (reproduction.IsPregnant()) reproduction.StepPregnancy();
+        if (!(status == Status.DIE || status == Status.CAUGHT))
+        {
+            rest.Step();
+            eat.Step();
+            drink.Step();
+            if (reproduction.isFertile) mating.Step();
+            if (reproduction.IsPregnant()) reproduction.StepPregnancy();
 
-                rest.updateBar();
-                eat.updateBar();
-                drink.updateBar();
-                mating.updateBar();
-            }
+            rest.updateBar();
+            eat.updateBar();
+            drink.updateBar();
+            mating.updateBar();
+        }
 
-            if (IsDying())
-            {
-                OnDeath?.Invoke();
-            }
-
-            stepCnt = 0;
+        if (IsDying())
+        {
+            OnDeath?.Invoke();
         }
     }
     public void Decide()
@@ -263,133 +254,127 @@ public abstract class Animal : MonoBehaviour
             }
         }
 
-        decideCnt++;
-
-        if (decideCnt == maxDecideCnt)
+        switch (status)
         {
-            switch (status)
-            {
-                case Status.SEARCH_MATE:
+            case Status.SEARCH_MATE:
+                {
+                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (targetRef != null)
                     {
-                        if (rest.ChanceToRest()) prevStatus = status = Status.REST;
-                        if (targetRef != null)
+                        Animal tmp = targetRef.GetComponent<Animal>();
+                        if (tmp == null || tmp.isMale == this.isMale || !tmp.mating.IsAcceptable(this))
                         {
-                            Animal tmp = targetRef.GetComponent<Animal>();
-                            if (tmp == null || tmp.isMale == this.isMale || !tmp.mating.IsAcceptable(this))
-                            {
-                                this.rejectedBy.Add(targetRef);
-                                targetRef = null;
-                            }
-                            else
-                            {
-                                tmp.reproduction = targetRef.GetComponent<Reproduction>();
-                                reproduction.mate = tmp;
-                                tmp.reproduction.mate = this;
-
-                                bool canSee = sensor.FieldOfViewCheck(getTargetLayerToMate(), reproduction.mate.transform.gameObject);
-                                if (!canSee)
-                                {
-                                    sensor.targetMask = LayerMask.GetMask("None");
-                                    targetRef = null;
-                                    (prevStatus, status) = (status, Status.WAIT);
-                                }
-                                else
-                                {
-                                    setTargetLayerToMate();
-                                    targetRef = reproduction.mate.transform.gameObject;
-                                    (prevStatus, status) = (status, Status.MOVE_TOWARDS);
-                                }
-                            }
+                            this.rejectedBy.Add(targetRef);
+                            targetRef = null;
                         }
-                        break;
-                    }
-                case Status.SEARCH_FOOD:
-                case Status.SEARCH_DRINK:
-                case Status.WANDER:
-                    {
-                        if (rest.ChanceToRest()) prevStatus = status = Status.REST;
-                        if (sensor.targetMask == LayerMask.GetMask("None"))
+                        else
                         {
-                            if (eat.currentHunger < drink.currentThirst && eat.IsHungry())   // TODO: ez tul sokszor lesz igaz tho
+                            tmp.reproduction = targetRef.GetComponent<Reproduction>();
+                            reproduction.mate = tmp;
+                            tmp.reproduction.mate = this;
+
+                            bool canSee = sensor.FieldOfViewCheck(getTargetLayerToMate(), reproduction.mate.transform.gameObject);
+                            if (!canSee)
                             {
-                                setTargetLayerToEat();
-                                status = Status.SEARCH_FOOD;
-                            }
-                            else if (!(reproduction.isFertile && mating.enableMating) || drink.IsThirsty())
-                            {
-                                sensor.targetMask = LayerMask.GetMask("Drink");
-                                status = Status.SEARCH_DRINK;
+                                sensor.targetMask = LayerMask.GetMask("None");
+                                targetRef = null;
+                                (prevStatus, status) = (status, Status.WAIT);
                             }
                             else
                             {
                                 setTargetLayerToMate();
-                                status = Status.SEARCH_MATE;
+                                targetRef = reproduction.mate.transform.gameObject;
+                                (prevStatus, status) = (status, Status.MOVE_TOWARDS);
                             }
                         }
-                        if (targetRef != null)
-                        {
-                            (prevStatus, status) = (status, Status.MOVE_TOWARDS);
-                        }
-                        break;
                     }
-                case Status.MOVE_TOWARDS:
+                    break;
+                }
+            case Status.SEARCH_FOOD:
+            case Status.SEARCH_DRINK:
+            case Status.WANDER:
+                {
+                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (sensor.targetMask == LayerMask.GetMask("None"))
                     {
-                        if (rest.ChanceToRest()) prevStatus = status = Status.REST;
-                        if (targetRef != null)
+                        if (eat.currentHunger < drink.currentThirst && eat.IsHungry())   // TODO: ez tul sokszor lesz igaz tho
                         {
-                            float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
-                            if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f)      // TODO: allat meret fuggo
-                            {
-                                Animal mate = targetRef.GetComponent<Animal>();
-                                if (mate != null)
-                                {
-                                    if (mate.status == Status.WAIT)
-                                    {
-                                        mate.mating.ToMate();
-                                        (mate.status, mate.prevStatus) = (mate.prevStatus, Status.WANDER);
-                                    }
-                                    mating.ToMate();
-                                    (status, prevStatus) = (prevStatus, Status.MATE);
-                                }
-                            }
-                            if (distanceToTarget < 5f)
-                            {
-                                if (prevStatus == Status.SEARCH_FOOD)
-                                {
-                                    eat.StartEating();
-                                    status = Status.EAT;
-
-                                }
-                                else if (sensor.targetMask == LayerMask.GetMask("Drink"))
-                                {
-                                    drink.StartDrinking();
-                                    status = Status.DRINK;
-                                }
-                            }
+                            setTargetLayerToEat();
+                            status = Status.SEARCH_FOOD;
+                        }
+                        else if (!(reproduction.isFertile && mating.enableMating) || drink.IsThirsty())
+                        {
+                            sensor.targetMask = LayerMask.GetMask("Drink");
+                            status = Status.SEARCH_DRINK;
                         }
                         else
                         {
-                            (status, prevStatus) = (prevStatus, Status.WANDER);
+                            setTargetLayerToMate();
+                            status = Status.SEARCH_MATE;
                         }
-                        break;
                     }
-                case Status.EAT:
-                case Status.DRINK:
-                case Status.MATE:
+                    if (targetRef != null)
                     {
-                        if (targetRef == null)
+                        (prevStatus, status) = (status, Status.MOVE_TOWARDS);
+                    }
+                    break;
+                }
+            case Status.MOVE_TOWARDS:
+                {
+                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (targetRef != null)
+                    {
+                        float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
+                        if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f)      // TODO: allat meret fuggo
                         {
-                            sensor.targetMask = LayerMask.GetMask("None");
-                            (prevStatus, status) = (status, Status.WANDER);
+                            Animal mate = targetRef.GetComponent<Animal>();
+                            if (mate != null)
+                            {
+                                if (mate.status == Status.WAIT)
+                                {
+                                    mate.mating.ToMate();
+                                    (mate.status, mate.prevStatus) = (mate.prevStatus, Status.WANDER);
+                                }
+                                mating.ToMate();
+                                (status, prevStatus) = (prevStatus, Status.MATE);
+                            }
                         }
-                        break;
+                        if (distanceToTarget < 5f)
+                        {
+                            if (prevStatus == Status.SEARCH_FOOD)
+                            {
+                                eat.StartEating();
+                                status = Status.EAT;
+
+                            }
+                            else if (sensor.targetMask == LayerMask.GetMask("Drink"))
+                            {
+                                drink.StartDrinking();
+                                status = Status.DRINK;
+                            }
+                        }
                     }
-                default:
+                    else
                     {
-                        break;
+                        (status, prevStatus) = (prevStatus, Status.WANDER);
                     }
-            }
-            decideCnt = 0;
+                    break;
+                }
+            case Status.EAT:
+            case Status.DRINK:
+            case Status.MATE:
+                {
+                    if (targetRef == null)
+                    {
+                        sensor.targetMask = LayerMask.GetMask("None");
+                        (prevStatus, status) = (status, Status.WANDER);
+                    }
+                    break;
+                }
+            default:
+                {
+                    break;
+                }
         }
     }
 }

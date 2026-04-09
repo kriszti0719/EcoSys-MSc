@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
 
 public class AnimalSpawner : Spawner
 {
@@ -32,13 +33,16 @@ public class AnimalSpawner : Spawner
 
     private int BunnyNameCntr;
     private int FoxNameCntr;
-
     private int FoxCntr;
     private int BunnyCntr;
 
-    public List<Bunny> rabbits = new List<Bunny>();
-    public List<Fox> foxes = new List<Fox>();
-    public List<ScheduledTask> ScheduledTasks = new List<ScheduledTask>();
+    public List<Animal> animals = new List<Animal>();
+    public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
+
+    [Header("Counter")]
+    public int maxStepCnt = 8;
+    public int maxDecideCnt = 2;
+    public int maxAfingCnt = 50;
 
     public override void Generate()
     {
@@ -52,16 +56,40 @@ public class AnimalSpawner : Spawner
         animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
         SpawnAnimals(animal, amount2);
 
-        //ScheduledTask decide = new ScheduledTask(
-        //    _name: "Decide",
-        //    _interval: 8f,
-        //    _timer: 0f,
-        //    _action: () =>
-        //    {
-        //        foreach (var r in rabbits)
-        //            r.Decide();
-        //    });
-        //ScheduledTasks.Add(decide);
+        AddTasks();
+    }
+    private void AddTasks()
+    {
+        ScheduledTask decide = new ScheduledTask(
+            _name: "Decide",
+            _interval: maxDecideCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals)
+                    a.Decide();
+            });
+        scheduledTasks.Add(decide);
+        ScheduledTask step = new ScheduledTask(
+            _name: "Step",
+            _interval: maxStepCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals)
+                    a.Step();
+            });
+        scheduledTasks.Add(step);
+        ScheduledTask aging = new ScheduledTask(
+            _name: "Age",
+            _interval: maxStepCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals)
+                    a.Step();
+            });
+        scheduledTasks.Add(step);
     }
     public override void Clear()
     {
@@ -70,8 +98,8 @@ public class AnimalSpawner : Spawner
             DestroyImmediate(transform.GetChild(0).gameObject);
         }
 
-        rabbits.Clear();
-        foxes.Clear();
+        animals.Clear();
+        scheduledTasks.Clear();
     }
     protected virtual void Start()
     {
@@ -82,6 +110,22 @@ public class AnimalSpawner : Spawner
         BunnyCntr = amount2;
 
         StartCoroutine(RegisterPopulation());
+    }
+    void Update()
+    {
+        float dt = Time.deltaTime;
+
+        foreach (var task in scheduledTasks)
+        {
+            task.timer += dt;
+
+            if (task.timer >= task.interval)
+            {
+                task.action?.Invoke();
+
+                task.timer -= task.interval;
+            }
+        }
     }
     private void SpawnAnimals(GenerateAnimal animal, int amount)
     {
@@ -121,7 +165,7 @@ public class AnimalSpawner : Spawner
                     instantiatedPrefab.name = $"{animal.species}_{BunnyNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
                     Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
-                    rabbits.Add(instantiatedBunny);
+                    animals.Add(instantiatedBunny);
 
                     isMale(instantiatedBunny, instantiatedPrefab);
                     changeBunnyColor(instantiatedBunny.isMale, instantiatedPrefab);
@@ -142,7 +186,7 @@ public class AnimalSpawner : Spawner
                     instantiatedPrefab.name = $"{animal.species}_{FoxNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
                     Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
-                    foxes.Add(instantiatedFox);
+                    animals.Add(instantiatedFox);
 
                     isMale(instantiatedFox, instantiatedPrefab);
                     if (animal.mother != null)
@@ -326,17 +370,6 @@ public class AnimalSpawner : Spawner
     public void RemoveAnimal(Animal animal)
     {
         DebugLogger.RegisterDeath(step: step, animal: animal);
-        switch (animal.species)
-        {
-            case Species.BUNNY:
-                if (animal is Bunny bunny)
-                    rabbits.Remove(bunny);
-                break;
-
-            case Species.FOX:
-                if (animal is Fox fox)
-                    foxes.Remove(fox);
-                break;
-        }
+        animals.Remove(animal);
     }
 }
