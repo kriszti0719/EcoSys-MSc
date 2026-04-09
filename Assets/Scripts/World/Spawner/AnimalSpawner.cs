@@ -1,6 +1,7 @@
 ﻿using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,27 +30,48 @@ public class AnimalSpawner : Spawner
 
     protected int step = 0;
 
-    private string filePathDeathData;
-    private string filePathPopulation;
-
     private int BunnyNameCntr;
     private int FoxNameCntr;
 
     private int FoxCntr;
     private int BunnyCntr;
 
+    public List<Bunny> rabbits = new List<Bunny>();
+    public List<Fox> foxes = new List<Fox>();
+    public List<ScheduledTask> ScheduledTasks = new List<ScheduledTask>();
 
-
-    public int getStep() => step;
     public override void Generate()
     {
         Clear();
+
         BunnyNameCntr = 0;
         FoxNameCntr = 0;
         GenerateAnimal animal = new GenerateAnimal(null, null, Species.FOX, animalSizeMin, animalSizeMax);
         SpawnAnimals(animal, amount);
+
         animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
         SpawnAnimals(animal, amount2);
+
+        //ScheduledTask decide = new ScheduledTask(
+        //    _name: "Decide",
+        //    _interval: 8f,
+        //    _timer: 0f,
+        //    _action: () =>
+        //    {
+        //        foreach (var r in rabbits)
+        //            r.Decide();
+        //    });
+        //ScheduledTasks.Add(decide);
+    }
+    public override void Clear()
+    {
+        while (transform.childCount != 0)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
+
+        rabbits.Clear();
+        foxes.Clear();
     }
     protected virtual void Start()
     {
@@ -99,6 +121,7 @@ public class AnimalSpawner : Spawner
                     instantiatedPrefab.name = $"{animal.species}_{BunnyNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
                     Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
+                    rabbits.Add(instantiatedBunny);
 
                     isMale(instantiatedBunny, instantiatedPrefab);
                     changeBunnyColor(instantiatedBunny.isMale, instantiatedPrefab);
@@ -119,6 +142,7 @@ public class AnimalSpawner : Spawner
                     instantiatedPrefab.name = $"{animal.species}_{FoxNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
                     Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
+                    foxes.Add(instantiatedFox);
 
                     isMale(instantiatedFox, instantiatedPrefab);
                     if (animal.mother != null)
@@ -283,7 +307,6 @@ public class AnimalSpawner : Spawner
             }
         }
     }
-
     IEnumerator RegisterPopulation()
     {
         DebugLogger.setLogPath();
@@ -298,6 +321,22 @@ public class AnimalSpawner : Spawner
 
             DebugLogger.RegisterPopulation(step, FoxCntr, BunnyCntr);
             yield return new WaitForSeconds(10f);
+        }
+    }
+    public void RemoveAnimal(Animal animal)
+    {
+        DebugLogger.RegisterDeath(step: step, animal: animal);
+        switch (animal.species)
+        {
+            case Species.BUNNY:
+                if (animal is Bunny bunny)
+                    rabbits.Remove(bunny);
+                break;
+
+            case Species.FOX:
+                if (animal is Fox fox)
+                    foxes.Remove(fox);
+                break;
         }
     }
 }

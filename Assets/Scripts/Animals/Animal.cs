@@ -7,10 +7,10 @@ using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
+    // TODO: remove (only for testing purposes)
     public int triedForBaby = 0;
     public int gaveBirth = 0;
     public int kids = 0;
-    // TODO: remove
 
     public CauseOfDeath cause;
     public Status status;

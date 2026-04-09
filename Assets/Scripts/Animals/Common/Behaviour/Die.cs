@@ -16,8 +16,8 @@ public class Die : MonoBehaviour
     }
     public void Destroy()
     {
-        DebugLogger.RegisterDeath(step: animal.GetComponentInParent<AnimalSpawner>().getStep(), animal: animal);
-        
+        animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
+
         // For testing purposes only
         //DebugLogger.ShowNotification("Someone died :(");
 
@@ -26,6 +26,7 @@ public class Die : MonoBehaviour
             Destroy(g);
         }
         Destroy(gameObject);
+        
     }
     public void CatchPrey()
     {

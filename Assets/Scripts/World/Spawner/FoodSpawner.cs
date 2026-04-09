@@ -43,6 +43,13 @@ public class FoodSpawner : Spawner
         SpawnBunnyFood(prefab5, amount5);
         SpawnBunnyFood(prefab6, amount6);
     }
+    public override void Clear()
+    {
+        while (transform.childCount != 0)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
+    }
     protected virtual void Start()
     {
         StartCoroutine(ReSpawn());
