@@ -90,7 +90,7 @@ public abstract class Animal : MonoBehaviour
 
         reproduction.setReproduction(
             _reproductiveUrge: UnityEngine.Random.Range(30, 50),
-            _pregnancyDuration: UnityEngine.Random.Range(30, 60),
+            _pregnancyDuration: UnityEngine.Random.Range(3, 6),
             _isFertile: true
         );
         mating.enableMating = true;
@@ -247,21 +247,22 @@ public abstract class Animal : MonoBehaviour
                     if (rest.ChanceToRest()) prevStatus = status = Status.REST;
                     if (targetRef != null)
                     {
-                        Animal tmp = targetRef.GetComponent<Animal>();
-                        if (tmp == null || tmp.isMale == this.isMale || !tmp.mating.IsAcceptable(this))
+                        Animal targetedMate = targetRef.GetComponent<Animal>();
+                        if (targetedMate == null || targetedMate.isMale == this.isMale || !targetedMate.mating.IsAcceptable(this))
                         {
                             this.rejectedBy.Add(targetRef);
                             targetRef = null;
                         }
                         else
                         {
-                            tmp.reproduction = targetRef.GetComponent<Reproduction>();
-                            reproduction.mate = tmp;
-                            tmp.reproduction.mate = this;
+                            targetedMate.reproduction = targetRef.GetComponent<Reproduction>();
+                            reproduction.mate = targetedMate;
+                            targetedMate.reproduction.mate = this;
 
                             bool canSee = sensor.FieldOfViewCheck(getTargetLayerToMate(), reproduction.mate.transform.gameObject);
                             if (!canSee)
                             {
+                                DebugLogger.Error("Hogy?");
                                 sensor.targetMask = LayerMask.GetMask("None");
                                 targetRef = null;
                                 (prevStatus, status) = (status, Status.WAIT);
@@ -272,6 +273,21 @@ public abstract class Animal : MonoBehaviour
                                 targetRef = reproduction.mate.transform.gameObject;
                                 (prevStatus, status) = (status, Status.MOVE_TOWARDS);
                             }
+
+                            bool canSeeMe = targetedMate.sensor.FieldOfViewCheck(getTargetLayerToMate(), targetedMate.reproduction.mate.transform.gameObject);
+                            if (!canSeeMe)
+                            {
+                                targetedMate.sensor.targetMask = LayerMask.GetMask("None");
+                                targetedMate.targetRef = null;
+                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.WAIT);
+                            }
+                            else
+                            {
+                                setTargetLayerToMate();
+                                targetedMate.targetRef = targetedMate.reproduction.mate.transform.gameObject;
+                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
+                            }
+
                         }
                     }
                     break;
@@ -311,18 +327,18 @@ public abstract class Animal : MonoBehaviour
                     if (targetRef != null)
                     {
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
-                        if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f)      // TODO: allat meret fuggo
+                        if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f) 
                         {
-                            Animal mate = targetRef.GetComponent<Animal>();
-                            if (mate != null)
+                            reproduction.mate = targetRef.GetComponent<Animal>();
+                            if (reproduction.mate != null)
                             {
-                                if (mate.status == Status.WAIT)
+                                if (reproduction.mate.status == Status.WAIT)
                                 {
-                                    mate.mating.ToMate();
-                                    (mate.status, mate.prevStatus) = (mate.prevStatus, Status.WANDER);
+                                    reproduction.mate.mating.ToMate();
+                                    (reproduction.mate.prevStatus, reproduction.mate.status) = (reproduction.mate.status, Status.MATE);
                                 }
                                 mating.ToMate();
-                                (status, prevStatus) = (prevStatus, Status.MATE);
+                                (prevStatus, status) = (status, Status.MATE);
                             }
                         }
                         if (distanceToTarget < 5f)
@@ -333,7 +349,7 @@ public abstract class Animal : MonoBehaviour
                                 status = Status.EAT;
 
                             }
-                            else if (sensor.targetMask == LayerMask.GetMask("Drink"))
+                            else if (prevStatus == Status.SEARCH_DRINK)
                             {
                                 drink.StartDrinking();
                                 status = Status.DRINK;
@@ -343,17 +359,6 @@ public abstract class Animal : MonoBehaviour
                     else
                     {
                         (status, prevStatus) = (prevStatus, Status.WANDER);
-                    }
-                    break;
-                }
-            case Status.EAT:
-            case Status.DRINK:
-            case Status.MATE:
-                {
-                    if (targetRef == null)
-                    {
-                        sensor.targetMask = LayerMask.GetMask("None");
-                        (prevStatus, status) = (status, Status.WANDER);
                     }
                     break;
                 }

@@ -68,7 +68,7 @@ public class Sensor : MonoBehaviour
                 if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
                     float camouflage = targetAnimal != null ? targetAnimal.sensor.camouflage : 0f;
-                    float detectionChance = Mathf.Clamp01(1f - camouflage);
+                    float detectionChance = 1f - Mathf.Clamp01(camouflage / 100f);
 
                     if (Random.value > detectionChance)
                         continue;

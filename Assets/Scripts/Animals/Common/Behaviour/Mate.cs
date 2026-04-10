@@ -45,21 +45,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 currentMatingUrge--;
             }
         }
-        public void Mating()
-        {
-            animal.triedForBaby++;
-        }
         public void ToMate()
         {
             animal.breakCounter = mateDuration;
+            animal.triedForBaby++;
         }
         public bool IsAcceptable(Animal mate)
         {
-            //int charmDifference = mate.charm - charm; // Jó eséllyel pozitív, de lehet - is
-            //float matingUrgeDifference = currentMatingUrge / 100f;
-            //float acceptanceChance = Mathf.Clamp01(0.5f + charmDifference * 0.01f + matingUrgeDifference); 
-            //float randomValue = Random.value;
-
             bool accepted = (mate.mating.charm + (100 - currentMatingUrge)) < charm;
             return accepted;
         }

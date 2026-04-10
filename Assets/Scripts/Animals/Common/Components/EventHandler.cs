@@ -90,14 +90,20 @@ public class EventHandler : MonoBehaviour
             }
             case Status.EAT:
             case Status.DRINK:
+                {
+                    animal.targetRef = null;
+                    animal.sensor.targetMask = LayerMask.GetMask("None");
+                    (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
+                    break;
+                }
             case Status.MATE:
-            {
-                animal.targetRef = null;
-                animal.sensor.targetMask = LayerMask.GetMask("None");
-                (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
-                animal.mating.IsSuccess();
-                break;
-            }
+                {
+                    animal.targetRef = null;
+                    animal.sensor.targetMask = LayerMask.GetMask("None");
+                    (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
+                    animal.mating.IsSuccess();
+                    break;
+                }
         }
 
     }
