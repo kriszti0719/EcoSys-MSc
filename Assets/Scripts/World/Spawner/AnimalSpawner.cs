@@ -118,6 +118,14 @@ public class AnimalSpawner : Spawner
 
         DebugLogger.setLogPath();
         AddTasks();
+
+        InfluxLogger.Init(
+        _url: "http://localhost:8086",
+        _token: "KeWK_betKl_J8Aqgnd6Nh-D2UrUabSBsfjPR-pu_C8QA9UX6y6V3z_lZNMm3jIDCXSeE4aWW_KBGIIe4GTcyUA==",
+        _org: "EcoSys",
+        _bucket: "ecosys",
+        runner: this
+    );
     }
     void Update()
     {

@@ -14,7 +14,7 @@ public enum Species
 
 public static class SpeciesExtensions
 {
-    public static string ToPrint(this Species species)
+    public static string ToString(this Species species)
     {
         return species switch
         {

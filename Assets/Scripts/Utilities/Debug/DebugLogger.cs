@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using System.Globalization;
 
 
 public static class DebugLogger
@@ -16,6 +17,7 @@ public static class DebugLogger
     private static string filePathDeathLatest;
     private static string filePathPopulationLatest;
     private static string filePathFoodLatest;
+    private static string timestamp;
 
     public static void setLogPath()
     {
@@ -25,7 +27,7 @@ public static class DebugLogger
             string dataDirectory = Path.Combine(projectRoot, ".logs");
 
             Directory.CreateDirectory(dataDirectory);
-            string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
@@ -117,43 +119,45 @@ public static class DebugLogger
         using (StreamWriter writer = new StreamWriter(filePathDeath, true))
         {
             string dataLine = $"{step};" +
-                $"{animal.species.ToPrint()};" +
-                $"{animal.cause.ToPrint()};" +
-                $"{animal.aging.currentAge}" +
-                $";{animal.movement.moveSpeed};" +
+                $"{animal.species.ToString()};" +
+                $"{animal.cause.ToString()};" +
+                $"{animal.aging.currentAge};" +
+                $"{animal.movement.moveSpeed};" +
                 $"{animal.sensor.radius};" +
                 $"{animal.reproduction.reproductiveUrge};" +
                 $"{animal.aging.lifeSpan};{animal.mating.charm};" +
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +
-                $"{animal.drink.critical}" +
-                $"{animal.triedForBaby}" +
-                $"{animal.gaveBirth}" +
+                $"{animal.drink.critical};" +
+                $"{animal.triedForBaby};" +
+                $"{animal.gaveBirth};" +
                 $"{animal.kids}"
                 ;
             writer.WriteLine(dataLine);
         }
-        using (StreamWriter writer = new StreamWriter(filePathDeathLatest, true))
-        {
-            string dataLine = $"{step};" +
-                $"{animal.species.ToPrint()};" +
-                $"{animal.cause.ToPrint()};" +
-                $"{animal.aging.currentAge}" +
-                $";{animal.movement.moveSpeed};" +
-                $"{animal.sensor.radius};" +
-                $"{animal.reproduction.reproductiveUrge};" +
-                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
-                $"{animal.reproduction.pregnancyDuration};" +
-                $"{animal.prevStatus};" +
-                $"{animal.eat.critical};" +
-                $"{animal.drink.critical}" +
-                $"{animal.triedForBaby}" +
-                $"{animal.gaveBirth}" +
-                $"{animal.kids}"
-                ;
-            writer.WriteLine(dataLine);
-        }
+
+        string F(float v) => v.ToString(CultureInfo.InvariantCulture);
+
+        string line =
+            $"death,run_id={timestamp},species={animal.species.ToString()},cause={animal.cause.ToString()} " +
+            $"age={F(animal.aging.currentAge)}," +
+            $"speed={F(animal.movement.moveSpeed)}," +
+            $"sight={F(animal.sensor.radius)}," +
+            $"reproductiveUrge={F(animal.reproduction.reproductiveUrge)}," +
+            $"lifeSpan={F(animal.aging.lifeSpan)}," +
+            $"charm={F(animal.mating.charm)}," +
+            $"pregnancyDuration={F(animal.reproduction.pregnancyDuration)}," +
+            $"starving={F(animal.eat.critical)}," +
+            $"drying={F(animal.drink.critical)}," +
+            $"triedForBaby={animal.triedForBaby}," +
+            $"gaveBirth={animal.gaveBirth}," +
+            $"kids={animal.kids}," +
+            $"step={step}"
+            ;
+
+        InfluxLogger.Log(line);
+        DebugLogger.Info(line);
     }
 }
 

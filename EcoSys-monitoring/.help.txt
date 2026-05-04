@@ -1,0 +1,33 @@
+docker ps
+
+docker-compose up -d    // elindít
+docker-compose stop     // leállít
+docker-compose down     // leállít + törli a konténereket
+docker-compose down -v  // leállít + törli az adatot is
+
+HA login kell, login után új PowerShellt kell nyitni
+
+docker ps -a
+docker logs influxdb
+
+docker stop influxdb
+docker rm influxdb
+
+docker pull hello-world
+docker pull influxdb:2.7
+
+https://www.youtube.com/watch?v=5TIgdhL9nj0
+
+admin
+password
+EcoSys
+ecosys
+
+KeWK_betKl_J8Aqgnd6Nh-D2UrUabSBsfjPR-pu_C8QA9UX6y6V3z_lZNMm3jIDCXSeE4aWW_KBGIIe4GTcyUA==
+
+curl -X POST "http://localhost:8086/api/v2/write?org=EcoSys&bucket=ecosys&precision=s" \
+  -H "Authorization: Token KeWK_betKl_J8Aqgnd6Nh-D2UrUabSBsfjPR-pu_C8QA9UX6y6V3z_lZNMm3jIDCXSeE4aWW_KBGIIe4GTcyUA==" \
+  --data-raw "population,species=bunny value=10"
+
+influx config create --token KeWK_betKl_J8Aqgnd6Nh-D2UrUabSBsfjPR-pu_C8QA9UX6y6V3z_lZNMm3jIDCXSeE4aWW_KBGIIe4GTcyUA==
+$ influx delete   --bucket ecosys   --org EcoSys   --start 2026-04-26T00:00:00Z   --stop 2026-04-30T00:00:00Z   --predicate '_measurement="death" AND run_id="20260428_153012"'

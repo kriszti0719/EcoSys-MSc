@@ -16,7 +16,7 @@ public enum CauseOfDeath
 
 public static class CauseOfDeathExtensions
 {
-    public static string ToPrint(this CauseOfDeath cause)
+    public static string ToString(this CauseOfDeath cause)
     {
         return cause switch
         {
