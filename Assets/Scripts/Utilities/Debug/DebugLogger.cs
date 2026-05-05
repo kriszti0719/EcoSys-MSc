@@ -14,9 +14,6 @@ public static class DebugLogger
     private static string filePathDeath;
     private static string filePathPopulation;
     private static string filePathFood;
-    private static string filePathDeathLatest;
-    private static string filePathPopulationLatest;
-    private static string filePathFoodLatest;
     private static string timestamp;
 
     public static void setLogPath()
@@ -31,9 +28,6 @@ public static class DebugLogger
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
-            filePathDeathLatest = Path.Combine(dataDirectory, $"latest_DeathData.csv");
-            filePathPopulationLatest = Path.Combine(dataDirectory, $"latest_PopulationData.csv");
-            filePathFoodLatest = Path.Combine(dataDirectory, $"latest_FoodData.csv");
 
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
@@ -44,18 +38,6 @@ public static class DebugLogger
                 writer.WriteLine("Time;BunnyPop;FoxPop");
             }
             using (StreamWriter writer = new StreamWriter(filePathFood))
-            {
-                writer.WriteLine("Time;Food");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathDeathLatest))
-            {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathPopulationLatest))
-            {
-                writer.WriteLine("Time;BunnyPop;FoxPop");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathFoodLatest))
             {
                 writer.WriteLine("Time;Food");
             }
@@ -98,18 +80,10 @@ public static class DebugLogger
         {
             writer.WriteLine($"{step};{counterBunny};{counterFox}");
         }
-        using (StreamWriter writer = new StreamWriter(filePathPopulationLatest, true))
-        {
-            writer.WriteLine($"{step};{counterBunny};{counterFox}");
-        }
     }
     public static void RegisterFood(int cnt, int step = 1)
     {
         using (StreamWriter writer = new StreamWriter(filePathFood, true))
-        {
-            writer.WriteLine($"{step};{cnt}");
-        }
-        using (StreamWriter writer = new StreamWriter(filePathFoodLatest, true))
         {
             writer.WriteLine($"{step};{cnt}");
         }

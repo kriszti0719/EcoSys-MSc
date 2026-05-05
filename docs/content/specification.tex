@@ -1,0 +1,54 @@
+\chapter{A feladatkiírás pontosítása és részletes elemzése}
+\label{chap:elemzes}
+
+Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét műszaki követelményekre. A feladat nem csupán egy működő szimuláció elkészítése, hanem egy olyan keretrendszer kialakítása, amely szoftvertechnológiai szempontból is megállja a helyét.
+
+\section{Funkcionális követelmények}
+
+A rendszernek a következő alapvető funkciókat kell ellátnia:
+
+\begin{itemize}
+    \item \textbf{Ágensalapú szimulációs környezet:} A Unity3D motoron belül egy lehatárolt, 3D-s élettér biztosítása, ahol az egyedek interakcióba léphetnek egymással és a környezettel.
+    \item \textbf{Többszintű populációdinamika:} Legalább két faj (préda és ragadozó) jelenléte, amelyek életciklusuk során táplálkoznak, szaporodnak és elpusztulnak.
+    \item \textbf{Genetikai öröklődés modellje:} Az egyedek tulajdonságainak (sebesség, látótávolság, energiafelhasználás) genotípus alapú tárolása és mutációval kombinált átörökítése az utódokba.
+    \item \textbf{Eseménykezelés és naplózás:} A szimuláció során bekövetkező releváns események (születés, halál, vadászat) detektálása és strukturált formában történő rögzítése.
+    \item \textbf{Külső adatkapcsolat:} A kinyert adatok HTTP protokollon keresztül történő továbbítása egy külső tároló/elemző egység felé.
+\end{itemize}
+
+\section{Nem-funkcionális követelmények}
+
+A szoftver minőségére vonatkozó elvárások:
+
+\begin{itemize}
+    \item \textbf{Kiterjeszthetőség (Extensibility):} Az architektúrának lehetővé kell tennie új fajok vagy viselkedésminták hozzáadását a meglévő kód bázis minimális módosításával (Open/Closed Principle).
+    \item \textbf{Teljesítmény és skálázhatóság:} A szimulációnak stabil képkockasebesség mellett kell futnia több száz aktív ágens jelenléte esetén is. Ehhez szükséges az állapotellenőrzések (polling) kiváltása eseményvezérelt logikával.
+    \item\textbf{Karbantarthatóság:} A BSc szakaszban azonosított „god class” struktúra felszámolása, a felelősségi körök szétválasztása (Single Responsibility Principle).
+    \item \textbf{Valós idejűség:} A statisztikai adatok gyűjtése nem okozhat észrevehető akadást vagy késleltetést a vizuális megjelenítésben.
+\end{itemize}
+
+\section{A szimulációs paraméterek specifikációja}
+
+A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyeket a rendszernek kezelnie kell. Ezek a következők:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Kategória} & \textbf{Paraméterek} \\ \hline
+Környezet & Terület mérete, táplálék (fű) újratermelődési rátája. \\ \hline
+Egyed (Genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb. \\ \hline
+Populáció & Kezdeti egyedszám, mutációs ráta. \\ \hline
+Rendszer & Logolási gyakoriság, szimulációs időlépték (Timescale). \\ \hline
+\end{tabular}
+\caption{A szimuláció kulcsparaméterei}
+\label{table:parameters}
+\end{table}
+
+\section{Felhasználói esetek (Use Cases)}
+
+A rendszer elsődleges felhasználója a kutató/hallgató, aki a következő műveleteket végzi:
+\begin{enumerate}
+	\item  \textbf{Konfiguráció:} A szimuláció indítása előtt beállítja a kezdőparamétereket.
+	\item \textbf{Megfigyelés:} Valós időben követi a vizuális térben zajló folyamatokat.
+	\item \textbf{Elemzés:} A futás után vagy alatt a generált grafikonok és statisztikák alapján következtetéseket von le a populáció életképességéről.
+\end{enumerate}

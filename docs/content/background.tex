@@ -1,0 +1,35 @@
+\chapter{Előzmények és irodalomkutatás}
+\label{chap:irodalom}
+
+A szimulációs rendszerek tervezése előtt alapos irodalomkutatást végeztem az \textit{ACM Digital Library} adatbázisában, valamint megvizsgáltam a területen elérhető népszerű szoftveres megoldásokat és oktatási célú projekteket. A kutatás célja az volt, hogy feltérképezzem az ágensalapú modellezés (Agent-Based Modeling – ABM) aktuális módszereit és a döntéshozatali algoritmusok implementációs lehetőségeit.
+
+\section{Irodalomkutatás és tudományos előzmények}
+
+A kutatás során több olyan publikációt is tanulmányoztam, amelyek közvetlen hatással voltak a saját rendszerem logikai felépítésére:
+
+\begin{itemize}
+    \item \textbf{Evolving predator and prey behaviours (Genetic Programming):} Ez a munka rávilágított arra, hogy a ragadozó-préda interakciók nem csupán determinisztikus szabályokkal, hanem genetikus programozással és döntési fákkal is modellezhetők. Ebből vontam le azt a következtetést, hogy az egyedek viselkedését érdemes különálló paraméterkészlettel (genotípussal) felruházni.
+
+    \item \textbf{Wolf sheep predation (Instructional exercise):} Ez a tanulmány a klasszikus NetLogo-alapú modellek modern újraimplementálását mutatja be. Megerősített abban, hogy a Unity3D alkalmasabb a komplexebb, nagy egyedszámú vizualizációkhoz, mint a hagyományos oktatási keretrendszerek.
+    
+    \item \textbf{Fuzzy Cognitive Map (FCM) alapú viselkedésmodellezés:} Ez a publikáció volt a legnagyobb hatással a projektre. Az FCM alkalmazása lehetővé teszi, hogy az ágensek döntéshozatala ne merev „if-else” ágakból álljon, hanem egy súlyozott, kognitív térkép alapján hozzanak árnyaltabb döntéseket (pl. az éhség és a félelemérzet egyensúlya). Ezt a logikát a saját fejlesztésem során a ragadozók viselkedésénél adaptáltam.
+\end{itemize}
+
+\section{Hasonló alkotások és inspirációk}
+
+A szoftverfejlesztői közösségben több figyelemre méltó kísérlet is létezik, amelyek a Unity motort használják ökológiai szimulációra.
+
+\begin{itemize}
+    \item \textbf{Sebastian Lague ökoszisztéma-projektje:} A diplomamunka alapötletét Sebastian Lague munkássága adta. Az ő megközelítése kiváló példát mutatott a látómező-alapú érzékelésre és a Unity-n belüli ágensmozgatásra. Az én megoldásom ezen túllépve az eseményvezérelt architektúrára és a külső adatbázis-alapú statisztikai elemzésre helyezi a fókuszt.
+    
+    \item \textbf{Egyéb implementációk:} Vizsgáltam továbbá olyan megoldásokat, mint a \textit{Primer} vagy \textit{Peenhead} által publikált videók, amelyek a neurális hálók és a populációdinamika kapcsolatát feszegetik. Ezekkel összehasonlítva az én rendszerem előnye a moduláris, kiterjeszthető osztályhierarchia, amely lehetővé teszi új fajok gyors integrálását.
+\end{itemize}
+
+\section{Következtetések}
+
+Az irodalomkutatás és a hasonló munkák elemzése után az alábbi következtetéseket vontam le, amelyek meghatározták a tervezési fázist:
+\begin{enumerate}
+    \item A merev állapotgépek helyett rugalmasabb döntéshozatali mechanizmus (pl. eseményvezérelt logika vagy FCM) szükséges.
+    \item A vizuális reprezentáció mellett a kinyerhető adatok (telemetria) tudományos igényű gyűjtése elengedhetetlen a validáláshoz.
+    \item A genetikai algoritmusok alkalmazása során a mutációs ráta finomhangolása kritikus a populáció összeomlásának elkerülése érdekében.
+\end{enumerate}

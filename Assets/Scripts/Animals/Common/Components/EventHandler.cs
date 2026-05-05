@@ -78,11 +78,11 @@ public class EventHandler : MonoBehaviour
     {
         switch (animal.status)
         {
-            case Status.CAUGHT:
-            {
-                animal.die.Destroy();
-                break;
-            }
+            //case Status.CAUGHT:
+            //{
+            //    animal.die.Destroy();
+            //    break;
+            //}
             case Status.REST:
             {
                 animal.status = animal.prevStatus;
