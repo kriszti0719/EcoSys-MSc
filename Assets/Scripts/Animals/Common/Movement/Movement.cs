@@ -15,7 +15,6 @@ public class Movement : MonoBehaviour
     // Define the minimum and maximum Y positions where the bunnies can wander
     public float minY = 21f;
     public Animal animal;
-    public bool isDying = false;
 
     public bool isTurningAway;
 
@@ -26,22 +25,11 @@ public class Movement : MonoBehaviour
     private float rotAngle;
     private float rotTime;
 
-    public int passedSeconds = 0;
-
-    //Flags 
-    private bool wanderInitialized = false;
-    private bool turningAwayEnded = true;
-    private bool turningEnded = true;
-
     public void StartMoving()
     {
         wanderingCoroutine = null;
         animal = GetComponent<Animal>();
         rotSpeed = moveSpeed * 30;
-    }
-    void Start()
-    {
-        animal.OnDeath += HandleDeathAnimation;
     }
     private void Update()
     {
@@ -58,13 +46,6 @@ public class Movement : MonoBehaviour
                 StopWander();            
             MovingTowards();
         }
-    }
-    public void HandleDeathAnimation()
-    {
-        if (wanderingCoroutine != null)
-            StopWander();
-        isDying = true;
-        StartCoroutine(Die());
     }
     private void Wandering()
     {
@@ -165,102 +146,6 @@ public class Movement : MonoBehaviour
         isWandering = false;
         wanderingCoroutine = null;
     }
-    private void StartWander()
-    {
-        walkTime = Random.Range(5, 7);
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 180);
-
-        wanderInitialized = true;
-    }
-    private void StartWalking()
-    {
-        isWalking = true;
-    }
-    private void StopWalking()
-    {
-        isWalking = false;
-    }
-    private void StartTurning()
-    {
-        rotateDir = Random.Range(0, 2);
-        if (rotateDir == 0)
-        {
-            isRotatingLeft = true;
-        }
-        else
-        {
-            isRotatingRight = true;
-        }
-        turningEnded = false;
-    }
-    private void StopTurning()
-    {
-        isRotatingLeft = false;
-        isRotatingRight = false;
-
-        isWandering = false;
-        wanderingCoroutine = null;
-
-        turningEnded = true;
-    }
-    private void StartTurningAway()
-    {
-        rotAngle = Random.Range(90f, 140f);
-        rotTime = rotAngle / rotSpeed;
-
-        isRotatingLeft = true;
-
-        turningAwayEnded = false;
-    }
-    private void StopTurningAway()
-    {
-        isRotatingLeft = false;
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 50f);
-        walkTime = Random.Range(5, 10);
-        rotTime = rotAngle / rotSpeed;
-
-        turningAwayEnded = true;
-    }
-    public void WanderTo()
-    {
-        if (!wanderInitialized)
-        {
-            StartWander();
-
-            if (isTurningAway)
-            {
-                StartTurningAway();
-            }
-            else
-            {
-                rotTime = rotAngle / rotSpeed;
-                StartWalking();
-            }
-        }
-        else if (!turningAwayEnded && passedSeconds >= rotTime * 10)
-        {
-            StopTurningAway();
-            StartWalking();
-        }
-        else if (isWalking && (isTurningAway && passedSeconds >= (rotTime + walkTime) * 10) || (!isTurningAway && passedSeconds >= (walkTime) * 10))
-        {
-            StopWalking();
-            if (isTurningAway)
-            {
-                isTurningAway = false;
-            }
-            StartTurning();
-        }
-        else if (!turningEnded && (isTurningAway && passedSeconds >= (rotTime + walkTime + rotTime) * 10) || (isTurningAway && passedSeconds >= (walkTime + rotTime) * 10))
-        {
-            StopTurning();
-            passedSeconds = 0;
-            isTurningAway = false;
-        }
-        passedSeconds++;
-    }
     public void ChangeDirection(float amount, float all)
     {
         float direction = 360 / amount * all;
@@ -287,20 +172,5 @@ public class Movement : MonoBehaviour
                 isWalking = true;
             }
         }
-    }
-    private IEnumerator Die()
-    {
-        yield return new WaitForSeconds(1f);
-
-        animal.barsContainer.transform.SetParent(null);
-
-        Quaternion targetRotation = Quaternion.Euler(0f, 0f, 90f);
-        while (transform.rotation != targetRotation)
-        {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);
-            yield return null;
-        }
-        yield return new WaitForSeconds(1f);
-        animal.die.Destroy();
     }
 }

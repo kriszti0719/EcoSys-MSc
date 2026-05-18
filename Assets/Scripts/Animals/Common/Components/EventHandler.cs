@@ -24,6 +24,8 @@ public class EventHandler : MonoBehaviour
         {
             animal.cause = CauseOfDeath.HUNGER;
             (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
+            
+            animal.die.Destroy();
         }
     }
     public void HandleThirstCritical()
@@ -36,7 +38,7 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleThirstFull()
     {
-        if (animal.status == Status.EAT) animal.drink.FinishDrinking();
+        if (animal.status == Status.DRINK) animal.drink.FinishDrinking();
         animal.breakCounter = 0;
         HandleBreakEnded();
     }
@@ -78,11 +80,6 @@ public class EventHandler : MonoBehaviour
     {
         switch (animal.status)
         {
-            //case Status.CAUGHT:
-            //{
-            //    animal.die.Destroy();
-            //    break;
-            //}
             case Status.REST:
             {
                 animal.status = animal.prevStatus;

@@ -2,6 +2,7 @@
 using Assets.Scripts.Datatypes;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
@@ -73,7 +74,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.Decide();
             });
         scheduledTasks.Add(decide);
@@ -83,7 +84,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.Step();
             });
         scheduledTasks.Add(step);
@@ -93,7 +94,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.aging.Aging();
             });
         scheduledTasks.Add(age);

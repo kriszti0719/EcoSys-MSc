@@ -56,10 +56,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 OnHungerCritical?.Invoke();
             }
         }
-        //public bool TryEating()
-        //{
-        //    return food.DamageHealth();
-        //}
         public void StartEating()
         {
             food = animal.targetRef.GetComponent<IEdible>();

@@ -48,8 +48,6 @@ public abstract class Animal : MonoBehaviour
 
     public GameObject barsContainer;
 
-    public event System.Action OnDeath;
-    private bool IsDying() => status == Status.DIE && !movement.isDying;
     public Species getSpecies()
     {
         return species;
@@ -150,7 +148,7 @@ public abstract class Animal : MonoBehaviour
     {
         this.prefab = prefab;
         this.color = color;
-        this.rejectedBy.Add(this.GameObject()); ;
+        this.rejectedBy.Add(this.gameObject);
         //TODO: set charm according to color
     }
     protected void Subscribe()
@@ -196,7 +194,6 @@ public abstract class Animal : MonoBehaviour
             if (status != Status.DIE) cause = CauseOfDeath.DROWN;
         }
 
-
         if (!(status == Status.DIE || status == Status.CAUGHT))
         {
             rest.Step();
@@ -209,11 +206,6 @@ public abstract class Animal : MonoBehaviour
             eat.updateBar();
             drink.updateBar();
             mating.updateBar();
-        }
-
-        if (IsDying())
-        {
-            OnDeath?.Invoke();
         }
     }
     public void Decide()

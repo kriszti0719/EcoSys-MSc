@@ -109,8 +109,13 @@ public static class DebugLogger
                 $"{animal.kids}"
                 ;
             writer.WriteLine(dataLine);
+            
+            // RegisterDeathToDb(step, animal);
         }
 
+    }
+    public static void RegisterDeathToDb(int step, Animal animal)
+    {
         string F(float v) => v.ToString(CultureInfo.InvariantCulture);
 
         string line =
@@ -132,8 +137,9 @@ public static class DebugLogger
 
         InfluxLogger.Log(line);
         DebugLogger.Info(line);
-    }
+    } 
 }
+
 
 public static class Notifier
 {
