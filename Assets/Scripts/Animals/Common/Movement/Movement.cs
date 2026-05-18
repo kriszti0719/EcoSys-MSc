@@ -18,7 +18,7 @@ public class Movement : MonoBehaviour
 
     public bool isTurningAway;
 
-    private Coroutine wanderingCoroutine; // Coroutine referencia
+    private Coroutine wanderingCoroutine; // Coroutine ref
 
     private float walkTime;
     private int rotateDir;

@@ -11,6 +11,6 @@ namespace Assets.Scripts
     {
         event Action OnConsumed;
         int getNutrition();
-        void AboutToBeConsumed();
+        void ToBeConsumed();
     }
 }

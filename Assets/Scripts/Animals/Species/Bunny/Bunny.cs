@@ -9,8 +9,6 @@ public class Bunny : Animal, IEdible
 {
     private int eatDuration = 5;
     private int nutrition = 20;
-    private int currentDuration;
-
     public event Action OnConsumed;
 
     protected override void Start()
@@ -47,32 +45,14 @@ public class Bunny : Animal, IEdible
         predators = new List<Species>();
         predators.Add(Species.FOX);
     }
-    public void AboutToBeConsumed()
+    public void ToBeConsumed()
     {
-        cause = CauseOfDeath.CONSUMED;
         (prevStatus, status) = (status, Status.CAUGHT);
-        currentDuration = eatDuration;
-        StartCoroutine(ToBeConsumed());
-    }
-    public IEnumerator ToBeConsumed()
-    {
-        while (currentDuration > 0)
-        {
-            if (OnConsumed != null)
-            {
-                yield return new WaitForSeconds(1f);
-                currentDuration--;
-            }
-            else
-            {
-                yield break;
-            }
-        }
-        OnConsumed?.Invoke();
-        Consumed();
+        Invoke(nameof(Consumed), eatDuration);
     }
     private void Consumed()
     {
-        die.DestroyAnimal();
+        OnConsumed?.Invoke();
+        die.HandleDeath(CauseOfDeath.CONSUMED);
     }
 }

@@ -60,7 +60,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             food = animal.targetRef.GetComponent<IEdible>();
             food.OnConsumed += animal.eventHandler.HandleFoodConsumed;
-            food.AboutToBeConsumed();
+            food.ToBeConsumed();
         }
         public void FinishEating()
         {

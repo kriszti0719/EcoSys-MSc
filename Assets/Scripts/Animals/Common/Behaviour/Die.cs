@@ -16,21 +16,14 @@ public class Die : MonoBehaviour
     }
     public void DestroyAnimal()
     {
-        animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
-
-        // For testing purposes only
         //DebugLogger.ShowNotification("Someone died :(");
+        animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
 
         foreach (GameObject g in animal.destructibles)
         {
             Destroy(g);
         }
         Destroy(gameObject);
-        
-    }
-    public void CatchPrey()
-    {
-        isCaptured = true;
     }
     public void HandleDeath(CauseOfDeath cause)
     {
