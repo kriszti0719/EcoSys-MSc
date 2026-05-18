@@ -23,7 +23,7 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
-        if (animal.status == Status.DIE || animal.status == Status.CAUGHT || animal.status == Status.WAIT)
+        if (animal.status == Status.DIE || animal.status == Status.CAUGHT)
         {
             hasTarget = false;
             return;

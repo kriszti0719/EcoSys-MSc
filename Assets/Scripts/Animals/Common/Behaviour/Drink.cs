@@ -50,10 +50,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void Drinking()
         {
             currentThirst = maxThirst;
-            
             animal.targetRef = null;
             animal.sensor.targetMask = LayerMask.GetMask("None");
-            (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
         }
     }
 }

@@ -7,7 +7,6 @@ public enum Status
     WANDER,
 
     FLEE,
-    WAIT,
     REST,
 
     SEARCH_FOOD,

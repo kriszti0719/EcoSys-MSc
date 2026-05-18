@@ -235,7 +235,7 @@ public abstract class Animal : MonoBehaviour
         {
             case Status.SEARCH_MATE:
                 {
-                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
                     if (targetRef != null)
                     {
                         Animal targetedMate = targetRef.GetComponent<Animal>();
@@ -246,39 +246,16 @@ public abstract class Animal : MonoBehaviour
                         }
                         else
                         {
-                            targetedMate.reproduction = targetRef.GetComponent<Reproduction>();
                             reproduction.mate = targetedMate;
                             targetedMate.reproduction.mate = this;
 
-                            bool canSee = sensor.FieldOfViewCheck(getTargetLayerToMate(), reproduction.mate.transform.gameObject);
-                            if (!canSee)
-                            {
-                                DebugLogger.Error("Hogy?");
-                                sensor.targetMask = LayerMask.GetMask("None");
-                                targetRef = null;
-                                (prevStatus, status) = (status, Status.WAIT);
-                            }
-                            else
-                            {
-                                setTargetLayerToMate();
-                                targetRef = reproduction.mate.transform.gameObject;
-                                (prevStatus, status) = (status, Status.MOVE_TOWARDS);
-                            }
+                            setTargetLayerToMate();
+                            targetRef = targetedMate.gameObject;
+                            (prevStatus, status) = (status, Status.MOVE_TOWARDS);
 
-                            bool canSeeMe = targetedMate.sensor.FieldOfViewCheck(getTargetLayerToMate(), targetedMate.reproduction.mate.transform.gameObject);
-                            if (!canSeeMe)
-                            {
-                                targetedMate.sensor.targetMask = LayerMask.GetMask("None");
-                                targetedMate.targetRef = null;
-                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.WAIT);
-                            }
-                            else
-                            {
-                                setTargetLayerToMate();
-                                targetedMate.targetRef = targetedMate.reproduction.mate.transform.gameObject;
-                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
-                            }
-
+                            targetedMate.setTargetLayerToMate();
+                            targetedMate.targetRef = this.gameObject;
+                            (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
                         }
                     }
                     break;
@@ -287,7 +264,7 @@ public abstract class Animal : MonoBehaviour
             case Status.SEARCH_DRINK:
             case Status.WANDER:
                 {
-                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
                     if (sensor.targetMask == LayerMask.GetMask("None"))
                     {
                         if (eat.currentHunger < drink.currentThirst && eat.IsHungry())   // TODO: ez tul sokszor lesz igaz tho
@@ -314,7 +291,7 @@ public abstract class Animal : MonoBehaviour
                 }
             case Status.MOVE_TOWARDS:
                 {
-                    if (rest.ChanceToRest()) prevStatus = status = Status.REST;
+                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
                     if (targetRef != null)
                     {
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
@@ -335,10 +312,12 @@ public abstract class Animal : MonoBehaviour
                             if (prevStatus == Status.SEARCH_FOOD)
                             {
                                 eat.Eating();
+                                (prevStatus, status) = (Status.WANDER, Status.WANDER);
                             }
                             else if (prevStatus == Status.SEARCH_DRINK)
                             {
                                 drink.Drinking();
+                                (prevStatus, status) = (Status.WANDER, Status.WANDER);
                             }
                         }
                     }

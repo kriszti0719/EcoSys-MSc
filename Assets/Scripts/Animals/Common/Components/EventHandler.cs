@@ -16,7 +16,6 @@ public class EventHandler : MonoBehaviour
     {
         animal.targetRef = null;
         animal.sensor.targetMask = LayerMask.GetMask("None");
-        (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
     }
     public void HandleBreakEnded()
     {
@@ -56,14 +55,11 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleRestFull()
     {
-        if (animal.status == Status.REST)
-        {
-            animal.breakCounter = 0;
-            HandleBreakEnded();
-        }
+        animal.breakCounter = 0;
+        HandleBreakEnded();
     }
     public void HandleRestDepleted()
     {
-        animal.prevStatus = animal.status = Status.REST;
+        (animal.prevStatus, animal.status) = (animal.status, Status.REST);
     }
 }

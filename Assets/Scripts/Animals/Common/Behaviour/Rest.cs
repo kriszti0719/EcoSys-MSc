@@ -12,8 +12,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     {
         private Animal animal;
         [SerializeField]
-        private int restAmount;             // X mp alatt mennyit pihen
-        public StaminaBar staminaBar;      //StaminaBar
+        private int restAmount;
+        public StaminaBar staminaBar;    
         public int maxStamina = 100;
         [SerializeField]
         public int currentStamina;
@@ -41,16 +41,20 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public void Step()
         {
             if (animal.status == Status.REST)
+            {
                 currentStamina = Mathf.Min(currentStamina + restAmount, maxStamina);
-            else
-                currentStamina--;
-            if(IsRested())
-            {
-                OnRestFull?.Invoke();
+                if (IsRested())
+                {
+                    OnRestFull?.Invoke();
+                }
             }
-            else if (IsDepleted())
+            else
             {
-                OnRestDepleted?.Invoke();
+                currentStamina--;
+                if (IsDepleted())
+                {
+                    OnRestDepleted?.Invoke();
+                }
             }
         }
         public bool ChanceToRest()

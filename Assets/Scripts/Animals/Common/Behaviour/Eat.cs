@@ -56,8 +56,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
             else
             {
-                // Fallback if target is lost
-                animal.status = Status.WANDER;
+                (animal.status, animal.prevStatus) = (animal.prevStatus, Status.WANDER);
                 animal.targetRef = null;
             }
         }
