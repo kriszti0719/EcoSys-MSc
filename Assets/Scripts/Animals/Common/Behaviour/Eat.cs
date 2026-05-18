@@ -19,10 +19,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private bool IsCritical() => currentHunger <= critical;
         private bool IsDepleted() => currentHunger == 0;
         public bool IsHungry() => currentHunger < 70;
-        public void setBar(GameObject barsContainer)
+        public void setBar(GameObject barsContainer, bool randomize = false)
         {
             this.hungerBar = barsContainer.GetComponentInChildren<HungerBar>();
-            currentHunger = maxHunger;
+            currentHunger = randomize ? UnityEngine.Random.Range(critical, maxHunger) : maxHunger;
             hungerBar.SetMaxHunger(maxHunger);
         }
         public void updateBar()

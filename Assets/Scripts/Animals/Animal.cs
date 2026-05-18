@@ -137,12 +137,12 @@ public abstract class Animal : MonoBehaviour
 
         return mutatedTrait;
     }
-    public void SetBars(GameObject barsContainer)
+    public void SetBars(GameObject barsContainer, bool randomize = false)
     {
-        rest.setBar(barsContainer);
-        eat.setBar(barsContainer);
-        drink.setBar(barsContainer);
-        mating.setBar(barsContainer);
+        rest.setBar(barsContainer, randomize);
+        eat.setBar(barsContainer, randomize);
+        drink.setBar(barsContainer, randomize);
+        mating.setBar(barsContainer, randomize);
         this.destructibles.Add(barsContainer);
     }
     public void SetAnimalData(GameObject prefab, Material color)
@@ -158,7 +158,6 @@ public abstract class Animal : MonoBehaviour
         eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
 
         drink.OnThirstCritical += eventHandler.HandleThirstCritical;
-        drink.OnThirstFull += eventHandler.HandleThirstFull;
         drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
 
         rest.OnRestFull += eventHandler.HandleRestFull;

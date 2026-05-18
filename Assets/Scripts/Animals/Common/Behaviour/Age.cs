@@ -34,14 +34,17 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Aging()
         {
-            if (currentAge <= 1)
+            if (currentAge < 1)
             {
                 Grow();
                 currentAge += aging / 100f;
+                if (currentAge >= 1)
+                {
+                    animal.reproduction.Mature();
+                    animal.mating.enableMating = true;
+                }
             }
 
-            animal.mating.enableMating = true;
-            animal.reproduction.Mature();
             currentAge += aging;
             if (AgeLimitReached())
             {

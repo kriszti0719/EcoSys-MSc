@@ -41,9 +41,9 @@ public class AnimalSpawner : Spawner
     public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
 
     [Header("Counter")]
-    public int maxStepCnt = 8;
-    public int maxDecideCnt = 2;
-    public int maxAgeCnt = 50;
+    public int maxStepCnt;
+    public int maxDecideCnt;
+    public int maxAgeCnt;
 
     public override void Generate()
     {
@@ -300,7 +300,7 @@ public class AnimalSpawner : Spawner
         instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
         instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-        instantiatedAnimal.SetBars(barsContainer);
+        instantiatedAnimal.SetBars(barsContainer, animal.mother == null);
     }
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {

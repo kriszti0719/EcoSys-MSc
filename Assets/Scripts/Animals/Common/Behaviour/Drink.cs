@@ -24,10 +24,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private bool IsCritical() => currentThirst <= critical;
         private bool IsDepleted() => currentThirst == 0;
         public bool IsThirsty() => currentThirst < 70;
-        public void setBar(GameObject barsContainer)
+        public void setBar(GameObject barsContainer, bool randomize = false)
         {
             this.thirstBar = barsContainer.GetComponentInChildren<ThirstBar>();
-            currentThirst = maxThirst;
+            currentThirst = randomize ? UnityEngine.Random.Range(critical, maxThirst) : maxThirst;
             thirstBar.SetMaxThirst(maxThirst);
         }
         public void updateBar()

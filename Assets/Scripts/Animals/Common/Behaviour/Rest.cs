@@ -28,10 +28,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         private bool IsRested() => currentStamina == maxStamina;
         private bool IsDepleted() => currentStamina == 0;
-        public void setBar(GameObject barsContainer) {
+        public void setBar(GameObject barsContainer, bool randomize = false) {
 
             this.staminaBar = barsContainer.GetComponentInChildren<StaminaBar>();
-            currentStamina = maxStamina;
+            currentStamina = randomize ? UnityEngine.Random.Range(30, maxStamina) : maxStamina;
             staminaBar.SetMaxStamina(maxStamina);
         }
         public void updateBar()
