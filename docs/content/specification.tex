@@ -1,4 +1,4 @@
-\chapter{A feladatkiírás pontosítása és részletes elemzése}
+\chapter{Specifikáció}
 \label{chap:elemzes}
 
 Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét műszaki követelményekre. A feladat nem csupán egy működő szimuláció elkészítése, hanem egy olyan keretrendszer kialakítása, amely szoftvertechnológiai szempontból is megállja a helyét.
@@ -15,20 +15,29 @@ A rendszernek a következő alapvető funkciókat kell ellátnia:
     \item \textbf{Külső adatkapcsolat:} A kinyert adatok HTTP protokollon keresztül történő továbbítása egy külső tároló/elemző egység felé.
 \end{itemize}
 
+Fontos kiemelni, hogy a fenti követelményekből a BSc projekt során az ágensalapú környezet alapjai és egy kezdeti préda-populáció (nyulak) modellje készült el. Ebben a fázisban már megjelentek az örökölhető tulajdonságok, azonban a rendszer architektúrája még monolitikus volt, és a szimuláció kizárólag egyetlen faj túlélési stratégiáit vizsgálta zárt környezetben.
+
+A jelenlegi munka során az alábbi követelmények teljesítése jelenti az előrelépést:
+\vspace{0.3cm}
+\begin{itemize}
+    \item A \textbf{ragadozó faj (rókák)} bevezetése, amely megteremti a valódi populációdinamikai interakciókat.
+    \item A rendszer \textbf{teljes refaktorálása} moduláris, eseményvezérelt architektúrává, megszüntetve a korábbi kódminta strukturális hiányosságait.
+    \item \textbf{Logolás és a külső adatbázis-kapcsolat (InfluxDB, Grafana)} implementálása, amely korábban statikus fájl alapú vagy hiányzó funkció volt.
+\end{itemize}
+
 \section{Nem-funkcionális követelmények}
 
 A szoftver minőségére vonatkozó elvárások:
 
 \begin{itemize}
     \item \textbf{Kiterjeszthetőség (Extensibility):} Az architektúrának lehetővé kell tennie új fajok vagy viselkedésminták hozzáadását a meglévő kód bázis minimális módosításával (Open/Closed Principle).
-    \item \textbf{Teljesítmény és skálázhatóság:} A szimulációnak stabil képkockasebesség mellett kell futnia több száz aktív ágens jelenléte esetén is. Ehhez szükséges az állapotellenőrzések (polling) kiváltása eseményvezérelt logikával.
-    \item\textbf{Karbantarthatóság:} A BSc szakaszban azonosított „god class” struktúra felszámolása, a felelősségi körök szétválasztása (Single Responsibility Principle).
-    \item \textbf{Valós idejűség:} A statisztikai adatok gyűjtése nem okozhat észrevehető akadást vagy késleltetést a vizuális megjelenítésben.
+    \item \textbf{Teljesítmény, skálázhatóság és valós idejűség:} A szimulációnak stabil képkockasebesség mellett kell futnia több száz aktív ágens jelenléte esetén is. Ehhez szükséges az állapotellenőrzések (polling) kiváltása eseményvezérelt logikával, biztosítva, hogy a statisztikai adatok gyűjtése és külső adatbázisba továbbítása ne okozzon észrevehető akadást vagy késleltetést a vizuális megjelenítésben.
+    \item \textbf{Karbantarthatóság:} A BSc szakaszban azonosított „god class” struktúra felszámolása, a felelősségi körök szétválasztása (Single Responsibility Principle).
 \end{itemize}
 
 \section{A szimulációs paraméterek specifikációja}
 
-A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyeket a rendszernek kezelnie kell. Ezek a következők:
+A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyeket a rendszernek kezelnie kell. A szimuláció bemeneti adatait és a vizsgált változók rendszerezett listáját a \ref{table:parameters}. táblázat foglalja össze.
 
 \begin{table}[h!]
 \centering
@@ -44,6 +53,8 @@ Rendszer & Logolási gyakoriság, szimulációs időlépték (Timescale). \\ \hl
 \label{table:parameters}
 \end{table}
 
+A táblázatban felsorolt paraméterek finomhangolása alapvetően meghatározza a szimulált ökoszisztéma stabilitását. Például a mutációs ráta és a kezdeti populációméret közötti egyensúly kritikus a természetes szelekció modellezésekor.
+
 \section{Felhasználói esetek (Use Cases)}
 
 A rendszer elsődleges felhasználója a kutató/hallgató, aki a következő műveleteket végzi:
@@ -52,3 +63,4 @@ A rendszer elsődleges felhasználója a kutató/hallgató, aki a következő m�
 	\item \textbf{Megfigyelés:} Valós időben követi a vizuális térben zajló folyamatokat.
 	\item \textbf{Elemzés:} A futás után vagy alatt a generált grafikonok és statisztikák alapján következtetéseket von le a populáció életképességéről.
 \end{enumerate}
+% SF: ha ki tudod egészíteni kisebb al use case-ekkel a fentieket, akkor egy use case diagram is készíthető a fentiekből, egyébként mivel kevés use case van, nem szükséges

@@ -2,13 +2,12 @@
 \setcounter{page}{1}
 
 \selecthungarian
-
 %----------------------------------------------------------------------------
 % Abstract in Hungarian
 %----------------------------------------------------------------------------
 \chapter*{Kivonat}\addcontentsline{toc}{chapter}{Kivonat}
 
-\noindent Diplomamunkám témája egy komplex ökoszisztéma-szimulációs keretrendszer fejlesztése, amelynek elsődleges célja a populációgenetikai folyamatok és az öröklődő tulajdonságok vizsgálata digitális környezetben. A fejlesztés mostanra egy négyéves intervallumot ölel fel, amely során a szoftver egy egyszerű ágensalapú modellből egy robusztus, eseményvezérelt rendszerré fejlődött.
+\noindent Diplomamunkám témája egy komplex, \textbf{Unity} alapú ökoszisztéma-szimulációs keretrendszer fejlesztése, amelynek elsődleges célja a populációgenetikai folyamatok és az öröklődő tulajdonságok vizsgálata digitális környezetben. A fejlesztés mostanra egy négyéves intervallumot ölel fel, amely során a szoftver egy egyszerű ágensalapú modellből egy robusztus, eseményvezérelt rendszerré fejlődött.
 
 A projekt kezdeti szakaszában, vagyis az egyetemi BSc képzés keretein belül, egy kódgenerált környezetben élő préda-populáció (nyulak) viselkedésének modellezése történt meg. Az egyedek olyan örökölhető jellemzőkkel rendelkeztek, mint a mozgási sebesség, a látótávolság és különféle reprodukciós paraméterek, amelyek közvetlen hatást gyakoroltak a túlélési rátára és a természetes szelekcióra.
 
@@ -16,27 +15,24 @@ A egyetemi MSc képzés megkezdésével, a fejlesztés későbbi fázisába érv
 
 A biológiai hűség fokozása érdekében a szimuláció egy ragadozó fajjal (rókák) egészült ki, megteremtve a predator–prey dinamikát. A kialakuló populáció-oszcillációk vizsgálata során a Lotka–Volterra modell elméleti alapjait alkalmaztam a rendszer validálására. A szoftver legfrissebb változata már eseményvezérelt architektúrára épül, amely nemcsak a számítási hatékonyságot javítja az állapotellenőrzések minimalizálásával, hanem rugalmas keretet biztosít az új viselkedésformák implementálásához is.
 
-Jelenleg a rendszer már HTTP-alapú naplózással továbbítja az adatokat egy külső adatbázisba, lehetővé téve a szimulációs folyamatok valós idejű statisztikai elemzését és vizualizációját.
-
+A szimuláció futása során keletkező adatokat a rendszer \textbf{InfluxDB} idősoros adatbázisban tárolja, az adatok vizualizációja és a valós idejű statisztikai elemzés pedig \textbf{Grafana} segítségével valósul meg. Ez a megoldás lehetővé teszi a komplex ökológiai folyamatok transzparens nyomon követését és a különböző döntéshozatali modellek összehasonlítását.
 \vfill
+
 \selectenglish
-
-
 %----------------------------------------------------------------------------
 % Abstract in English
 %----------------------------------------------------------------------------
 \chapter*{Abstract}\addcontentsline{toc}{chapter}{Abstract}
 
-The subject of my Master's thesis is the development of a complex ecosystem simulation framework, primarily aimed at investigating population genetic processes and inheritable traits within a digital environment. The development spans a four-year interval, during which the software has evolved from a simple agent-based model into a robust, event-driven system.
+\noindent The subject of my thesis is the development of a complex, \textbf{Unity}-based ecosystem simulation framework, primarily aimed at investigating population genetic processes and heritable traits within a digital environment. The development now spans a four-year period, during which the software has evolved from a simple agent-based model into a robust, event-driven system.
 
-In the initial phase of the project, conducted during my BSc studies, the focus was on modeling the behavior of a prey population (rabbits) living in a code-generated environment. Individuals possessed heritable characteristics—such as movement speed, visual range, and various reproductive parameters—which directly influenced survival rates and natural selection.
+In the initial phase of the project, conducted within the framework of my BSc studies, the behavior of a prey population (rabbits) living in a code-generated environment was modeled. Individuals possessed heritable characteristics such as movement speed, vision range, and various reproductive parameters, which had a direct impact on survival rates and natural selection.
 
-Upon entering the MSc program, the subsequent phase of development shifted focus toward software architecture optimization and refactoring. The initial monolithic structure of the system (the so-called "god class" problem) was replaced by a modular class structure with clear responsibilities, significantly increasing code maintainability and extensibility.
+Upon commencing my MSc studies and entering a later phase of development, the focus shifted toward software architecture optimization and refactoring. The system's initial monolithic structure (the so-called "god class" problem) was replaced by a modular class hierarchy with clean responsibilities, significantly increasing code maintainability and extensibility.
 
-To enhance biological fidelity, the simulation was expanded to include a predator species (foxes), establishing predator-prey dynamics. During the investigation of the resulting population oscillations, I applied the theoretical foundations of the Lotka-Volterra model to validate the system. The latest version of the software is built on an event-driven architecture, which not only improves computational efficiency by minimizing state-check overhead but also provides a flexible framework for implementing new behavioral patterns.
+To enhance biological fidelity, the simulation was expanded to include a predator species (foxes), establishing predator–prey dynamics. During the investigation of the resulting population oscillations, I applied the theoretical foundations of the Lotka–Volterra model to validate the system. The latest version of the software is built on an event-driven architecture, which not only improves computational efficiency by minimizing state checks but also provides a flexible framework for implementing new behavioral forms.
 
-Currently, the system utilizes HTTP-based logging to transmit data to an external database, enabling real-time statistical analysis and visualization of the simulation processes.
-
+Data generated during the simulation is stored in an \textbf{InfluxDB} time-series database, while data visualization and real-time statistical analysis are realized using \textbf{Grafana}. This solution enables the transparent monitoring of complex ecological processes and the comparison of different decision-making models.
 \vfill
 \selectthesislanguage
 

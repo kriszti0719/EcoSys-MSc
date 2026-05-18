@@ -11,41 +11,29 @@
 \newcommand{\vikszerzoVezeteknev}{Mészáros}
 \newcommand{\vikszerzoKeresztnev}{Krisztina}
 
-\newcommand{\vikkonzulensAMegszolitas}{}
+\newcommand{\vikkonzulensAMegszolitas}{Dr. }
 \newcommand{\vikkonzulensAVezeteknev}{Somogyi}
 \newcommand{\vikkonzulensAKeresztnev}{Ferenc Attila}
 
-
-\newcommand{\vikcim}{Ecosystem Simulation} % Cím
+\newcommand{\vikcim}{Ökoszisztéma szimulációja Unity3D alapokon} % Cím
 \newcommand{\viktanszek}{\bmeaut} % Tanszék
 \newcommand{\vikdoktipus}{\msc} % Dokumentum típusa (\bsc vagy \msc)
 \newcommand{\vikmunkatipusat}{diplomaterv} % a "hallgató nyilatkozat" részhez: szakdolgozatot vagy diplomatervet
 \newcommand{\szerzoMeta}{\vikszerzoVezeteknev{} \vikszerzoKeresztnev} % egy szerző esetén
-
-%TODO Language configuration -- choose one
-% Beállítások magyar nyelvű dolgozathoz
-\input{include/thesis-hu}
-% Settings for English documents
-%\input{include/thesis-en}
-
+\input{include/thesis-hu}	% Beállítások magyar nyelvű dolgozathoz
 \input{include/preamble}
 
 %--------------------------------------------------------------------------------------
 % Table of contents and the main text
 %--------------------------------------------------------------------------------------
 \begin{document}
-
 \pagenumbering{gobble}
 
-%TODO These includes define guidelines -- remove these
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%\include{include/guideline}
-\include{include/project}						% feladatkiírás
+\include{include/project}						% Feladatkiírás
 
 \selectthesislanguage
-
-\include{include/titlepage}		   				% Szakdolgozat/Diplomaterv címlap
-
+\include{include/titlepage}		   				% Diplomaterv címlap
 
 % Table of Contents
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,28 +48,23 @@
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \pagenumbering{arabic}
 
-%TODO import your own content
 \include{content/introduction}					% Bevezetés
 \include{content/specification}					% Feladatkiírás pontosítása és részletes elemzése
 \include{content/background}						% Előzmények, az ezekből levonható következtetések
 
-
 % Acknowledgements
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %\include{content/acknowledgement}				% Esetleges köszönetnyilvánítások
-
 
 % List of Figures, Tables
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %\listoffigures\addcontentsline{toc}{chapter}{\listfigurename}
 %\listoftables\addcontentsline{toc}{chapter}{\listtablename}
 
-
 % Bibliography
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \addcontentsline{toc}{chapter}{\bibname}
 \bibliography{bib/mybib}
-
 
 % Appendix
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
