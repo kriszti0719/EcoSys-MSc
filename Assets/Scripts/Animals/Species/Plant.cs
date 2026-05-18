@@ -5,20 +5,13 @@ using UnityEngine;
 
 public class Plant : MonoBehaviour, IEdible
 {
-    private int nutrition = 5;
-    private int eatDuration = 5;
-    public event Action OnConsumed;
+    private int nutrition = 25;
     public int getNutrition()
     {
         return nutrition;
     }
-    public void ToBeConsumed()
+    public void Consumed()
     {
-        Invoke(nameof(Consumed), eatDuration);
-    }
-    private void Consumed()
-    {
-        OnConsumed?.Invoke();
         Destroy(gameObject);
     }
 }

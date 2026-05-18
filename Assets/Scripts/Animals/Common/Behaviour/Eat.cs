@@ -9,16 +9,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private Animal animal;
         public HungerBar hungerBar;
         private int maxHunger = 100;
-        public IEdible food;
         public int critical;
         public int currentHunger;
 
         public event Action OnHungerCritical;
-        public event Action OnHungerFull;
         public event Action OnHungerDepleted;
 
         void Start() { animal = GetComponent<Animal>(); }
-        private bool IsFull() => currentHunger == maxHunger;
         private bool IsCritical() => currentHunger <= critical;
         private bool IsDepleted() => currentHunger == 0;
         public bool IsHungry() => currentHunger < 70;
@@ -38,33 +35,31 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if (animal.status == Status.EAT)
-                currentHunger = Mathf.Min(currentHunger + food.getNutrition(), maxHunger);
-            else
-                currentHunger--;
+            currentHunger--;
 
             if (IsDepleted())
             {
                 OnHungerDepleted?.Invoke();
-            }
-            else if (IsFull())
-            {
-                OnHungerFull?.Invoke();
             }
             else if (IsCritical())
             {
                 OnHungerCritical?.Invoke();
             }
         }
-        public void StartEating()
+        public void Eating()
         {
-            food = animal.targetRef.GetComponent<IEdible>();
-            food.OnConsumed += animal.eventHandler.HandleFoodConsumed;
-            food.ToBeConsumed();
-        }
-        public void FinishEating()
-        {
-            food = null;
+            if (animal.targetRef != null && animal.targetRef.TryGetComponent<IEdible>(out var edibleFood))
+            {
+                currentHunger = Mathf.Min(currentHunger + edibleFood.getNutrition(), maxHunger);
+                edibleFood.Consumed();
+                animal.eventHandler.HandleFoodConsumed();
+            }
+            else
+            {
+                // Fallback if target is lost
+                animal.status = Status.WANDER;
+                animal.targetRef = null;
+            }
         }
     }
 }

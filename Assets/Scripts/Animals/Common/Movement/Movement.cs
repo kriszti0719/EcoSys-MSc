@@ -54,7 +54,6 @@ public class Movement : MonoBehaviour
     {
         wanderTimer -= Time.deltaTime;
         
-        // Pick new target if time is up, we reached the current one, or we accidentally went into water
         if (wanderTimer <= 0 || Vector3.Distance(transform.position, targetPosition) < 1.5f || transform.position.y < 21f)
         {
             PickNewWanderTarget();
@@ -67,7 +66,6 @@ public class Movement : MonoBehaviour
         bool validPointFound = false;
         int attempts = 0;
 
-        // Try to find a point on land (Island layer)
         int groundLayerMask = LayerMask.GetMask("Island");
 
         while (!validPointFound && attempts < 15)
@@ -90,12 +88,10 @@ public class Movement : MonoBehaviour
             }
         }
 
-        // Fallback: If no land found nearby, turn around and try a short distance
         if (!validPointFound)
         {
             targetPosition = transform.position - transform.forward * 5f;
         }
-
         wanderTimer = WANDER_TIME_LIMIT;
     }
 
@@ -114,11 +110,9 @@ public class Movement : MonoBehaviour
 
     public void ChangeDirection(float amount, float all)
     {
-        // Spreads animals out during spawning
         float direction = 360 / amount * all;
         transform.Rotate(transform.up, -direction);
         
-        // Pick a target in the new forward direction
         targetPosition = transform.position + transform.forward * 10f;
         wanderTimer = WANDER_TIME_LIMIT;
     }

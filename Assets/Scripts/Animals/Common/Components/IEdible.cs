@@ -9,8 +9,7 @@ namespace Assets.Scripts
 {
     public interface IEdible
     {
-        event Action OnConsumed;
         int getNutrition();
-        void ToBeConsumed();
+        void Consumed();
     }
 }

@@ -7,9 +7,7 @@ using UnityEngine;
 
 public class Bunny : Animal, IEdible
 {
-    private int eatDuration = 5;
-    private int nutrition = 20;
-    public event Action OnConsumed;
+    private int nutrition = 100;
 
     protected override void Start()
     {
@@ -45,14 +43,9 @@ public class Bunny : Animal, IEdible
         predators = new List<Species>();
         predators.Add(Species.FOX);
     }
-    public void ToBeConsumed()
+    public void Consumed()
     {
         (prevStatus, status) = (status, Status.CAUGHT);
-        Invoke(nameof(Consumed), eatDuration);
-    }
-    private void Consumed()
-    {
-        OnConsumed?.Invoke();
         die.HandleDeath(CauseOfDeath.CONSUMED);
     }
 }

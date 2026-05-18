@@ -16,12 +16,6 @@ public class EventHandler : MonoBehaviour
             animal.status = Status.SEARCH_FOOD;
         }
     }
-    public void HandleHungerFull()
-    {
-        if (animal.status == Status.EAT) animal.eat.FinishEating();
-        animal.breakCounter = 0;
-        HandleBreakEnded();
-    }
     public void HandleHungerDepleted()
     {
         animal.die.HandleDeath(CauseOfDeath.HUNGER);
@@ -75,7 +69,6 @@ public class EventHandler : MonoBehaviour
                 animal.status = animal.prevStatus;
                 break;
             }
-            case Status.EAT:
             case Status.DRINK:
                 {
                     animal.targetRef = null;

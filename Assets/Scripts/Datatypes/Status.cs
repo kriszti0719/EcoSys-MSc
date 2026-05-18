@@ -16,7 +16,6 @@ public enum Status
 
     MOVE_TOWARDS,
 
-    EAT,
     DRINK,
     MATE,
 

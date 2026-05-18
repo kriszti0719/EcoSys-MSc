@@ -155,7 +155,6 @@ public abstract class Animal : MonoBehaviour
     protected void Subscribe()
     {
         eat.OnHungerCritical += eventHandler.HandleHungerCritical;
-        eat.OnHungerFull += eventHandler.HandleHungerFull;
         eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
 
         drink.OnThirstCritical += eventHandler.HandleThirstCritical;
@@ -338,9 +337,7 @@ public abstract class Animal : MonoBehaviour
                         {
                             if (prevStatus == Status.SEARCH_FOOD)
                             {
-                                eat.StartEating();
-                                status = Status.EAT;
-
+                                eat.Eating();
                             }
                             else if (prevStatus == Status.SEARCH_DRINK)
                             {
