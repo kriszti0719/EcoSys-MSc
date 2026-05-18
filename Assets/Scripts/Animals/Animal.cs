@@ -341,8 +341,7 @@ public abstract class Animal : MonoBehaviour
                             }
                             else if (prevStatus == Status.SEARCH_DRINK)
                             {
-                                drink.StartDrinking();
-                                status = Status.DRINK;
+                                drink.Drinking();
                             }
                         }
                     }

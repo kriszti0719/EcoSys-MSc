@@ -11,20 +11,16 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     {
         private Animal animal;
         public ThirstBar thirstBar;
-        private int drinkDuration = 5;
-        private int drinkAmount = 10;
         private int maxThirst = 200;
         public int currentThirst;
         public int critical;
 
         public event Action OnThirstCritical;
-        public event Action OnThirstFull;
         public event Action OnThirstDepleted;
         void Start()
         {
             animal = GetComponent<Animal>();
         }
-        private bool IsFull() => currentThirst == maxThirst;
         private bool IsCritical() => currentThirst <= critical;
         private bool IsDepleted() => currentThirst == 0;
         public bool IsThirsty() => currentThirst < 70;
@@ -40,31 +36,24 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if (animal.status == Status.DRINK)
-                currentThirst = Mathf.Min(currentThirst + drinkAmount, maxThirst);
-            else
-                currentThirst--;
+            currentThirst--;
 
             if (IsDepleted())
             {
                 OnThirstDepleted?.Invoke();
-            }
-            else if (IsFull())
-            {
-                OnThirstFull?.Invoke();
             }
             else if (IsCritical())
             {
                 OnThirstCritical?.Invoke();
             }
         }
-        public void StartDrinking()
+        public void Drinking()
         {
-            animal.breakCounter = drinkDuration;
-        }
-        public void FinishDrinking()
-        {
-            return;
+            currentThirst = maxThirst;
+            
+            animal.targetRef = null;
+            animal.sensor.targetMask = LayerMask.GetMask("None");
+            (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
         }
     }
 }

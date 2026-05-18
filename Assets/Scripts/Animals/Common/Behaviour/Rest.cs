@@ -40,7 +40,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if (animal.status == Status.REST || animal.status == Status.DRINK)
+            if (animal.status == Status.REST)
                 currentStamina = Mathf.Min(currentStamina + restAmount, maxStamina);
             else
                 currentStamina--;
