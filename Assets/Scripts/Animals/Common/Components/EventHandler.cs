@@ -50,7 +50,7 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleRestFull()
     {
-        animal.breakCounter = 0;
+        animal.rest.breakCounter = 0;
         HandleBreakEnded();
     }
     public void HandleRestDepleted()

@@ -3,16 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
-    public CauseOfDeath cause;
     public Status status;
     public Status prevStatus;
-    
-    public int breakCounter = 0;
     
     public GameObject targetRef;
     public List<GameObject> rejectedBy = new List<GameObject>();
@@ -21,6 +17,7 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public Species species;
     [HideInInspector] public List<Species> predators = new List<Species>();
 
+    [HideInInspector] public CauseOfDeath cause;
     [HideInInspector] public GameObject prefab;
     [HideInInspector] public Material color;
     [HideInInspector] public List<GameObject> destructibles = new List<GameObject>();
@@ -46,11 +43,7 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public Movement movement;
     [HideInInspector] public GameObject barsContainer;
     private EventHandler eventHandler;
-
-    public event Action OnBreakEnded;
     public event Action OnDrowned;
-
-
     public Species getSpecies()
     {
         return species;
@@ -61,7 +54,6 @@ public abstract class Animal : MonoBehaviour
     public abstract void setTargetLayerToMate();
     public abstract void setTargetLayerToEat();
     public abstract void setSpeciesSpecificTraits();
-    private bool IsBreakEnded() => breakCounter == 0;
     protected void SetComponents()
     {
         sensor = GetComponent<Sensor>();
@@ -164,11 +156,11 @@ public abstract class Animal : MonoBehaviour
 
         rest.OnRestFull += eventHandler.HandleRestFull;
         rest.OnRestDepleted += eventHandler.HandleRestDepleted;
+        rest.OnBreakEnded += eventHandler.HandleBreakEnded;
 
         aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
 
         OnDrowned += eventHandler.HandleDrowning;
-        OnBreakEnded += eventHandler.HandleBreakEnded;
     }
     protected virtual void Start()
     {
@@ -180,15 +172,6 @@ public abstract class Animal : MonoBehaviour
     }
     public void Step()
     {
-        if(breakCounter != 0)
-        {
-            breakCounter = System.Math.Max(0, breakCounter - 1);
-            if (IsBreakEnded())
-            {
-                OnBreakEnded?.Invoke();
-            }
-        }
-
         oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
         if (oxygen == 0)
         {

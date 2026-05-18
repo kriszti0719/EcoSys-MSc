@@ -18,8 +18,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         [SerializeField]
         public int currentStamina;
 
+        public int breakCounter = 0;
+
         public event Action OnRestFull;
         public event Action OnRestDepleted;
+        public event Action OnBreakEnded;
 
         void Start()
         {
@@ -28,6 +31,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         private bool IsRested() => currentStamina == maxStamina;
         private bool IsDepleted() => currentStamina == 0;
+        private bool IsBreakEnded() => breakCounter == 0;
         public void setBar(GameObject barsContainer, bool randomize = false) {
 
             this.staminaBar = barsContainer.GetComponentInChildren<StaminaBar>();
@@ -40,6 +44,15 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
+            if (breakCounter != 0)
+            {
+                breakCounter = System.Math.Max(0, breakCounter - 1);
+                if (IsBreakEnded())
+                {
+                    OnBreakEnded?.Invoke();
+                }
+            }
+
             if (animal.status == Status.REST)
             {
                 currentStamina = Mathf.Min(currentStamina + restAmount, maxStamina);
@@ -75,11 +88,11 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (currentStamina + time < maxStamina)
             {
-                animal.breakCounter = time;
+                breakCounter = time;
             }
             else
             {
-                animal.breakCounter = maxStamina - currentStamina;
+                breakCounter = maxStamina - currentStamina;
             }
         }
     }
