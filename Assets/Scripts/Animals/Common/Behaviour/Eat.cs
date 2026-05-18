@@ -52,7 +52,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 currentHunger = Mathf.Min(currentHunger + edibleFood.getNutrition(), maxHunger);
                 edibleFood.Consumed();
-                animal.eventHandler.HandleFoodConsumed();
+                
+                animal.targetRef = null;
+                animal.sensor.targetMask = LayerMask.GetMask("None");
             }
             else
             {

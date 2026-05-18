@@ -12,11 +12,6 @@ public class EventHandler : MonoBehaviour
     {
         animal.die.HandleDeath(CauseOfDeath.AGE);
     }
-    public void HandleFoodConsumed()
-    {
-        animal.targetRef = null;
-        animal.sensor.targetMask = LayerMask.GetMask("None");
-    }
     public void HandleBreakEnded()
     {
         switch (animal.status)

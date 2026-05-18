@@ -8,47 +8,48 @@ using UnityEngine;
 
 public abstract class Animal : MonoBehaviour
 {
-    // TODO: remove (only for testing purposes)
-    public int triedForBaby = 0;
-    public int gaveBirth = 0;
-    public int kids = 0;
-
     public CauseOfDeath cause;
     public Status status;
     public Status prevStatus;
-    public Species species;
-    public List<Species> predators = new List<Species>();
-
-    public GameObject prefab;
-    public Material color;
+    
     public int breakCounter = 0;
-    public List<GameObject> destructibles = new List<GameObject>();
+    
     public GameObject targetRef;
-    public List<GameObject> spottedThreats = new List<GameObject>();
     public List<GameObject> rejectedBy = new List<GameObject>();
+    public List<GameObject> spottedThreats = new List<GameObject>();
+    
+    [HideInInspector] public Species species;
+    [HideInInspector] public List<Species> predators = new List<Species>();
 
-    public bool isMale;
+    [HideInInspector] public GameObject prefab;
+    [HideInInspector] public Material color;
+    [HideInInspector] public List<GameObject> destructibles = new List<GameObject>();
 
-    int maxOxygen = 10;
-    public int oxygen;
+    [HideInInspector] public bool isMale;
+    [HideInInspector] public int bravery;
 
-    public Sensor sensor;
-    public Reproduction reproduction;
-    public Rest rest;
-    public Drink drink;
-    public Eat eat;
-    public Die die;
-    public Age aging;
-    public Mate mating;
-    public Movement movement;
-    public EventHandler eventHandler;
+    private int maxOxygen = 10;
+    private int oxygen;
+    // TODO: remove (only for testing purposes)
+    [HideInInspector] public int triedForBaby = 0;
+    [HideInInspector] public int gaveBirth = 0;
+    [HideInInspector] public int kids = 0;
 
-    public int bravery;
+    [HideInInspector] public Sensor sensor;
+    [HideInInspector] public Reproduction reproduction;
+    [HideInInspector] public Rest rest;
+    [HideInInspector] public Drink drink;
+    [HideInInspector] public Eat eat;
+    [HideInInspector] public Die die;
+    [HideInInspector] public Age aging;
+    [HideInInspector] public Mate mating;
+    [HideInInspector] public Movement movement;
+    [HideInInspector] public GameObject barsContainer;
+    private EventHandler eventHandler;
 
     public event Action OnBreakEnded;
     public event Action OnDrowned;
 
-    public GameObject barsContainer;
 
     public Species getSpecies()
     {
