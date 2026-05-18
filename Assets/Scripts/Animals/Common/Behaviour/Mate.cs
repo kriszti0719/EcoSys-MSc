@@ -14,7 +14,6 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         [SerializeField]
         private int currentMatingUrge;
         public bool enableMating;
-        private int mateDuration = 1;
         public MatingUrgeBar matingBar;
         private int maxMatingUrge = 100;
         [SerializeField]
@@ -35,29 +34,28 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if(animal.status == Status.MATE)
-            {
-                currentMatingUrge = maxMatingUrge;
-                enableMating = false;
-            }
-            else
-            {
-                currentMatingUrge--;
-            }
+            currentMatingUrge--;
         }
-        public void ToMate()
+        public void Mating()
         {
-            animal.breakCounter = mateDuration;
+            currentMatingUrge = maxMatingUrge;
+            enableMating = false;
             animal.triedForBaby++;
+            
+            IsSuccess();
+            
+            animal.targetRef = null;
+            animal.sensor.targetMask = LayerMask.GetMask("None");
+            (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
         }
         public bool IsAcceptable(Animal mate)
         {
             bool accepted = (mate.mating.charm + (100 - currentMatingUrge)) < charm;
             return accepted;
         }
-        public void IsSuccess()
+        private void IsSuccess()
         {
-            if (!animal.isMale)     //TODO:  && !isPregnant
+            if (!animal.isMale)
             {
                 // Base success rate for pregnancy
                 float baseSuccessRate = 0.8f;

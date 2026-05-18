@@ -321,16 +321,14 @@ public abstract class Animal : MonoBehaviour
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
                         if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f) 
                         {
-                            reproduction.mate = targetRef.GetComponent<Animal>();
-                            if (reproduction.mate != null)
+                            Animal mateAnimal = targetRef.GetComponent<Animal>();
+                            if (mateAnimal != null)
                             {
-                                if (reproduction.mate.status == Status.WAIT)
-                                {
-                                    reproduction.mate.mating.ToMate();
-                                    (reproduction.mate.prevStatus, reproduction.mate.status) = (reproduction.mate.status, Status.MATE);
-                                }
-                                mating.ToMate();
-                                (prevStatus, status) = (status, Status.MATE);
+                                reproduction.mate = mateAnimal;
+                                mateAnimal.reproduction.mate = this;
+                                
+                                mating.Mating();
+                                mateAnimal.mating.Mating();
                             }
                         }
                         if (distanceToTarget < 5f)

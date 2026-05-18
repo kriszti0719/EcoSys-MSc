@@ -27,14 +27,6 @@ public class EventHandler : MonoBehaviour
                 animal.status = animal.prevStatus;
                 break;
             }
-            case Status.MATE:
-            {
-                animal.targetRef = null;
-                animal.sensor.targetMask = LayerMask.GetMask("None");
-                (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
-                animal.mating.IsSuccess();
-                break;
-            }
         }
 
     }

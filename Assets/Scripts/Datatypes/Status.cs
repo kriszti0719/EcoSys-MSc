@@ -16,8 +16,6 @@ public enum Status
 
     MOVE_TOWARDS,
 
-    MATE,
-
     DIE,
     CAUGHT
-}
+    }
