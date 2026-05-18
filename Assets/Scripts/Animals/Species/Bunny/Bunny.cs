@@ -73,6 +73,6 @@ public class Bunny : Animal, IEdible
     }
     private void Consumed()
     {
-        die.Destroy();
+        die.DestroyAnimal();
     }
 }

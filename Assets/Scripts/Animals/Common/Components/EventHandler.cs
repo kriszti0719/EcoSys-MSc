@@ -4,6 +4,10 @@ public class EventHandler : MonoBehaviour
 {
     private Animal animal;
     void Start() {  animal = GetComponent<Animal>(); }
+    public void HandleDrowning()
+    {
+        animal.die.HandleDeath(CauseOfDeath.DROWN);
+    }
     public void HandleHungerCritical()
     {
         if (animal.status == Status.SEARCH_MATE || animal.status == Status.REST)
@@ -20,13 +24,7 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleHungerDepleted()
     {
-        if (animal.status != Status.DIE)
-        {
-            animal.cause = CauseOfDeath.HUNGER;
-            (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
-            
-            animal.die.Destroy();
-        }
+        animal.die.HandleDeath(CauseOfDeath.HUNGER);
     }
     public void HandleThirstCritical()
     {
@@ -44,11 +42,7 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleThirstDepleted()
     {
-        if (animal.status != Status.DIE)
-        {
-            animal.cause = CauseOfDeath.THIRST;
-            (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
-        }
+        animal.die.HandleDeath(CauseOfDeath.THIRST);
     }
     public void HandleRestFull()
     {
@@ -64,11 +58,7 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleAgeLimitReached()
     {
-        if (animal.status != Status.DIE)
-        {
-            animal.cause = CauseOfDeath.AGE;
-            (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
-        }
+        animal.die.HandleDeath(CauseOfDeath.AGE);
     }
     public void HandleFoodConsumed()
     {

@@ -14,7 +14,7 @@ public class Die : MonoBehaviour
     {
         animal = GetComponent<Animal>();
     }
-    public void Destroy()
+    public void DestroyAnimal()
     {
         animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
 
@@ -31,5 +31,14 @@ public class Die : MonoBehaviour
     public void CatchPrey()
     {
         isCaptured = true;
+    }
+    public void HandleDeath(CauseOfDeath cause)
+    {
+        if (animal.status != Status.DIE)
+        {
+            animal.cause = cause;
+            (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
+            DestroyAnimal();
+        }
     }
 }

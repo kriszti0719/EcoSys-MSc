@@ -45,6 +45,7 @@ public abstract class Animal : MonoBehaviour
     public int bravery;
 
     public event Action OnBreakEnded;
+    public event Action OnDrowned;
 
     public GameObject barsContainer;
 
@@ -166,6 +167,7 @@ public abstract class Animal : MonoBehaviour
 
         aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
 
+        OnDrowned += eventHandler.HandleDrowning;
         OnBreakEnded += eventHandler.HandleBreakEnded;
     }
     protected virtual void Start()
@@ -188,10 +190,9 @@ public abstract class Animal : MonoBehaviour
         }
 
         oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
-
-        if (oxygen == 0)
+        if (oxygen == 0 && status != Status.DIE)
         {
-            if (status != Status.DIE) cause = CauseOfDeath.DROWN;
+            OnDrowned?.Invoke();
         }
 
         if (!(status == Status.DIE || status == Status.CAUGHT))
