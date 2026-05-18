@@ -23,7 +23,7 @@ public class MateTraits
 
     public MateTraits(Animal animal)
     {
-        this.size = animal.aging.size;
+        this.size = animal.aging.adultSize;
         this.lifeSpan = animal.aging.lifeSpan;
         this.eat_critical = animal.eat.critical;
         this.drink_critical = animal.drink.critical;

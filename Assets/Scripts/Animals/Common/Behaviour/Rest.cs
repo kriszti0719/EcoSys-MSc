@@ -11,19 +11,15 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Rest : MonoBehaviour
     {
         private Animal animal;
+        [HideInInspector] public StaminaBar staminaBar;    
+        public int maxStamina = 100;
+        public int currentStamina;
         [SerializeField]
         private int restAmount;
-        public StaminaBar staminaBar;    
-        public int maxStamina = 100;
-        [SerializeField]
-        public int currentStamina;
-
         public int breakCounter = 0;
-
         public event Action OnRestFull;
         public event Action OnRestDepleted;
         public event Action OnBreakEnded;
-
         void Start()
         {
             restAmount = Mathf.RoundToInt(maxStamina * 0.05f);

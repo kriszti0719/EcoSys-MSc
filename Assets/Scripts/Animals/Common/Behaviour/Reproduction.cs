@@ -8,12 +8,11 @@ public class Reproduction : MonoBehaviour
     private Animal animal;
     public Animal mate;
     public MateTraits mateTraits;
-    public bool isPregnant = false;
-
     public bool isFertile;
-    public int reproductiveUrge;        // higher chance to reproduction BUT spends more time finding a mate
+    public bool isPregnant = false;
     public int currentPregnancy;
     public int pregnancyDuration;  // stronger kids BUT can die during pregnancy meaning no inheriting at all
+    public int reproductiveUrge;        // higher chance to reproduction BUT spends more time finding a mate
     void Start()
     {
         animal = GetComponent<Animal>();

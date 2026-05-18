@@ -7,8 +7,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Eat : MonoBehaviour
     {
         private Animal animal;
-        public HungerBar hungerBar;
-        private int maxHunger = 100;
+        [HideInInspector] public HungerBar hungerBar;
+        public int maxHunger = 100;
         public int critical;
         public int currentHunger;
 

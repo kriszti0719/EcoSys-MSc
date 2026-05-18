@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
+    [HideInInspector] public Animal animal;
     public float moveSpeed;
     public float rotSpeed;
-    public Animal animal;
 
     private Vector3 targetPosition;
     private bool hasTarget;

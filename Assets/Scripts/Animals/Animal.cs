@@ -99,7 +99,7 @@ public abstract class Animal : MonoBehaviour
 
         aging.setAging(
             _age: 0.01f,
-            _size: (mother.aging.size + father.size) / 2f,
+            _size: (mother.aging.adultSize + father.size) / 2f,
             _lifeSpan: MutateTrait(mother.aging.lifeSpan, father.lifeSpan)
         );
         bravery = Mathf.RoundToInt(MutateTrait(mother.bravery, father.bravery));
@@ -196,7 +196,6 @@ public abstract class Animal : MonoBehaviour
             sensor.CheckForPredators();
             if (sensor.danger && status != Status.FLEE)
             {
-                // --- Bravery roll ---
                 float fleeChance = Mathf.Clamp01(1f - bravery / 100f);
                 float roll = UnityEngine.Random.value;
 
@@ -220,7 +219,6 @@ public abstract class Animal : MonoBehaviour
                 {
                     if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
                     
-                    // If we were searching for a mate specifically, check target acceptance
                     if (status == Status.SEARCH && sensor.targetMask == (1 << getTargetLayerToMate()))
                     {
                         if (targetRef != null)

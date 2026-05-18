@@ -5,18 +5,17 @@ using UnityEngine;
 
 public class Sensor : MonoBehaviour
 {
+    [HideInInspector] public Animal animal;
     [Range(0, 360)]
     public int angle = 160;
     public int radius;
     public int camouflage;
     public int stealth;
-    // The layer masks for filtering targets and obstructions:
+    
     public LayerMask targetMask;
     public LayerMask obstructionMask;
 
     public bool canSeeTarget;
-    public Animal animal;
-    public int secCntr = 0;
     public bool danger = false;
 
     private void Start()

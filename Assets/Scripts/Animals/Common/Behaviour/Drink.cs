@@ -10,10 +10,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Drink : MonoBehaviour
     {
         private Animal animal;
-        public ThirstBar thirstBar;
-        private int maxThirst = 200;
-        public int currentThirst;
+        [HideInInspector] public ThirstBar thirstBar;
+        public int maxThirst = 200;
         public int critical;
+        public int currentThirst;
 
         public event Action OnThirstCritical;
         public event Action OnThirstDepleted;

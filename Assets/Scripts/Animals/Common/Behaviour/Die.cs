@@ -8,7 +8,6 @@ using UnityEngine;
 public class Die : MonoBehaviour
 {
     private Animal animal;
-    public bool isCaptured = false;
 
     void Start()
     {

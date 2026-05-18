@@ -11,15 +11,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Mate : MonoBehaviour
     {
         private Animal animal;
-        [SerializeField]
-        private int currentMatingUrge;
+        [HideInInspector] public MatingUrgeBar matingBar;
         public bool enableMating;
-        public int matingCooldown = 0;
-        private int maxMatingCooldown = 150;
-        public MatingUrgeBar matingBar;
-        private int maxMatingUrge = 100;
-        [SerializeField]
         public int charm;
+        public int maxMatingUrge = 100;
+        public int currentMatingUrge;
+        public int maxMatingCooldown = 150;
+        public int matingCooldown = 0;
         void Start()
         {
             animal = GetComponent<Animal>();
