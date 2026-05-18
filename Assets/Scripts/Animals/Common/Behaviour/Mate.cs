@@ -14,6 +14,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         [SerializeField]
         private int currentMatingUrge;
         public bool enableMating;
+        public int matingCooldown = 0;
+        private int maxMatingCooldown = 150;
         public MatingUrgeBar matingBar;
         private int maxMatingUrge = 100;
         [SerializeField]
@@ -22,10 +24,15 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             animal = GetComponent<Animal>();
         }
-        public void setBar(GameObject barsContainer)
+        public void setBar(GameObject barsContainer, bool randomize = false)
         {
             this.matingBar = barsContainer.GetComponentInChildren<MatingUrgeBar>();
-            currentMatingUrge = maxMatingUrge;
+            currentMatingUrge = randomize ? UnityEngine.Random.Range(40, maxMatingUrge) : maxMatingUrge;
+            if (randomize)
+            {
+                matingCooldown = UnityEngine.Random.Range(0, maxMatingCooldown);
+                enableMating = matingCooldown == 0;
+            }
             matingBar.SetMaxMatingUrge(maxMatingUrge);
         }
         public void updateBar()
@@ -34,12 +41,22 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
+            if (matingCooldown > 0)
+            {
+                matingCooldown--;
+            }
+
+            if (matingCooldown == 0 && animal.reproduction.isFertile && !animal.reproduction.isPregnant)
+            {
+                enableMating = true;
+            }
             currentMatingUrge--;
         }
         public void Mating()
         {
             currentMatingUrge = maxMatingUrge;
             enableMating = false;
+            matingCooldown = maxMatingCooldown;
             animal.triedForBaby++;
             
             IsSuccess();
