@@ -31,10 +31,10 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleHungerCritical()
     {
-        if (animal.status == Status.SEARCH_MATE || animal.status == Status.REST)
+        if (animal.status == Status.SEARCH || animal.status == Status.REST)
         {
             animal.setTargetLayerToEat();
-            animal.status = Status.SEARCH_FOOD;
+            animal.status = Status.SEARCH;
         }
     }
     public void HandleHungerDepleted()
@@ -43,10 +43,10 @@ public class EventHandler : MonoBehaviour
     }
     public void HandleThirstCritical()
     {
-        if (animal.status == Status.SEARCH_MATE || animal.status == Status.REST)
+        if (animal.status == Status.SEARCH || animal.status == Status.REST)
         {
             animal.sensor.targetMask = LayerMask.GetMask("Drink");
-            animal.status = Status.SEARCH_DRINK;
+            animal.status = Status.SEARCH;
         }
     }
     public void HandleThirstDepleted()

@@ -99,7 +99,8 @@ public static class DebugLogger
                 $"{animal.movement.moveSpeed};" +
                 $"{animal.sensor.radius};" +
                 $"{animal.reproduction.reproductiveUrge};" +
-                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
+                $"{animal.aging.lifeSpan};" +
+                $"{animal.mating.charm};" +
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +

@@ -23,10 +23,13 @@ public class UtilityDecision
 
         float max = Mathf.Max(eatU, drinkU, restU, mateU);
 
-        if (max == eatU) return Status.SEARCH_FOOD;
-        if (max == drinkU) return Status.SEARCH_DRINK;
         if (max == restU) return Status.REST;
-        return Status.SEARCH_MATE;
+
+        if (max == eatU) a.setTargetLayerToEat();
+        else if (max == drinkU) a.sensor.targetMask = LayerMask.GetMask("Drink");
+        else a.setTargetLayerToMate();
+
+        return Status.SEARCH;
     }
 
 }

@@ -2,6 +2,7 @@ using Assets.Scripts.Animals.Common.Behaviour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Assets.Scripts;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -230,57 +231,57 @@ public abstract class Animal : MonoBehaviour
 
         switch (status)
         {
-            case Status.SEARCH_MATE:
-                {
-                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
-                    if (targetRef != null)
-                    {
-                        Animal targetedMate = targetRef.GetComponent<Animal>();
-                        if (targetedMate == null || targetedMate.isMale == this.isMale || !targetedMate.mating.IsAcceptable(this))
-                        {
-                            this.rejectedBy.Add(targetRef);
-                            targetRef = null;
-                        }
-                        else
-                        {
-                            reproduction.mate = targetedMate;
-                            targetedMate.reproduction.mate = this;
-
-                            setTargetLayerToMate();
-                            targetRef = targetedMate.gameObject;
-                            (prevStatus, status) = (status, Status.MOVE_TOWARDS);
-
-                            targetedMate.setTargetLayerToMate();
-                            targetedMate.targetRef = this.gameObject;
-                            (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
-                        }
-                    }
-                    break;
-                }
-            case Status.SEARCH_FOOD:
-            case Status.SEARCH_DRINK:
+            case Status.SEARCH:
             case Status.WANDER:
                 {
                     if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
+                    
+                    // If we were searching for a mate specifically, check target acceptance
+                    if (status == Status.SEARCH && sensor.targetMask == (1 << getTargetLayerToMate()))
+                    {
+                        if (targetRef != null)
+                        {
+                            Animal targetedMate = targetRef.GetComponent<Animal>();
+                            if (targetedMate == null || targetedMate.isMale == this.isMale || !targetedMate.mating.IsAcceptable(this))
+                            {
+                                this.rejectedBy.Add(targetRef);
+                                targetRef = null;
+                            }
+                            else
+                            {
+                                reproduction.mate = targetedMate;
+                                targetedMate.reproduction.mate = this;
+
+                                targetRef = targetedMate.gameObject;
+                                (prevStatus, status) = (status, Status.MOVE_TOWARDS);
+
+                                targetedMate.setTargetLayerToMate();
+                                targetedMate.targetRef = this.gameObject;
+                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
+                            }
+                        }
+                    }
+
                     if (sensor.targetMask == LayerMask.GetMask("None"))
                     {
-                        if (eat.currentHunger < drink.currentThirst && eat.IsHungry())   // TODO: ez tul sokszor lesz igaz tho
+                        if (eat.currentHunger < drink.currentThirst && eat.IsHungry())
                         {
                             setTargetLayerToEat();
-                            status = Status.SEARCH_FOOD;
+                            status = Status.SEARCH;
                         }
                         else if (!(reproduction.isFertile && mating.enableMating) || drink.IsThirsty())
                         {
                             sensor.targetMask = LayerMask.GetMask("Drink");
-                            status = Status.SEARCH_DRINK;
+                            status = Status.SEARCH;
                         }
                         else
                         {
                             setTargetLayerToMate();
-                            status = Status.SEARCH_MATE;
+                            status = Status.SEARCH;
                         }
                     }
-                    if (targetRef != null)
+
+                    if (targetRef != null && status != Status.MOVE_TOWARDS)
                     {
                         (prevStatus, status) = (status, Status.MOVE_TOWARDS);
                     }
@@ -292,26 +293,27 @@ public abstract class Animal : MonoBehaviour
                     if (targetRef != null)
                     {
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
-                        if (prevStatus == Status.SEARCH_MATE && distanceToTarget < 7f) 
+                        
+                        if (targetRef.TryGetComponent<Animal>(out var mateAnimal) && mateAnimal.species == this.species)
                         {
-                            Animal mateAnimal = targetRef.GetComponent<Animal>();
-                            if (mateAnimal != null)
+                            if (distanceToTarget < 7f)
                             {
                                 reproduction.mate = mateAnimal;
                                 mateAnimal.reproduction.mate = this;
-                                
+
                                 mating.Mating();
                                 mateAnimal.mating.Mating();
+                                (prevStatus, status) = (Status.WANDER, Status.WANDER);
                             }
                         }
-                        if (distanceToTarget < 5f)
+                        else if (distanceToTarget < 5f)
                         {
-                            if (prevStatus == Status.SEARCH_FOOD)
+                            if (targetRef.GetComponent<IEdible>() != null)
                             {
                                 eat.Eating();
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);
                             }
-                            else if (prevStatus == Status.SEARCH_DRINK)
+                            else if (targetRef.layer == LayerMask.NameToLayer("Drink"))
                             {
                                 drink.Drinking();
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);

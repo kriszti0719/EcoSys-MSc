@@ -35,9 +35,12 @@ public class FCMDecision
         float max = Mathf.Max(eat, drink, rest, flee, mate);
 
         if (max == flee) return Status.FLEE;
-        if (max == eat) return Status.SEARCH_FOOD;
-        if (max == drink) return Status.SEARCH_DRINK;
         if (max == rest) return Status.REST;
-        return Status.SEARCH_MATE;
+
+        if (max == eat) a.setTargetLayerToEat();
+        else if (max == drink) a.sensor.targetMask = LayerMask.GetMask("Drink");
+        else a.setTargetLayerToMate();
+
+        return Status.SEARCH;
     }
 }

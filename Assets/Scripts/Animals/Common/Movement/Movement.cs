@@ -28,12 +28,10 @@ public class Movement : MonoBehaviour
             targetPosition = animal.targetRef.transform.position;
             hasTarget = true;
         }
-        else if (animal.status == Status.WANDER || animal.status == Status.SEARCH_FOOD || 
-                 animal.status == Status.SEARCH_DRINK || animal.status == Status.SEARCH_MATE)
+        else if (animal.status == Status.WANDER || animal.status == Status.SEARCH)
         {
             UpdateWander();
-        }
-        else
+        }        else
         {
             hasTarget = false;
         }

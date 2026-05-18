@@ -54,10 +54,7 @@ public class Sensor : MonoBehaviour
             if (animal.rejectedBy.Contains(target.gameObject))
                 continue;
 
-            //If already has been caught
             Animal targetAnimal = target.GetComponent<Animal>();
-            if (targetAnimal != null && targetAnimal.status == Status.CAUGHT)
-                continue;
 
             Vector3 directionToTarget = (target.position - transform.position).normalized;
             if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)

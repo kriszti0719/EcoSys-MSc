@@ -5,13 +5,9 @@ using UnityEngine;
 public enum Status
 {
     WANDER,
+    SEARCH,
+    MOVE_TOWARDS,
 
     FLEE,
     REST,
-
-    SEARCH_FOOD,
-    SEARCH_DRINK,
-    SEARCH_MATE,
-
-    MOVE_TOWARDS
-    }
+}
