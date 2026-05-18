@@ -188,24 +188,21 @@ public abstract class Animal : MonoBehaviour
         }
 
         oxygen = (transform.localPosition.y < 20 && targetRef == null) ? oxygen - 1 : maxOxygen;
-        if (oxygen == 0 && status != Status.DIE)
+        if (oxygen == 0)
         {
             OnDrowned?.Invoke();
         }
 
-        if (!(status == Status.DIE || status == Status.CAUGHT))
-        {
-            rest.Step();
-            eat.Step();
-            drink.Step();
-            if (reproduction.isFertile) mating.Step();
-            if (reproduction.IsPregnant()) reproduction.StepPregnancy();
+        rest.Step();
+        eat.Step();
+        drink.Step();
+        if (reproduction.isFertile) mating.Step();
+        if (reproduction.IsPregnant()) reproduction.StepPregnancy();
 
-            rest.updateBar();
-            eat.updateBar();
-            drink.updateBar();
-            mating.updateBar();
-        }
+        rest.updateBar();
+        eat.updateBar();
+        drink.updateBar();
+        mating.updateBar();
     }
     public void Decide()
     {

@@ -73,16 +73,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void ToRest(int time)
         {
-            if (animal.status != Status.DIE)
+            if (currentStamina + time < maxStamina)
             {
-                if (currentStamina + time < maxStamina)
-                {
-                    animal.breakCounter = time;
-                }
-                else
-                {
-                    animal.breakCounter = maxStamina - currentStamina;
-                }
+                animal.breakCounter = time;
+            }
+            else
+            {
+                animal.breakCounter = maxStamina - currentStamina;
             }
         }
     }

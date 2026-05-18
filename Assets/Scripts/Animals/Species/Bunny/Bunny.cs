@@ -45,7 +45,6 @@ public class Bunny : Animal, IEdible
     }
     public void Consumed()
     {
-        (prevStatus, status) = (status, Status.CAUGHT);
         die.HandleDeath(CauseOfDeath.CONSUMED);
     }
 }

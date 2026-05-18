@@ -27,11 +27,7 @@ public class Die : MonoBehaviour
     }
     public void HandleDeath(CauseOfDeath cause)
     {
-        if (animal.status != Status.DIE)
-        {
-            animal.cause = cause;
-            (animal.prevStatus, animal.status) = (animal.status, Status.DIE);
-            DestroyAnimal();
-        }
+        animal.cause = cause;
+        DestroyAnimal();
     }
 }

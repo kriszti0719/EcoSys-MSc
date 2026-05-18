@@ -13,8 +13,5 @@ public enum Status
     SEARCH_DRINK,
     SEARCH_MATE,
 
-    MOVE_TOWARDS,
-
-    DIE,
-    CAUGHT
+    MOVE_TOWARDS
     }

@@ -23,12 +23,6 @@ public class Movement : MonoBehaviour
 
     private void Update()
     {
-        if (animal.status == Status.DIE || animal.status == Status.CAUGHT)
-        {
-            hasTarget = false;
-            return;
-        }
-
         if (animal.status == Status.MOVE_TOWARDS && animal.targetRef != null)
         {
             targetPosition = animal.targetRef.transform.position;
