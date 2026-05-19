@@ -10,28 +10,24 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Drink : MonoBehaviour
     {
         private Animal animal;
-        public ThirstBar thirstBar;
-        private int drinkDuration = 5;
-        private int drinkAmount = 10;
-        private int maxThirst = 200;
-        public int currentThirst;
+        [HideInInspector] public ThirstBar thirstBar;
+        public int maxThirst = 200;
         public int critical;
+        public int currentThirst;
 
-        public event Action OnThirstCritical;
-        public event Action OnThirstFull;
         public event Action OnThirstDepleted;
+        public event Action OnThirstCritical;
         void Start()
         {
             animal = GetComponent<Animal>();
         }
-        private bool IsFull() => currentThirst == maxThirst;
         private bool IsCritical() => currentThirst <= critical;
         private bool IsDepleted() => currentThirst == 0;
         public bool IsThirsty() => currentThirst < 70;
-        public void setBar(GameObject barsContainer)
+        public void setBar(GameObject barsContainer, bool randomize = false)
         {
             this.thirstBar = barsContainer.GetComponentInChildren<ThirstBar>();
-            currentThirst = maxThirst;
+            currentThirst = randomize ? UnityEngine.Random.Range(critical, maxThirst) : maxThirst;
             thirstBar.SetMaxThirst(maxThirst);
         }
         public void updateBar()
@@ -40,31 +36,22 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if (animal.status == Status.DRINK)
-                currentThirst = Mathf.Min(currentThirst + drinkAmount, maxThirst);
-            else
-                currentThirst--;
+            currentThirst--;
 
             if (IsDepleted())
             {
                 OnThirstDepleted?.Invoke();
-            }
-            else if (IsFull())
-            {
-                OnThirstFull?.Invoke();
             }
             else if (IsCritical())
             {
                 OnThirstCritical?.Invoke();
             }
         }
-        public void StartDrinking()
+        public void Drinking()
         {
-            animal.breakCounter = drinkDuration;
-        }
-        public void FinishDrinking()
-        {
-            return;
+            currentThirst = maxThirst;
+            animal.targetRef = null;
+            animal.sensor.targetMask = LayerMask.GetMask("None");
         }
     }
 }

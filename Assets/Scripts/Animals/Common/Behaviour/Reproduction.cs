@@ -9,21 +9,16 @@ public class Reproduction : MonoBehaviour
     public Animal mate;
     public MateTraits mateTraits;
     public bool isPregnant = false;
-
-    public bool isFertile;
-    public int reproductiveUrge;        // higher chance to reproduction BUT spends more time finding a mate
     public int currentPregnancy;
-    public int pregnancyDuration;  // stronger kids BUT can die during pregnancy meaning no inheriting at all
+    public int pregnancyDuration;
     void Start()
     {
         animal = GetComponent<Animal>();
         currentPregnancy = 0;
     }
-    public void setReproduction(int _reproductiveUrge, int _pregnancyDuration, bool _isFertile)
+    public void setReproduction(int _pregnancyDuration)
     {
-        this.reproductiveUrge = _reproductiveUrge;
-        this.pregnancyDuration = _pregnancyDuration;
-        this.isFertile = _isFertile;
+        pregnancyDuration = _pregnancyDuration;
     }
     public void StepPregnancy()
     {
@@ -65,13 +60,6 @@ public class Reproduction : MonoBehaviour
         animal.gaveBirth++;
         animal.kids += rnd;
         isPregnant = false;
-    }
-    public void Mature()
-    {
-        if (!isFertile)
-        {
-            isFertile = true;
-        }
     }
     public bool IsPregnant()
     {

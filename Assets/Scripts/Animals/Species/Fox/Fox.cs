@@ -7,11 +7,11 @@ public class Fox : Animal
     }
     public override int getTargetLayerToMate()
     {
-        return LayerMask.GetMask("Fox"); ;
+        return LayerMask.GetMask("Fox");
     }
     public override int getTargetLayerToEat()
     {
-        return LayerMask.GetMask("Bunny"); ;
+        return LayerMask.GetMask("Bunny");
     }
     public override void setTargetLayerToEat()
     {

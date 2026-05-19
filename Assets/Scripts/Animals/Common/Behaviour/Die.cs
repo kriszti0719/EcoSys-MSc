@@ -8,28 +8,25 @@ using UnityEngine;
 public class Die : MonoBehaviour
 {
     private Animal animal;
-    public bool isCaptured = false;
 
     void Start()
     {
         animal = GetComponent<Animal>();
     }
-    public void Destroy()
+    public void DestroyAnimal()
     {
-        animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
-
-        // For testing purposes only
         //DebugLogger.ShowNotification("Someone died :(");
+        animal.GetComponentInParent<AnimalSpawner>().RemoveAnimal(animal);
 
         foreach (GameObject g in animal.destructibles)
         {
             Destroy(g);
         }
         Destroy(gameObject);
-        
     }
-    public void CatchPrey()
+    public void HandleDeath(CauseOfDeath cause)
     {
-        isCaptured = true;
+        animal.cause = cause;
+        DestroyAnimal();
     }
 }

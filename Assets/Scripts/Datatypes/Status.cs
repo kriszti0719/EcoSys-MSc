@@ -5,21 +5,9 @@ using UnityEngine;
 public enum Status
 {
     WANDER,
-
-    FLEE,
-    WAIT,
-    REST,
-
-    SEARCH_FOOD,
-    SEARCH_DRINK,
-    SEARCH_MATE,
-
+    SEARCH,
     MOVE_TOWARDS,
 
-    EAT,
-    DRINK,
-    MATE,
-
-    DIE,
-    CAUGHT
+    FLEE,
+    REST,
 }

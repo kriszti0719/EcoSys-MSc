@@ -1,306 +1,166 @@
-using System.Collections;
 using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
+    [HideInInspector] public Animal animal;
     public float moveSpeed;
     public float rotSpeed;
 
-    public bool isPassive;
-    public bool isWandering = false;
-    public bool isRotatingLeft = false;
-    public bool isRotatingRight = false;
-    public bool isWalking = false;
+    private Vector3 targetPosition;
+    private bool hasTarget;
+    private float wanderTimer;
+    
+    private const float MIN_WANDER_DIST = 5f;
+    private const float MAX_WANDER_DIST = 15f;
+    private const float WANDER_TIME_LIMIT = 10f;
 
-    // Define the minimum and maximum Y positions where the bunnies can wander
-    public float minY = 21f;
-    public Animal animal;
-    public bool isDying = false;
-
-    public bool isTurningAway;
-
-    private Coroutine wanderingCoroutine; // Coroutine referencia
-
-    private float walkTime;
-    private int rotateDir;
-    private float rotAngle;
-    private float rotTime;
-
-    public int passedSeconds = 0;
-
-    //Flags 
-    private bool wanderInitialized = false;
-    private bool turningAwayEnded = true;
-    private bool turningEnded = true;
+    private void Start()
+    {
+        if (animal == null) animal = GetComponent<Animal>();
+    }
 
     public void StartMoving()
     {
-        wanderingCoroutine = null;
-        animal = GetComponent<Animal>();
-        rotSpeed = moveSpeed * 30;
+        PickNewWanderTarget();
     }
-    void Start()
-    {
-        animal.OnDeath += HandleDeathAnimation;
-    }
+
     private void Update()
     {
-        if (animal.status == Status.WANDER || 
-                animal.status == Status.SEARCH_FOOD ||
-                animal.status == Status.SEARCH_DRINK ||
-                animal.status == Status.SEARCH_MATE)
-        {
-            Wandering();
-        }
-        else if (animal.status == Status.MOVE_TOWARDS)
-        {
-            if (wanderingCoroutine != null)
-                StopWander();            
-            MovingTowards();
-        }
-    }
-    public void HandleDeathAnimation()
-    {
-        if (wanderingCoroutine != null)
-            StopWander();
-        isDying = true;
-        StartCoroutine(Die());
-    }
-    private void Wandering()
-    {
-        if (!isWandering)
-        {
-            if (wanderingCoroutine != null)
-                DebugLogger.Warning("wanderingCoroutine should be null at this point");
-            wanderingCoroutine = StartCoroutine(Wander());
-            //isWandering = true;
-        }
-        if (isRotatingRight)
-        {
-            transform.Rotate(transform.up * Time.deltaTime * rotSpeed);
-        }
-        if (isRotatingLeft)
-        {
-            transform.Rotate(transform.up * Time.deltaTime * -rotSpeed);
-        }
-        if (isWalking)
-        {
-            if (animal.transform.localPosition.y > 22 || isTurningAway)
-                transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
-            else
-            {
-                isTurningAway = true;
-                isWalking = false;
-                RestartWander();               
-            }
-        }
-    }
-    private void StopWander()
-    {
-        StopCoroutine(wanderingCoroutine);
-        wanderingCoroutine = null;
+        if (animal == null) return;
 
-        isRotatingLeft = false;
-        isRotatingRight = false;
-        isWandering = false;
-        isTurningAway = false;
-    }
-    private void RestartWander()
-    {
-        StopCoroutine(wanderingCoroutine);
-        isWandering = false;
-        isRotatingLeft = false;
-        isRotatingRight = false;
-        isWandering = false;
-        wanderingCoroutine = StartCoroutine(Wander()); 
-        //isWandering = true;
-    }
-    IEnumerator Wander()
-    {
-        walkTime = Random.Range(5,7);
-        rotateDir = Random.Range(0, 2); 
-        rotAngle =  Random.Range(10f, 180);
+        rotSpeed = moveSpeed * 30f;
 
-       isWandering = true;
-
-        if(isTurningAway)
+        if (animal.status == Status.MOVE_TOWARDS && animal.targetRef != null)
         {
-            rotAngle = Random.Range(90f, 140f);
-            rotTime = rotAngle / rotSpeed;
-            
-            isRotatingLeft = true;
-            
-            yield return new WaitForSeconds(rotTime);
-            isRotatingLeft = false;
-            rotateDir = Random.Range(0, 2);
-            rotAngle = Random.Range(10f, 50f);
-            walkTime = Random.Range(5, 10);
+            targetPosition = animal.targetRef.transform.position;
+            hasTarget = true;
         }
-        rotTime = rotAngle / rotSpeed;
-
-        //Walking
-        isWalking = true;
-        yield return new WaitForSeconds(walkTime);
-        isWalking = false;
-
-        if (isTurningAway)
+        else if (animal.status == Status.WANDER || animal.status == Status.SEARCH)
         {
-            isTurningAway = false;
+            UpdateWander();
         }
-
-        //Turning
-        rotateDir = Random.Range(0, 2);
-        if (rotateDir == 0)
+        else if (animal.status == Status.FLEE)
         {
-            isRotatingLeft = true;
+            UpdateFlee();
         }
         else
         {
-            isRotatingRight = true;
+            hasTarget = false;
         }
-        yield return new WaitForSeconds(rotTime);
-        isRotatingLeft = false;
-        isRotatingRight = false;
 
-        isWandering = false;
-        wanderingCoroutine = null;
-    }
-    private void StartWander()
-    {
-        walkTime = Random.Range(5, 7);
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 180);
-
-        wanderInitialized = true;
-    }
-    private void StartWalking()
-    {
-        isWalking = true;
-    }
-    private void StopWalking()
-    {
-        isWalking = false;
-    }
-    private void StartTurning()
-    {
-        rotateDir = Random.Range(0, 2);
-        if (rotateDir == 0)
+        if (hasTarget)
         {
-            isRotatingLeft = true;
+            MoveTowardsTarget();
+        }
+    }
+
+    private void UpdateFlee()
+    {
+        if (animal.spottedThreats == null || animal.spottedThreats.Count == 0)
+        {
+            hasTarget = false;
+            return;
+        }
+
+        Vector3 weightedFleeVector = Vector3.zero;
+
+        foreach (var threat in animal.spottedThreats)
+        {
+            if (threat == null) continue;
+
+            Vector3 directionAway = transform.position - threat.transform.position;
+            float distance = directionAway.magnitude;
+
+            if (distance > 0)
+            {
+                // Weigh closer threats more (1/distance^2 or 1/distance)
+                weightedFleeVector += directionAway.normalized / distance;
+            }
+        }
+
+        if (weightedFleeVector.sqrMagnitude > 0.001f)
+        {
+            targetPosition = transform.position + weightedFleeVector.normalized * 5f;
+            hasTarget = true;
         }
         else
         {
-            isRotatingRight = true;
+            hasTarget = false;
         }
-        turningEnded = false;
     }
-    private void StopTurning()
+
+    private void UpdateWander()
     {
-        isRotatingLeft = false;
-        isRotatingRight = false;
-
-        isWandering = false;
-        wanderingCoroutine = null;
-
-        turningEnded = true;
-    }
-    private void StartTurningAway()
-    {
-        rotAngle = Random.Range(90f, 140f);
-        rotTime = rotAngle / rotSpeed;
-
-        isRotatingLeft = true;
-
-        turningAwayEnded = false;
-    }
-    private void StopTurningAway()
-    {
-        isRotatingLeft = false;
-        rotateDir = Random.Range(0, 2);
-        rotAngle = Random.Range(10f, 50f);
-        walkTime = Random.Range(5, 10);
-        rotTime = rotAngle / rotSpeed;
-
-        turningAwayEnded = true;
-    }
-    public void WanderTo()
-    {
-        if (!wanderInitialized)
+        wanderTimer -= Time.deltaTime;
+        
+        if (wanderTimer <= 0 || Vector3.Distance(transform.position, targetPosition) < 1.5f || transform.position.y < 21f)
         {
-            StartWander();
+            PickNewWanderTarget();
+        }
+        hasTarget = true;
+    }
 
-            if (isTurningAway)
+    private void PickNewWanderTarget()
+    {
+        bool validPointFound = false;
+        int attempts = 0;
+
+        int groundLayerMask = LayerMask.GetMask("Island");
+
+        while (!validPointFound && attempts < 15)
+        {
+            attempts++;
+            float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+            float dist = Random.Range(MIN_WANDER_DIST, MAX_WANDER_DIST);
+            
+            Vector3 offset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * dist;
+            Vector3 potentialTarget = transform.position + offset;
+
+            // Raycast down to check the height of the island at that point
+            if (Physics.Raycast(new Vector3(potentialTarget.x, 100f, potentialTarget.z), Vector3.down, out RaycastHit hit, 200f, groundLayerMask))
             {
-                StartTurningAway();
-            }
-            else
-            {
-                rotTime = rotAngle / rotSpeed;
-                StartWalking();
+                if (hit.point.y >= 22f)
+                {
+                    targetPosition = hit.point;
+                    validPointFound = true;
+                }
             }
         }
-        else if (!turningAwayEnded && passedSeconds >= rotTime * 10)
+
+        if (!validPointFound)
         {
-            StopTurningAway();
-            StartWalking();
+            targetPosition = transform.position - transform.forward * 5f;
         }
-        else if (isWalking && (isTurningAway && passedSeconds >= (rotTime + walkTime) * 10) || (!isTurningAway && passedSeconds >= (walkTime) * 10))
-        {
-            StopWalking();
-            if (isTurningAway)
-            {
-                isTurningAway = false;
-            }
-            StartTurning();
-        }
-        else if (!turningEnded && (isTurningAway && passedSeconds >= (rotTime + walkTime + rotTime) * 10) || (isTurningAway && passedSeconds >= (walkTime + rotTime) * 10))
-        {
-            StopTurning();
-            passedSeconds = 0;
-            isTurningAway = false;
-        }
-        passedSeconds++;
+        wanderTimer = WANDER_TIME_LIMIT;
     }
+
+    private void MoveTowardsTarget()
+    {
+        Vector3 direction = targetPosition - transform.position;
+        direction.y = 0; // Keep movement horizontal
+
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            
+            // Use much faster rotation speed when actively targeting or fleeing
+            float currentRotSpeed = rotSpeed;
+            if (animal.status == Status.MOVE_TOWARDS || animal.status == Status.FLEE)
+            {
+                currentRotSpeed *= 5f; // 5x faster turn when focused
+            }
+
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, currentRotSpeed * Time.deltaTime);
+            transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
+        }
+    }
+
     public void ChangeDirection(float amount, float all)
     {
         float direction = 360 / amount * all;
-        transform.Rotate(transform.up, -(direction));
-    }
-    private void MovingTowards()
-    {
-        if (animal.targetRef != null)
-        {
-            Vector3 directionToTarget = animal.targetRef.transform.position - transform.position;
-            directionToTarget.y = 0; // Keep the movement in the horizontal plane
-
-            Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);
-            transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
-
-            float distanceToTarget = Vector3.Distance(transform.position, animal.targetRef.transform.position);
-            if (distanceToTarget < 3f)
-            {
-                isWalking = false;
-            }
-            else
-            {
-                isWalking = true;
-            }
-        }
-    }
-    private IEnumerator Die()
-    {
-        yield return new WaitForSeconds(1f);
-
-        animal.barsContainer.transform.SetParent(null);
-
-        Quaternion targetRotation = Quaternion.Euler(0f, 0f, 90f);
-        while (transform.rotation != targetRotation)
-        {
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);
-            yield return null;
-        }
-        yield return new WaitForSeconds(1f);
-        animal.die.Destroy();
+        transform.Rotate(transform.up, -direction);
+        
+        targetPosition = transform.position + transform.forward * 10f;
+        wanderTimer = WANDER_TIME_LIMIT;
     }
 }

@@ -16,7 +16,7 @@ public class FCMDecision
         float thirstNormalized = 1f - (a.drink.currentThirst / 100f);
         float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina);
         float fearNormalized = a.spottedThreats.Any() ? 1f : 0f;
-        float mateNormalized = a.reproduction.reproductiveUrge / 100f;
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);
 
         model.SetInput("Hunger", hungerNormalized);
         model.SetInput("Thirst", thirstNormalized);
@@ -35,9 +35,12 @@ public class FCMDecision
         float max = Mathf.Max(eat, drink, rest, flee, mate);
 
         if (max == flee) return Status.FLEE;
-        if (max == eat) return Status.SEARCH_FOOD;
-        if (max == drink) return Status.SEARCH_DRINK;
         if (max == rest) return Status.REST;
-        return Status.SEARCH_MATE;
+
+        if (max == eat) a.setTargetLayerToEat();
+        else if (max == drink) a.sensor.targetMask = LayerMask.GetMask("Drink");
+        else a.setTargetLayerToMate();
+
+        return Status.SEARCH;
     }
 }

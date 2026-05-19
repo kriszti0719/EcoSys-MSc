@@ -2,6 +2,7 @@
 using Assets.Scripts.Datatypes;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
@@ -40,9 +41,9 @@ public class AnimalSpawner : Spawner
     public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
 
     [Header("Counter")]
-    public int maxStepCnt = 8;
-    public int maxDecideCnt = 2;
-    public int maxAgeCnt = 50;
+    public int maxStepCnt;
+    public int maxDecideCnt;
+    public int maxAgeCnt;
 
     public override void Generate()
     {
@@ -73,7 +74,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.Decide();
             });
         scheduledTasks.Add(decide);
@@ -83,7 +84,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.Step();
             });
         scheduledTasks.Add(step);
@@ -93,7 +94,7 @@ public class AnimalSpawner : Spawner
             _timer: 0f,
             _action: () =>
             {
-                foreach (var a in animals)
+                foreach (var a in animals.ToList())
                     a.aging.Aging();
             });
         scheduledTasks.Add(age);
@@ -172,7 +173,7 @@ public class AnimalSpawner : Spawner
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
 
-            EventHandler instantiatedEventHandler = instantiatedPrefab.AddComponent<EventHandler>();
+            AnimalEventHandler instantiatedAnimalEventHandler = instantiatedPrefab.AddComponent<AnimalEventHandler>();
 
             switch (animal.species)
             {
@@ -299,7 +300,7 @@ public class AnimalSpawner : Spawner
         instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
         instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-        instantiatedAnimal.SetBars(barsContainer);
+        instantiatedAnimal.SetBars(barsContainer, animal.mother == null);
     }
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
@@ -374,7 +375,7 @@ public class AnimalSpawner : Spawner
         if (BunnyCntr != 0) BunnyCntr = Counter("BUNNY");
         if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
 
-        DebugLogger.RegisterPopulation(step, FoxCntr, BunnyCntr);
+        DebugLogger.RegisterPopulation(step, BunnyCntr, FoxCntr);
     }
     public void RemoveAnimal(Animal animal)
     {

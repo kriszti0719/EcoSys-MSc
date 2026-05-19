@@ -31,7 +31,7 @@ public static class DebugLogger
 
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
+                writer.WriteLine("Step;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
             }
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
@@ -94,12 +94,13 @@ public static class DebugLogger
         {
             string dataLine = $"{step};" +
                 $"{animal.species.ToString()};" +
+                $"{animal.isMale};" +
                 $"{animal.cause.ToString()};" +
                 $"{animal.aging.currentAge};" +
                 $"{animal.movement.moveSpeed};" +
                 $"{animal.sensor.radius};" +
-                $"{animal.reproduction.reproductiveUrge};" +
-                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
+                $"{animal.aging.lifeSpan};" +
+                $"{animal.mating.charm};" +
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +
@@ -109,8 +110,13 @@ public static class DebugLogger
                 $"{animal.kids}"
                 ;
             writer.WriteLine(dataLine);
+            
+            // RegisterDeathToDb(step, animal);
         }
 
+    }
+    public static void RegisterDeathToDb(int step, Animal animal)
+    {
         string F(float v) => v.ToString(CultureInfo.InvariantCulture);
 
         string line =
@@ -118,7 +124,6 @@ public static class DebugLogger
             $"age={F(animal.aging.currentAge)}," +
             $"speed={F(animal.movement.moveSpeed)}," +
             $"sight={F(animal.sensor.radius)}," +
-            $"reproductiveUrge={F(animal.reproduction.reproductiveUrge)}," +
             $"lifeSpan={F(animal.aging.lifeSpan)}," +
             $"charm={F(animal.mating.charm)}," +
             $"pregnancyDuration={F(animal.reproduction.pregnancyDuration)}," +
@@ -132,8 +137,9 @@ public static class DebugLogger
 
         InfluxLogger.Log(line);
         DebugLogger.Info(line);
-    }
+    } 
 }
+
 
 public static class Notifier
 {
