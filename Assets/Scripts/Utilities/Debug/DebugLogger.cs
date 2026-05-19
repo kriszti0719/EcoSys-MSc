@@ -31,7 +31,7 @@ public static class DebugLogger
 
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
+                writer.WriteLine("Step;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
             }
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
@@ -94,6 +94,7 @@ public static class DebugLogger
         {
             string dataLine = $"{step};" +
                 $"{animal.species.ToString()};" +
+                $"{animal.isMale};" +
                 $"{animal.cause.ToString()};" +
                 $"{animal.aging.currentAge};" +
                 $"{animal.movement.moveSpeed};" +

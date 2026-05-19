@@ -173,7 +173,7 @@ public class AnimalSpawner : Spawner
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
 
-            EventHandler instantiatedEventHandler = instantiatedPrefab.AddComponent<EventHandler>();
+            AnimalEventHandler instantiatedAnimalEventHandler = instantiatedPrefab.AddComponent<AnimalEventHandler>();
 
             switch (animal.species)
             {

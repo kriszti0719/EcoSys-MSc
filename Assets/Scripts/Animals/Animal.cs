@@ -2,6 +2,7 @@ using Assets.Scripts.Animals.Common.Behaviour;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Assets.Scripts;
 using UnityEngine;
 
@@ -42,7 +43,7 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public Mate mating;
     [HideInInspector] public Movement movement;
     [HideInInspector] public GameObject barsContainer;
-    private EventHandler eventHandler;
+    [HideInInspector] public AnimalEventHandler animalEventHandler;
     public event Action OnDrowned;
     public Species getSpecies()
     {
@@ -66,7 +67,7 @@ public abstract class Animal : MonoBehaviour
         aging = GetComponent<Age>();
         mating = GetComponent<Mate>();
         movement = GetComponent<Movement>();
-        eventHandler = GetComponent<EventHandler>();
+        animalEventHandler = GetComponent<AnimalEventHandler>();
     }
     public void SetTraits(float rnd)
     {
@@ -144,26 +145,27 @@ public abstract class Animal : MonoBehaviour
     }
     protected void Subscribe()
     {
-        eat.OnHungerCritical += eventHandler.HandleHungerCritical;
-        eat.OnHungerDepleted += eventHandler.HandleHungerDepleted;
+        eat.OnHungerCritical += animalEventHandler.HandleHungerCritical;
+        eat.OnHungerDepleted += animalEventHandler.HandleHungerDepleted;
 
-        drink.OnThirstCritical += eventHandler.HandleThirstCritical;
-        drink.OnThirstDepleted += eventHandler.HandleThirstDepleted;
+        drink.OnThirstCritical += animalEventHandler.HandleThirstCritical;
+        drink.OnThirstDepleted += animalEventHandler.HandleThirstDepleted;
 
-        rest.OnRestFull += eventHandler.HandleRestFull;
-        rest.OnRestDepleted += eventHandler.HandleRestDepleted;
-        rest.OnBreakEnded += eventHandler.HandleBreakEnded;
+        rest.OnRestDepleted += animalEventHandler.HandleRestDepleted;
+        rest.OnBreakEnded += animalEventHandler.HandleBreakEnded;
 
-        aging.OnAgeLimitReached += eventHandler.HandleAgeLimitReached;
+        aging.OnAgeLimitReached += animalEventHandler.HandleAgeLimitReached;
 
-        OnDrowned += eventHandler.HandleDrowning;
+        sensor.OnTargetSpotted += animalEventHandler.HandleTargetSpotted;
+
+        OnDrowned += animalEventHandler.HandleDrowning;
     }
     protected virtual void Start()
     {
         Subscribe();
         cause = CauseOfDeath.NONE;
         status = Status.WANDER;
-        oxygen = maxOxygen; // TODO: delete
+        oxygen = maxOxygen;
         movement.StartMoving();
     }
     public void Step()
@@ -200,11 +202,13 @@ public abstract class Animal : MonoBehaviour
                     (prevStatus, status) = (Status.WANDER, Status.FLEE);
                     targetRef = null;
                     sensor.targetMask = LayerMask.GetMask("None");
+                    return;
                 }
             }
             else if (!sensor.danger && status == Status.FLEE)
             {
                 (status, prevStatus) = (prevStatus, status);
+                return;
             }
         }
 
@@ -213,8 +217,12 @@ public abstract class Animal : MonoBehaviour
             case Status.SEARCH:
             case Status.WANDER:
                 {
-                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
-                    
+                    if (rest.ChanceToRest())
+                    {
+                        (prevStatus, status) = (status, Status.REST);
+                        return;
+                    }
+
                     if (status == Status.SEARCH && sensor.targetMask == (1 << getTargetLayerToMate()))
                     {
                         if (targetRef != null)
@@ -236,6 +244,7 @@ public abstract class Animal : MonoBehaviour
                                 targetedMate.setTargetLayerToMate();
                                 targetedMate.targetRef = this.gameObject;
                                 (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
+                                return;
                             }
                         }
                     }
@@ -246,32 +255,40 @@ public abstract class Animal : MonoBehaviour
                         {
                             setTargetLayerToEat();
                             status = Status.SEARCH;
+                            return;
                         }
                         else if (!mating.enableMating || drink.IsThirsty())
                         {
                             sensor.targetMask = LayerMask.GetMask("Drink");
                             status = Status.SEARCH;
+                            return;
                         }
                         else
                         {
                             setTargetLayerToMate();
                             status = Status.SEARCH;
+                            return;
                         }
                     }
 
                     if (targetRef != null && status != Status.MOVE_TOWARDS)
                     {
                         (prevStatus, status) = (status, Status.MOVE_TOWARDS);
+                        return;
                     }
                     break;
                 }
             case Status.MOVE_TOWARDS:
                 {
-                    if (rest.ChanceToRest()) (prevStatus, status) = (status, Status.REST);
+                    if (rest.ChanceToRest())
+                    {
+                        (prevStatus, status) = (status, Status.REST);
+                        return;
+                    }
                     if (targetRef != null)
                     {
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);
-                        
+
                         if (targetRef.TryGetComponent<Animal>(out var mateAnimal) && mateAnimal.species == this.species)
                         {
                             if (distanceToTarget < 7f)
@@ -282,6 +299,7 @@ public abstract class Animal : MonoBehaviour
                                 mating.Mating();
                                 mateAnimal.mating.Mating();
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);
+                                return;
                             }
                         }
                         else if (distanceToTarget < 5f)
@@ -290,17 +308,20 @@ public abstract class Animal : MonoBehaviour
                             {
                                 eat.Eating();
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);
+                                return;
                             }
                             else if (targetRef.layer == LayerMask.NameToLayer("Drink"))
                             {
                                 drink.Drinking();
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);
+                                return;
                             }
                         }
                     }
                     else
                     {
                         (status, prevStatus) = (prevStatus, Status.WANDER);
+                        return;
                     }
                     break;
                 }

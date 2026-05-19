@@ -18,6 +18,8 @@ public class Sensor : MonoBehaviour
     public bool canSeeTarget;
     public bool danger = false;
 
+    public event System.Action OnTargetSpotted;
+
     private void Start()
     {
         animal = GetComponent<Animal>();
@@ -78,7 +80,16 @@ public class Sensor : MonoBehaviour
         }
 
         canSeeTarget = nearestTarget != null;
-        animal.targetRef = canSeeTarget ? nearestTarget : null;
+
+        if (canSeeTarget && animal.targetRef == null)
+        {
+            animal.targetRef = nearestTarget;
+            OnTargetSpotted?.Invoke();
+        }
+        else
+        {
+            animal.targetRef = nearestTarget;
+        }
     }
     public void CheckForPredators()
     {

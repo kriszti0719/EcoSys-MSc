@@ -15,8 +15,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public int critical;
         public int currentThirst;
 
-        public event Action OnThirstCritical;
         public event Action OnThirstDepleted;
+        public event Action OnThirstCritical;
         void Start()
         {
             animal = GetComponent<Animal>();

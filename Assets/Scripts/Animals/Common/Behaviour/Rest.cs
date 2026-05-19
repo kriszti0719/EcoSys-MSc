@@ -15,14 +15,12 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public int maxStamina = 100;
         public int currentStamina;
         [SerializeField]
-        private int restAmount;
+        private int restAmount = 5;
         public int breakCounter = 0;
-        public event Action OnRestFull;
         public event Action OnRestDepleted;
         public event Action OnBreakEnded;
         void Start()
         {
-            restAmount = Mathf.RoundToInt(maxStamina * 0.05f);
             animal = GetComponent<Animal>();
         }
         private bool IsRested() => currentStamina == maxStamina;
@@ -30,7 +28,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private bool IsBreakEnded() => breakCounter == 0;
         public void setBar(GameObject barsContainer, bool randomize = false) {
 
-            this.staminaBar = barsContainer.GetComponentInChildren<StaminaBar>();
+            staminaBar = barsContainer.GetComponentInChildren<StaminaBar>();
             currentStamina = randomize ? UnityEngine.Random.Range(30, maxStamina) : maxStamina;
             staminaBar.SetMaxStamina(maxStamina);
         }
@@ -40,21 +38,13 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if (breakCounter != 0)
-            {
-                breakCounter = System.Math.Max(0, breakCounter - 1);
-                if (IsBreakEnded())
-                {
-                    OnBreakEnded?.Invoke();
-                }
-            }
-
             if (animal.status == Status.REST)
             {
                 currentStamina = Mathf.Min(currentStamina + restAmount, maxStamina);
-                if (IsRested())
+                breakCounter = System.Math.Max(0, breakCounter - 1);
+                if (IsRested() || (IsBreakEnded()))
                 {
-                    OnRestFull?.Invoke();
+                    OnBreakEnded?.Invoke();
                 }
             }
             else
@@ -70,26 +60,21 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (currentStamina > 30) return false;
 
-            float restProbability = Mathf.Clamp01(1f - (currentStamina / 30f)); // Minél alacsonyabb a stamina, annál nagyobb az esély
+            float restProbability = Mathf.Clamp01(1f - (currentStamina / 30f));
 
             if (UnityEngine.Random.value < restProbability)
             {
-                int restAmount = (currentStamina == 0) ? 100 : UnityEngine.Random.value < 0.5f ? 50 : 20;
-                ToRest(restAmount);
+                int time = (currentStamina == 0) ? 100 : UnityEngine.Random.value < 0.5f ? 50 : 20;
+                ToRest(time);
                 return true;
             }
             return false;
         }
         public void ToRest(int time)
         {
-            if (currentStamina + time < maxStamina)
-            {
-                breakCounter = time;
-            }
-            else
-            {
-                breakCounter = maxStamina - currentStamina;
-            }
+            if (restAmount <= 0) { breakCounter = 0; return; }
+            int staminaToRestore = Mathf.Min(time, maxStamina - currentStamina);
+            breakCounter = Mathf.Max(0, Mathf.CeilToInt((float)staminaToRestore / restAmount));
         }
     }
 }
