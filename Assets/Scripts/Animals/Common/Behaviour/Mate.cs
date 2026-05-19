@@ -24,7 +24,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void setBar(GameObject barsContainer, bool randomize = false)
         {
-            this.matingBar = barsContainer.GetComponentInChildren<MatingUrgeBar>();
+            matingBar = barsContainer.GetComponentInChildren<MatingUrgeBar>();
             currentMatingUrge = randomize ? UnityEngine.Random.Range(40, maxMatingUrge) : maxMatingUrge;
             if (randomize)
             {

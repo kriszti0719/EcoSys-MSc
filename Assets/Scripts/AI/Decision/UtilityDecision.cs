@@ -14,7 +14,7 @@ public class UtilityDecision
         float hungerNormalized = 1f - (a.eat.currentHunger / 100f);     
         float thirstNormalized = 1f - (a.drink.currentThirst / 100f);   
         float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina); 
-        float mateNormalized = a.reproduction.reproductiveUrge / 100f;  
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);  
 
         float eatU = genome.hungerWeight * hungerNormalized;
         float drinkU = genome.thirstWeight * thirstNormalized;

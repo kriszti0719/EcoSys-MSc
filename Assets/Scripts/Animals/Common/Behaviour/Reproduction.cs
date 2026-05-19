@@ -11,15 +11,13 @@ public class Reproduction : MonoBehaviour
     public bool isPregnant = false;
     public int currentPregnancy;
     public int pregnancyDuration;
-    public int reproductiveUrge;
     void Start()
     {
         animal = GetComponent<Animal>();
         currentPregnancy = 0;
     }
-    public void setReproduction(int _reproductiveUrge, int _pregnancyDuration)
+    public void setReproduction(int _pregnancyDuration)
     {
-        this.reproductiveUrge = _reproductiveUrge;
         this.pregnancyDuration = _pregnancyDuration;
     }
     public void StepPregnancy()

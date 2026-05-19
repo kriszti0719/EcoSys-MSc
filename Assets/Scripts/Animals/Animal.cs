@@ -82,7 +82,6 @@ public abstract class Animal : MonoBehaviour
         );
 
         reproduction.setReproduction(
-            _reproductiveUrge: UnityEngine.Random.Range(30, 50),
             _pregnancyDuration: UnityEngine.Random.Range(3, 6)
         );
         mating.enableMating = true;
@@ -111,7 +110,6 @@ public abstract class Animal : MonoBehaviour
             _stealth: Mathf.RoundToInt(MutateTrait(mother.sensor.stealth, father.stealth))
         );
         reproduction.setReproduction(
-            _reproductiveUrge: Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
             _pregnancyDuration: Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration))
         );
         mating.enableMating = false;

@@ -16,7 +16,7 @@ public class FCMDecision
         float thirstNormalized = 1f - (a.drink.currentThirst / 100f);
         float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina);
         float fearNormalized = a.spottedThreats.Any() ? 1f : 0f;
-        float mateNormalized = a.reproduction.reproductiveUrge / 100f;
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);
 
         model.SetInput("Hunger", hungerNormalized);
         model.SetInput("Thirst", thirstNormalized);
