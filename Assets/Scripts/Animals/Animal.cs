@@ -83,8 +83,7 @@ public abstract class Animal : MonoBehaviour
 
         reproduction.setReproduction(
             _reproductiveUrge: UnityEngine.Random.Range(30, 50),
-            _pregnancyDuration: UnityEngine.Random.Range(3, 6),
-            _isFertile: true
+            _pregnancyDuration: UnityEngine.Random.Range(3, 6)
         );
         mating.enableMating = true;
         mating.charm = UnityEngine.Random.Range(20, 100);
@@ -113,8 +112,7 @@ public abstract class Animal : MonoBehaviour
         );
         reproduction.setReproduction(
             _reproductiveUrge: Mathf.RoundToInt(MutateTrait(mother.reproduction.reproductiveUrge, father.reproductiveUrge)),
-            _pregnancyDuration: Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration)),
-            _isFertile: false
+            _pregnancyDuration: Mathf.RoundToInt(MutateTrait(mother.reproduction.pregnancyDuration, father.pregnancyDuration))
         );
         mating.enableMating = false;
         mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
@@ -181,7 +179,7 @@ public abstract class Animal : MonoBehaviour
         rest.Step();
         eat.Step();
         drink.Step();
-        if (reproduction.isFertile) mating.Step();
+        mating.Step();
         if (reproduction.IsPregnant()) reproduction.StepPregnancy();
 
         rest.updateBar();
@@ -251,7 +249,7 @@ public abstract class Animal : MonoBehaviour
                             setTargetLayerToEat();
                             status = Status.SEARCH;
                         }
-                        else if (!(reproduction.isFertile && mating.enableMating) || drink.IsThirsty())
+                        else if (!mating.enableMating || drink.IsThirsty())
                         {
                             sensor.targetMask = LayerMask.GetMask("Drink");
                             status = Status.SEARCH;

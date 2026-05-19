@@ -27,9 +27,9 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         private bool AgeLimitReached() => currentAge >= lifeSpan;
         public void setAging(float _age, float _size, float _lifeSpan)
         {
-            this.currentAge = _age;
-            this.adultSize = _size;
-            this.lifeSpan = _lifeSpan;
+            currentAge = _age;
+            adultSize = _size;
+            lifeSpan = _lifeSpan;
         }
         public void Aging()
         {
@@ -37,14 +37,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 Grow();
                 currentAge += aging / 100f;
-                if (currentAge >= 1)
-                {
-                    animal.reproduction.Mature();
-                    animal.mating.enableMating = true;
-                }
             }
 
             currentAge += aging;
+            
             if (AgeLimitReached())
             {
                 OnAgeLimitReached?.Invoke();

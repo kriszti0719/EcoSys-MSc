@@ -44,7 +44,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 matingCooldown--;
             }
 
-            if (matingCooldown == 0 && animal.reproduction.isFertile && !animal.reproduction.isPregnant)
+            if (matingCooldown == 0 && animal.aging.currentAge >= 1 && !animal.reproduction.isPregnant)
             {
                 enableMating = true;
             }
