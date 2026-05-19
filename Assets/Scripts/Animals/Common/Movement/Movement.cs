@@ -14,15 +14,23 @@ public class Movement : MonoBehaviour
     private const float MAX_WANDER_DIST = 15f;
     private const float WANDER_TIME_LIMIT = 10f;
 
-    public void StartMoving()
+    private void Awake()
     {
         animal = GetComponent<Animal>();
-        rotSpeed = moveSpeed * 30f;
+    }
+
+    public void StartMoving()
+    {
         PickNewWanderTarget();
     }
 
     private void Update()
     {
+        if (animal == null) return;
+
+        // Ensure rotSpeed is always up to date with moveSpeed
+        rotSpeed = moveSpeed * 30f;
+
         if (animal.status == Status.MOVE_TOWARDS && animal.targetRef != null)
         {
             targetPosition = animal.targetRef.transform.position;
@@ -135,7 +143,15 @@ public class Movement : MonoBehaviour
         if (direction.sqrMagnitude > 0.01f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotSpeed * Time.deltaTime);
+            
+            // Use much faster rotation speed when actively targeting or fleeing
+            float currentRotSpeed = rotSpeed;
+            if (animal.status == Status.MOVE_TOWARDS || animal.status == Status.FLEE)
+            {
+                currentRotSpeed *= 5f; // 5x faster turn when focused
+            }
+
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, currentRotSpeed * Time.deltaTime);
             transform.Translate(Vector3.forward * moveSpeed * Time.deltaTime);
         }
     }
