@@ -31,7 +31,12 @@ public class Movement : MonoBehaviour
         else if (animal.status == Status.WANDER || animal.status == Status.SEARCH)
         {
             UpdateWander();
-        }        else
+        }
+        else if (animal.status == Status.FLEE)
+        {
+            UpdateFlee();
+        }
+        else
         {
             hasTarget = false;
         }
@@ -39,6 +44,41 @@ public class Movement : MonoBehaviour
         if (hasTarget)
         {
             MoveTowardsTarget();
+        }
+    }
+
+    private void UpdateFlee()
+    {
+        if (animal.spottedThreats == null || animal.spottedThreats.Count == 0)
+        {
+            hasTarget = false;
+            return;
+        }
+
+        Vector3 weightedFleeVector = Vector3.zero;
+
+        foreach (var threat in animal.spottedThreats)
+        {
+            if (threat == null) continue;
+
+            Vector3 directionAway = transform.position - threat.transform.position;
+            float distance = directionAway.magnitude;
+
+            if (distance > 0)
+            {
+                // Weigh closer threats more (1/distance^2 or 1/distance)
+                weightedFleeVector += directionAway.normalized / distance;
+            }
+        }
+
+        if (weightedFleeVector.sqrMagnitude > 0.001f)
+        {
+            targetPosition = transform.position + weightedFleeVector.normalized * 5f;
+            hasTarget = true;
+        }
+        else
+        {
+            hasTarget = false;
         }
     }
 

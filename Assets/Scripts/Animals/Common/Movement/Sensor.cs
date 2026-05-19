@@ -32,7 +32,6 @@ public class Sensor : MonoBehaviour
     }
     private IEnumerator FOVRoutine()
     {
-        /// We only calculate just 5 times per second
         WaitForSeconds wait = new WaitForSeconds(0.2f);
 
         while (true)
@@ -81,28 +80,6 @@ public class Sensor : MonoBehaviour
         canSeeTarget = nearestTarget != null;
         animal.targetRef = canSeeTarget ? nearestTarget : null;
     }
-    public bool FieldOfViewCheck(LayerMask _targetMask, GameObject _targetRef)
-    {
-        Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, _targetMask);
-
-        foreach (var targetCollider in rangeChecks)
-        {
-            Transform target = targetCollider.transform;
-
-            if (target.gameObject != _targetRef) { continue; }
-
-            Vector3 directionToTarget = (target.position - transform.position).normalized;
-            if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)
-            {
-                float distanceToTarget = Vector3.Distance(transform.position, target.position);
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
     public void CheckForPredators()
     {
         Collider[] predatorsInRange = Physics.OverlapSphere(transform.position, radius, animal.getPredatorLayers());
@@ -124,7 +101,6 @@ public class Sensor : MonoBehaviour
                 float detectionChance = Mathf.Clamp01(distanceFactor * (1f - (camouflage + stealth) / 200f)); // combine (distance + camouflage + stealth)
                 float roll = Random.value;
 
-                // --- Perception roll ---
                 if (roll < detectionChance)
                 {
                     if (!animal.spottedThreats.Contains(predator.gameObject))
@@ -135,7 +111,6 @@ public class Sensor : MonoBehaviour
             }
         }
 
-        // Remove predators that are no longer visible
         foreach (var threat in animal.spottedThreats)
         {
             bool isStillVisible = predatorsInRange.Any(predatorCollider =>
@@ -150,10 +125,11 @@ public class Sensor : MonoBehaviour
             }
         }
 
-        // Remove no longer visible threats
         foreach (var threat in toRemove)
         {
             animal.spottedThreats.Remove(threat);
         }
+
+        danger = animal.spottedThreats.Any();
     }
 }
