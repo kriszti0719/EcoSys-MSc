@@ -72,14 +72,10 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         {
             if (!animal.isMale)
             {
-                // Base success rate for pregnancy
                 float baseSuccessRate = 0.8f;
-                // Random chance factor between -10% to +10%
                 float randomChanceFactor = UnityEngine.Random.Range(-0.1f, 0.1f);
-                // Calculate the overall success rate
                 float overallSuccessRate = baseSuccessRate + randomChanceFactor;
 
-                // Check if the mating is successful based on the calculated success rate
                 animal.reproduction.isPregnant = UnityEngine.Random.value < overallSuccessRate;
                 if (animal.reproduction.isPregnant)
                 {

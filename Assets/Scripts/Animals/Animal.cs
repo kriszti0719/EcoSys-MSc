@@ -67,6 +67,7 @@ public abstract class Animal : MonoBehaviour
         aging = GetComponent<Age>();
         mating = GetComponent<Mate>();
         movement = GetComponent<Movement>();
+        movement.animal = this;
         animalEventHandler = GetComponent<AnimalEventHandler>();
     }
     public void SetTraits(float rnd)
@@ -76,6 +77,7 @@ public abstract class Animal : MonoBehaviour
         aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
         bravery = UnityEngine.Random.Range(20, 40);
         movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
+        movement.rotSpeed = movement.moveSpeed * 30;
         sensor.setSensor(
             _radius: UnityEngine.Random.Range(30, 70),
             _camouflage: UnityEngine.Random.Range(30, 60),
@@ -105,6 +107,7 @@ public abstract class Animal : MonoBehaviour
         eat.critical = Mathf.RoundToInt(MutateTrait(mother.eat.critical, father.eat_critical));
         drink.critical = Mathf.RoundToInt(MutateTrait(mother.drink.critical, father.drink_critical));
         movement.moveSpeed = MutateTrait(mother.movement.moveSpeed, father.moveSpeed);
+        movement.rotSpeed = movement.moveSpeed * 30;
         sensor.setSensor(
             _radius: Mathf.RoundToInt(MutateTrait(mother.sensor.radius, father.radius)),
             _camouflage: Mathf.RoundToInt(MutateTrait(mother.sensor.camouflage, father.camouflage)),
@@ -134,7 +137,7 @@ public abstract class Animal : MonoBehaviour
         eat.setBar(barsContainer, randomize);
         drink.setBar(barsContainer, randomize);
         mating.setBar(barsContainer, randomize);
-        this.destructibles.Add(barsContainer);
+        destructibles.Add(barsContainer);
     }
     public void SetAnimalData(GameObject prefab, Material color)
     {

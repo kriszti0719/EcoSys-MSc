@@ -14,9 +14,9 @@ public class Movement : MonoBehaviour
     private const float MAX_WANDER_DIST = 15f;
     private const float WANDER_TIME_LIMIT = 10f;
 
-    private void Awake()
+    private void Start()
     {
-        animal = GetComponent<Animal>();
+        if (animal == null) animal = GetComponent<Animal>();
     }
 
     public void StartMoving()
@@ -28,7 +28,6 @@ public class Movement : MonoBehaviour
     {
         if (animal == null) return;
 
-        // Ensure rotSpeed is always up to date with moveSpeed
         rotSpeed = moveSpeed * 30f;
 
         if (animal.status == Status.MOVE_TOWARDS && animal.targetRef != null)

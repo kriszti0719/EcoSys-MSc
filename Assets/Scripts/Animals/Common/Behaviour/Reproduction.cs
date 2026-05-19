@@ -18,7 +18,7 @@ public class Reproduction : MonoBehaviour
     }
     public void setReproduction(int _pregnancyDuration)
     {
-        this.pregnancyDuration = _pregnancyDuration;
+        pregnancyDuration = _pregnancyDuration;
     }
     public void StepPregnancy()
     {
