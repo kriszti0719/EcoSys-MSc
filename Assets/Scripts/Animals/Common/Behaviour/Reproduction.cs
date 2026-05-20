@@ -52,7 +52,7 @@ public class Reproduction : MonoBehaviour
         int rnd = animal.species switch
         {
             Species.FOX => Random.Range(4, 7),
-            Species.BUNNY => Random.Range(6, 9),
+            Species.BUNNY => Random.Range(1, 4),
             _ => throw new System.ArgumentException($"Unhandled species: {animal.species}")
         };
 
