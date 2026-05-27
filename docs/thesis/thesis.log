@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.12) (preloaded format=xelatex 2026.5.4)  27 MAY 2026 15:48
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.12) (preloaded format=xelatex 2026.5.4)  27 MAY 2026 21:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -517,7 +517,7 @@ LaTeX Info: Redefining \cite on input line 694.
 )
 (C:\Program Files\MiKTeX\tex/latex/tools\xspace.sty
 Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
-))
+)
 (C:\Program Files\MiKTeX\tex/latex/enumitem\enumitem.sty
 Package: enumitem 2025/02/06 v3.11 Customized lists
 \labelindent=\skip66
@@ -527,45 +527,50 @@ Package: enumitem 2025/02/06 v3.11 Customized lists
 \enit@count@id=\count341
 \enitdp@description=\count342
 )
-(include/thesis-hu.tex) (include/preamble.tex
+(C:\Program Files\MiKTeX\tex/latex/float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count343
+\float@exts=\toks44
+\float@box=\box59
+\@float@everytoks=\toks45
+\@floatcapt=\box60
+)) (include/thesis-hu.tex)
+(include/preamble.tex
 Package hyperref Info: Option `unicode' set `true' on input line 39.
 Package hyperref Info: Option `pdfnewwindow' set `true' on input line 39.
 Package hyperref Info: Option `colorlinks' set `true' on input line 39.
-\c@currexamplectr=\count343
-\c@endexamplectr=\count344
-\c@example=\count345
-\c@currdefinitionctr=\count346
-\c@enddefinitionctr=\count347
-\c@definition=\count348
-\c@currtheoremctr=\count349
-\c@endtheoremctr=\count350
-\c@theorem=\count351
-) (thesis.aux (include/project.aux) (include/titlepage.aux) (include/declaratio
-n_HU.aux) (content/abstract.aux)
-(content/introduction.aux) (content/specification.aux) (content/background.aux)
-)
+\c@currexamplectr=\count344
+\c@endexamplectr=\count345
+\c@example=\count346
+\c@currdefinitionctr=\count347
+\c@enddefinitionctr=\count348
+\c@definition=\count349
+\c@currtheoremctr=\count350
+\c@endtheoremctr=\count351
+\c@theorem=\count352
+) (thesis.aux)
 \openout1 = `thesis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 29.
-LaTeX Font Info:    ... okay on input line 29.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 37.
+LaTeX Font Info:    ... okay on input line 37.
 
 Package fontspec Info: 
 (fontspec)             Adjusting the maths setup (use [no-math] to avoid
@@ -573,56 +578,56 @@ Package fontspec Info:
 
 \symlegacymaths=\mathgroup6
 LaTeX Font Info:    Overwriting symbol font `legacymaths' in version `bold'
-(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 29.
-LaTeX Font Info:    Redeclaring math accent \acute on input line 29.
-LaTeX Font Info:    Redeclaring math accent \grave on input line 29.
-LaTeX Font Info:    Redeclaring math accent \ddot on input line 29.
-LaTeX Font Info:    Redeclaring math accent \tilde on input line 29.
-LaTeX Font Info:    Redeclaring math accent \bar on input line 29.
-LaTeX Font Info:    Redeclaring math accent \breve on input line 29.
-LaTeX Font Info:    Redeclaring math accent \check on input line 29.
-LaTeX Font Info:    Redeclaring math accent \hat on input line 29.
-LaTeX Font Info:    Redeclaring math accent \dot on input line 29.
-LaTeX Font Info:    Redeclaring math accent \mathring on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Delta on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Theta on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Xi on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Pi on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Phi on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Psi on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \Omega on input line 29.
-LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 29.
-LaTeX Font Info:    Redeclaring symbol font `operators' on input line 29.
+(Font)                  OT1/cmr/m/n --> OT1/cmr/bx/n on input line 37.
+LaTeX Font Info:    Redeclaring math accent \acute on input line 37.
+LaTeX Font Info:    Redeclaring math accent \grave on input line 37.
+LaTeX Font Info:    Redeclaring math accent \ddot on input line 37.
+LaTeX Font Info:    Redeclaring math accent \tilde on input line 37.
+LaTeX Font Info:    Redeclaring math accent \bar on input line 37.
+LaTeX Font Info:    Redeclaring math accent \breve on input line 37.
+LaTeX Font Info:    Redeclaring math accent \check on input line 37.
+LaTeX Font Info:    Redeclaring math accent \hat on input line 37.
+LaTeX Font Info:    Redeclaring math accent \dot on input line 37.
+LaTeX Font Info:    Redeclaring math accent \mathring on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 37.
+LaTeX Font Info:    Redeclaring math symbol \mathdollar on input line 37.
+LaTeX Font Info:    Redeclaring symbol font `operators' on input line 37.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `normal' on input line 29.
+(Font)              `operators' in the math version `normal' on input line 37.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  OT1/cmr/m/n --> TU/lmr/m/n on input line 29.
+(Font)                  OT1/cmr/m/n --> TU/lmr/m/n on input line 37.
 LaTeX Font Info:    Encoding `OT1' has changed to `TU' for symbol font
-(Font)              `operators' in the math version `bold' on input line 29.
+(Font)              `operators' in the math version `bold' on input line 37.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  OT1/cmr/bx/n --> TU/lmr/m/n on input line 29.
+(Font)                  OT1/cmr/bx/n --> TU/lmr/m/n on input line 37.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `normal'
-(Font)                  TU/lmr/m/n --> TU/lmr/m/n on input line 29.
+(Font)                  TU/lmr/m/n --> TU/lmr/m/n on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `normal'
-(Font)                  OT1/cmr/m/it --> TU/lmr/m/it on input line 29.
+(Font)                  OT1/cmr/m/it --> TU/lmr/m/it on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathbf' in version `normal'
-(Font)                  OT1/cmr/bx/n --> TU/lmr/b/n on input line 29.
+(Font)                  OT1/cmr/bx/n --> TU/lmr/b/n on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `normal'
-(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 29.
+(Font)                  OT1/cmss/m/n --> TU/lmss/m/n on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `normal'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 29.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/m/n on input line 37.
 LaTeX Font Info:    Overwriting symbol font `operators' in version `bold'
-(Font)                  TU/lmr/m/n --> TU/lmr/b/n on input line 29.
+(Font)                  TU/lmr/m/n --> TU/lmr/b/n on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathit' in version `bold'
-(Font)                  OT1/cmr/bx/it --> TU/lmr/b/it on input line 29.
+(Font)                  OT1/cmr/bx/it --> TU/lmr/b/it on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathsf' in version `bold'
-(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 29.
+(Font)                  OT1/cmss/bx/n --> TU/lmss/b/n on input line 37.
 LaTeX Font Info:    Overwriting math alphabet `\mathtt' in version `bold'
-(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 29.
+(Font)                  OT1/cmtt/m/n --> TU/lmtt/b/n on input line 37.
 
 
 LaTeX Warning: Please use \usepackage{t1enc} with
@@ -633,55 +638,26 @@ LaTeX Warning: Please use \usepackage[latin2]{inputenc}
                or \usepackage[utf8]{inputenc}
                with \usepackage[magyar]{babel}.
 
-Package hyperref Info: Link coloring ON on input line 29.
+Package hyperref Info: Link coloring ON on input line 37.
 (thesis.out) (thesis.out)
 \@outlinefile=\write3
 \openout3 = `thesis.out'.
 
-\c@lstlisting=\count352
+
+
+Package hyperref Warning: Rerun to get /PageLabels entry.
+
+\c@lstlisting=\count353
 Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
 Package caption Info: End \AtBeginDocument code.
- (C:\Program Files\MiKTeX\tex/latex/base\report.cls
+(C:\Program Files\MiKTeX\tex/latex/base\report.cls
 LaTeX Info: Redefining \cal on input line 577.
 LaTeX Info: Redefining \mit on input line 578.
 )
 Package babel Info: 'magyar' activates 'magyar' shorthands.
-(babel)             Reported on input line 29.
-\openout2 = `include/project.aux'.
-
-
-(include/project.tex
-File: figures/bme_logo.pdf Graphic file (type pdf)
-<use figures/bme_logo.pdf>
-LaTeX Font Info:    Trying to load font information for U+msa on input line 37.
-
- (C:\Program Files\MiKTeX\tex/latex/amsfonts\umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 37.
-
-
-(C:\Program Files\MiKTeX\tex/latex/amsfonts\umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)) [1
-
-
-
-]
-\openout2 = `include/titlepage.aux'.
-
-
-(include/titlepage.tex
-Package hyperref Info: Option `pageanchor' set `false' on input line 1.
-File: figures/bme_logo.pdf Graphic file (type pdf)
-<use figures/bme_logo.pdf>
- [1
-
-
-
-]
-Package hyperref Info: Option `pageanchor' set `false' on input line 30.
-) (thesis.toc)
+(babel)             Reported on input line 37.
+ (thesis.toc)
 \tf@toc=\write4
 \openout4 = `thesis.toc'.
 
@@ -689,111 +665,70 @@ Package hyperref Info: Option `pageanchor' set `false' on input line 30.
 
 
 
-]
-\openout2 = `include/declaration_HU.aux'.
 
- (include/declaration_HU.tex
+
+]
+\openout2 = `content/architecture.aux'.
+
+
+(content/architecture.tex
+1. fejezet.
 [1
 
-])
-\openout2 = `content/abstract.aux'.
 
- (content/abstract.tex [1
 
 
 
 
 
 ]
-\c@romanPage=\count353
-) [2
+Underfull \hbox (badness 1259) in paragraph at lines 42--43
+[]\TU/lmtt/m/n/10.95 Die\TU/lmr/m/n/10.95 : az elhullás végpontja, a fizikai Ga
+meObject, valamint a hozzátar-
+ []
 
-]
-\openout2 = `content/introduction.aux'.
+(C:\Program Files\MiKTeX\tex/latex/listings\lstlang1.sty
+File: lstlang1.sty 2025/11/14 1.11b listings language file
+)
+Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
+nput line 48.
+LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <8> not available
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 67.
+ [2]
 
- (content/introduction.tex
-1. fejezet.
+LaTeX Warning: Reference `item:fiziologia_enum' on page 3 undefined on input li
+ne 95.
 
-Underfull \hbox (badness 10000) in paragraph at lines 12--13
-[]\TU/lmr/m/n/10.95 A dolgozatban bemutatott rendszer egy Unity3D alapú, esemén
-yvezérelt
+
+Underfull \hbox (badness 1048) in paragraph at lines 102--103
+[]\TU/lmr/m/n/10.95 Az \TU/lmtt/m/n/10.95 AnimalEventHandler \TU/lmr/m/n/10.95 
+ezen értesítések hatására azonnal átállítja az ágens
  []
 
 
-Underfull \hbox (badness 2707) in paragraph at lines 12--13
-\TU/lmr/m/n/10.95 lyamatok mély integrációja: az egyedek DNS-alapú öröklődési m
-echanizmusokkal
+Underfull \hbox (badness 2368) in paragraph at lines 102--103
+\TU/lmtt/m/n/10.95 sensor.targetMask \TU/lmr/m/n/10.95 értékét a megfelelő célo
+bjektumra (például nyúl esetén
  []
 
 
-LaTeX Warning: Reference `chap:tervezes' on page 1 undefined on input line 16.
+Underfull \hbox (badness 1888) in paragraph at lines 108--109
+[]\TU/lmr/m/n/10.95 Az \TU/lmtt/m/n/10.95 HandleTargetSpotted() \TU/lmr/m/n/10.
+95 metódus ekkor az aktuális állapotot elmenti a
+ []
 
-
-LaTeX Warning: Reference `chap:implementacio' on page 1 undefined on input line
- 16.
-
-
-LaTeX Warning: Reference `chap:ertekeles' on page 1 undefined on input line 16.
-
-
-) [1
-
-
-
-
-] [2]
-\openout2 = `content/specification.aux'.
-
- (content/specification.tex
-2. fejezet.
-[3
-
-
-
-
-]) [4]
-\openout2 = `content/background.aux'.
-
- (content/background.tex
-3. fejezet.
-
-Package natbib Warning: Citation `Tiago08' on page 5 undefined on input line 10
+[3]
+LaTeX Font Info:    Trying to load font information for U+msa on input line 161
+.
+ (C:\Program Files\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 161
 .
 
-
-Package natbib Warning: Citation `Michael22' on page 5 undefined on input line 
-12.
-
-
-Package natbib Warning: Citation `Gras09' on page 5 undefined on input line 14.
-
-
-[5
-
-
-
-
-]
-
-Package natbib Warning: Citation `Sebastian19' on page 6 undefined on input lin
-e 32.
-
-[6]
-
-Package natbib Warning: Citation `VAV23' on page 7 undefined on input line 44.
-
-
-Package natbib Warning: Citation `Fun20' on page 7 undefined on input line 52.
-
-
-Package natbib Warning: Citation `Fun22' on page 7 undefined on input line 54.
-
-[7]
-
-Package natbib Warning: Citation `Primer18' on page 8 undefined on input line 6
-0.
-
-) [8]
+(C:\Program Files\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+) [4]) [5]
 No file thesis.bbl.
 \tf@thm=\write5
 \openout5 = `thesis.thm'.
@@ -802,12 +737,11 @@ No file thesis.bbl.
 Package caption Warning: Unused \captionsetup[figure] on input line 110.
 See the caption package documentation for explanation.
 
-
-Package natbib Warning: There were undefined citations.
-
 (thesis.aux (include/project.aux) (include/titlepage.aux)
 (include/declaration_HU.aux) (content/abstract.aux) (content/introduction.aux)
-(content/specification.aux) (content/background.aux))
+(content/specification.aux) (content/background.aux) (content/architecture.aux)
+No file content/evaluation.aux.
+)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
@@ -817,21 +751,24 @@ L3 programming layer <2025-12-24>
 LaTeX Warning: There were undefined references.
 
 
+LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+
+
 Package rerunfilecheck Warning: File `thesis.out' has changed.
 (rerunfilecheck)                Rerun to get outlines right
 (rerunfilecheck)                or use package `bookmark'.
 
 Package rerunfilecheck Info: Checksums for `thesis.out':
-(rerunfilecheck)             Before: 6365B69CA1E264FA5C582C60E138B72E;2965
-(rerunfilecheck)             After:  91E23C7FF76208AE847E9C31D9621BAF;2778.
+(rerunfilecheck)             Before: D41D8CD98F00B204E9800998ECF8427E;0
+(rerunfilecheck)             After:  83EBEB2E1CC7154DAEC2F3774C2A500A;1763.
  ) 
 Here is how much of TeX's memory you used:
- 18247 strings out of 402986
- 338261 string characters out of 5452851
- 824442 words of memory out of 5000000
- 46692 multiletter control sequences out of 15000+600000
- 635071 words of font info for 87 fonts, out of 8000000 for 9000
+ 18416 strings out of 402986
+ 338762 string characters out of 5452851
+ 1200657 words of memory out of 5000000
+ 46893 multiletter control sequences out of 15000+600000
+ 632841 words of font info for 73 fonts, out of 8000000 for 9000
  1352 hyphenation exceptions out of 8191
- 78i,8n,82p,1013b,445s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 78i,6n,82p,869b,1837s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on thesis.pdf (14 pages).
+Output written on thesis.pdf (6 pages).

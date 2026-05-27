@@ -14,3 +14,9 @@
 \select@language {magyar} \contentsline {subsection}{\numberline {3.2.3}Fun Master Ed}{7}{subsection.3.2.3}%
 \select@language {magyar} \contentsline {subsection}{\numberline {3.2.4}Primer}{8}{subsection.3.2.4}%
 \select@language {magyar} \contentsline {section}{\numberline {3.3}Következtetések}{8}{section.3.3}%
+\select@language {magyar} \contentsline {chapter}{\numberline {1}A tervezés részletes leírása és szoftverarchitektúrája}{1}{chapter.1}%
+\select@language {magyar} \contentsline {section}{\numberline {1.1}Architekturális áttekintés}{1}{section.1.1}%
+\select@language {magyar} \contentsline {section}{\numberline {1.2}Eseményvezérelt kommunikációs modell és az állapotgép frissítése}{3}{section.1.2}%
+\select@language {magyar} \contentsline {section}{\numberline {1.3}A döntési folyamatok moduláris tervezése}{4}{section.1.3}%
+\select@language {magyar} \contentsline {section}{\numberline {1.4}A populációgenetikai adatmodell}{5}{section.1.4}%
+\select@language {magyar} \contentsline {section}{\numberline {1.5}Elosztott Telemetria és aszinkron adatgyűjtés}{5}{section.1.5}%
