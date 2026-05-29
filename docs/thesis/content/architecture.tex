@@ -227,9 +227,62 @@ Az FCM legfőbb ereje a komplex, visszacsatolt rendszerek modellezésében rejli
 % 4.4
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A populációgenetikai adatmodell}
-	A Genome osztály belső felépítése. Hogyan tárolódnak a fizikai paraméterek (float értékek) és az FCM gráf élsúlyai
 
-	A mutációs algoritmus tervezése
+Az evolúciós szimuláció sarokköve a populációgenetikai adatmodell, amely az egyedek viselkedési és fizikai jellemzőit digitális kromoszómákká (genomokká) kódolja. A rendszerben a genetikai állomány nem csupán statikus tulajdonságokat határoz meg, hanem közvetlen bemenetként szolgál a döntéshozatali mechanizmusok számára, lehetőséget biztosítva a környezethez való dinamikus adaptációra és a természetes szelekció modellezésére.
+
+\subsection{A Genome osztályok belső felépítése és kódolása}
+
+A moduláris tervezési elveknek megfelelően a genetikai reprezentáció két fő komponensre válik szét a döntési architektúrákhoz igazodva: a \texttt{UtilityGenome} és az \texttt{FCMGenome} osztályokra.
+
+\paragraph{Megjegyzés a klasszikus FSM architektúrával kapcsolatban:}
+Fontos kiemelni, hogy a hagyományos végesállapotú gép (\texttt{ClassicFSM}) döntéshozatali mód nem rendelkezik dedikált genetikai adatmodellel. Mivel a klasszikus FSM állapotátmenetei merev, determinisztikus szabályrendszereken alapulnak (pl. fix küszöbértékek az éhség vagy szomjúság kritikus szintjeire), a viselkedési logika nem tartalmaz szabadon konfigurálható vagy finomhangolható súlyparamétereket. Ebből adódóan az FSM-alapú egyedek fenotípusa homogén, nem mutatnak egyedi variabilitást, és nem vesznek részt az evolúciós (mutációs és keresztezési) ciklusban. A genetikai kódolás kizárólag a rugalmasabb, adaptív döntési architektúrák sajátja.
+
+\paragraph{A fizikai és döntési paraméterek tárolása (\texttt{UtilityGenome}):}
+A \texttt{UtilityGenome} osztály az egyedek alapvető belső késztetéseinek (motivációinak) súlyozásáért felelős. Ezen paraméterek határozzák meg, hogy az egyed milyen prioritással reagál a létfontosságú környezeti és fiziológiai változásokra. Az osztály belső struktúrája a következő lebegőpontos (\texttt{float}) értékeket tárolja:
+\begin{itemize}
+    \item \texttt{hungerWeight}: Az éhségérzet prioritása a hasznossági függvényben.
+    \item \texttt{thirstWeight}: A szomjúságérzet súlya a vízkeresési motivációban.
+    \item \texttt{energyWeight}: A staminaveszteség és a pihenési hajlandóság együtthatója.
+    \item \texttt{mateWeight}: A szaporodási ösztön dominanciája kedvező körülmények esetén.
+\end{itemize}
+Ezek a \texttt{float} típusú gének homogén, normalizált teret alkotnak, amely közvetlenül skálázza a döntéshozatalkor számított hasznossági értékeket.
+
+\paragraph{A kognitív térkép élsúlyainak kódolása (\texttt{FCMGenome}):}
+A Fuzzy Cognitive Map alapú döntéshozatalhoz egy jóval komplexebb, hálózatos genetikai struktúrára van szükség. Az \texttt{FCMGenome} nem nevesített változókként, hanem egy egydimenziós \texttt{float[]} tömbként (\texttt{weights}) tárolja a gráf élsúlyait. 
+\begin{itemize}
+    \item A tömb hossza megegyezik a hálózatban definiált kauzális kapcsolatok (élek) számával (jelenlegi konfigurációban 8 aktív él).
+    \item Az élsúlyok értéktartománya a $[-1.0, 1.0]$ intervallumra van korlátozva, ahol a pozitív értékek egyenes, a negatív értékek pedig fordított arányú kauzális kapcsolatot (gátlást) reprezentálnak a koncepciócsomópontok között (például a \textit{Félelem} és az \textit{Evés} közötti kapcsolat gátló hatása).
+\end{itemize}
+
+Az egyedek replikációjakor és inicializálásakor kritikus fontosságú a genetikai állomány mély másolása (deep copy), amelyet mindkét osztályban a \texttt{Clone()} tagfüggvény valósít meg, megakadályozva a memóriacímek referenciáinak nemkívánatos átfedését a szülő és az utód egyedek között.
+
+\subsection{A mutációs algoritmus tervezése és matematikai modellje}
+
+A genetikai variabilitás fenntartásáért és az új viselkedési minták felfedezéséért (exploration) a \texttt{Mutation} statikus osztály felel. Az algoritmus két fő hiperparaméter mentén dolgozik: a mutációs ráta (\texttt{rate}), amely az esélyt adja meg arra, hogy egy adott gén megváltozik-e, valamint a mutációs erő (\texttt{strength}), amely a változás maximális léptékét korlátozza.
+
+A mutáció matematikai modellje egy Gauss-eloszláshoz közelítő uniform perturbáción alapul, amely a meglévő génértéket kis lépésekkel tolja el, megőrizve a korábbi evolúciós eredmények stabilitását (graduális fejlődés). A perturbációs függvény formálisan:
+
+\begin{equation}
+g'_{i} = 
+\begin{cases} 
+g_{i} + \Delta g, & \text{ha } r < \text{\texttt{rate}} \\
+g_{i}, & \text{egyébként}
+\end{cases}
+\end{equation}
+
+Ahol $r \sim \mathcal{U}(0, 1)$ egy egyenletes eloszlású véletlen szám, a perturbáció mértéke pedig $\Delta g \sim \mathcal{U}(-\text{\texttt{strength}}, \text{\texttt{strength}})$. 
+
+A gyakorlati implementáció során a rendszer minden egyes génre külön elvégzi ezt a valószínűségi ellenőrzést. Amennyiben a mutáció sikeresen lezajlik az \texttt{FCMGenome} tömbjén, az új súlyok a döntéshozatali ciklusban azonnal módosítják az aktivációs függvények eredőjét, finomhangolva az állat reakcióidejét és túlélési stratégiáját.
+
+\subsection{Keresztezési (rekombinációs) mechanizmus}
+
+A populációgenetikai modell teljességéhez a \texttt{Breeding} osztály biztosítja a szexuális reprodukció modellezését. Amikor két egyed sikeresen párosodik, az utód genetikai állománya a szülői gének számtani közepéből (\textit{bblend crossover}) áll elő:
+
+\begin{equation}
+g_{child} = \frac{g_{male} + g_{female}}{2}
+\end{equation}
+
+A számtani közép alapú rekombináció biztosítja, hogy az utódok a szülők által már sikeresen tesztelt túlélési stratégiák interpolációs terében induljanak el. A rekombinációt közvetlenül követi a fent részletezett mutációs fázis, biztosítva, hogy az utód ne csupán a szülők pontos átlaga legyen, hanem egyedi, potenciálisan jobb adaptációs mutatókkal rendelkező új egyed.
 
 % 4.5
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
