@@ -11,6 +11,57 @@
 	A genetikai drift elemzése: hogyan változtak a populáció átlagértékei X generáció után
 
 \section{Továbbfejlesztési lehetőségek}
-	technológiai irány: Unity DOTS (Data-Oriented Technology Stack) és ECS (Entity Component System) bevezetése, amivel a több száz ágens helyett több tízezer ágenst lehetne elvileg szimulálni párhuzamosan
 
-	biológiai irány: további környezeti tényezők (újabb fajok, évszakok, nappal-éjszaka ciklusok, domborzatfüggő mikró-klímák) és komplexebb ágens-interakciók (falka-viselkedés, utódgondozás nyúlüregekkel) bevezetése
+A kifejlesztett ökoszisztéma-szimuláció egy stabil, moduláris alapkeretet biztosít, amely mind szoftverarchitekturális, mind biológiai modellezési szempontból jelentős továbbfejlesztési potenciállal rendelkezik. A jövőbeli kutatási és fejlesztési irányok három fő kategóriába csoportosíthatók.
+
+\subsection{Technológiai irány: Skálázhatóság és a Unity DOTS architektúra}
+
+A jelenlegi implementáció a hagyományos objektumorientált (\textit{Object-Oriented Programming, OOP}) megközelítést alkalmazza, ahol minden ágens egy egyedi \texttt{MonoBehaviour} alapú \texttt{GameObject} a Unity színtéren. Bár ez a struktúra ideális a komplex állapotgépek és a Fuzzy Cognitive Map egyedi kiértékelésére, komoly teljesítménybeli korlátokat (\textit{performance bottleneck}) jelent a CPU és a memória-hozzáférés szintjén. A szimulált ágensek száma a hardverkapacitástól függően néhány száz, maximum egy-kétezer egyedben maximalizálódik, mivel az objektumok kezelése és a Unity belső alrendszereinek (pl. \texttt{Update()} ciklusok overheadje) jelentős erőforrást igényel.
+
+A szimuláció nagyságrendi skálázhatóságának biztosításához a technológiai jövőkép a **Unity DOTS (Data-Oriented Technology Stack)** és az **ECS (Entity Component System)** architektúra bevezetése.
+
+\begin{itemize}
+    \item \textbf{Adatközpontú tervezés (ECS):} A \texttt{GameObject}-ek helyett az egyedeket egyszerű azonosítók (\textit{Entities}), a tulajdonságaikat (pozíció, éhség, genetikai súlyok) tiszta adatstruktúrák (\textit{Components}), a logikát pedig globális rendszerek (\textit{Systems}) reprezentálnák. Ez megszüntetné a memóriatöredezettséget, és lehetővé tenné a gyorsítótár-optimalizált (\textit{cache-friendly}) szekvenciális adatolvasást.
+    \item \textbf{Párhuzamosítás (C\# Job System \& Burst Compiler):} Az ECS-re való átállással az egyedek döntéshozatali ciklusai (legyen az hasznossági alapú vagy FCM hálózat) natív gépi kódra fordulnának, és automatikusan szétoszthatók lennének a CPU összes elérhető magja között.
+\end{itemize}
+
+Ezen technológiai paradigmaváltás eredményeképpen a szimulációs kapacitás a jelenlegi néhány száz ágensről **több tízezer párhuzamosan működő ágensre** növekedne, ami már valódi, makroszintű populációdinamikai és makroevolúciós trendek vizsgálatát is lehetővé tenné.
+
+\subsection{Biológiai és ökológiai irány: A szimulációs hűség növelése}
+
+A környezeti és viselkedési modell finomhangolásával a szimuláció közelebb vihető a valós ökoszisztémák komplexitásához. A legfontosabb biológiai fejlesztési irányok a következők:
+
+\paragraph{Dinamikus környezeti tényezők:}
+\begin{itemize}
+    \item \textbf{Nappal-éjszaka ciklusok:} Az ágensek látási sugarának (\texttt{sensor.radius}) és camouflage mutatóinak időfüggő skálázása. Ez lehetőséget adna az éjszakai (nokturnális) és nappali (diurnális) életmód evolúciós kialakulására.
+    \item \textbf{Szezonalitás (Évszakok):} A növényzet reprodukciós rátájának és a vízforrások elérhetőségének globális, ciklikus változtatása, amely rákényszerítené a populációt a vándorlásra, az erőforrások felhalmozására vagy a reprodukciós időszakok optimalizálására.
+    \item \textbf{Domborzatfüggő mikroklímák:} Az \textit{Island} terep magassági és koordináta-adatai alapján különböző szárazsági vagy hőmérsékleti zónák kialakítása, amelyek befolyásolnák a staminaveszteséget vagy a metabolikus rátát.
+\end{itemize}
+
+\paragraph{Komplex társas és szaporodási interakciók:}
+\begin{itemize}
+    \item \textbf{Falka-viselkedés (Flocking/Swarming):} Csoportos vadászati vagy védekezési stratégiák kódolása. A ragadozók (rókák) képesek lennének koordináltan bekeríteni a zsákmányt, míg a prédák (nyulak) csoportba tömörülve csökkenthetnék az egyéni predációs kockázatot.
+    \item \textbf{Utódgondozás és fészekrakás:} A szaporodási mechanizmus kiterjesztése fix vagy dinamikusan épített objektumokkal (pl. nyúlüregek, kotorékok). A vemhes nőstények nem a nyílt színtéren hoznák világra az utódokat, hanem védett környezetben, ahol a kölykök egy bizonyos fejlődési fázisig (\texttt{currentAge < 1}) védve lennének a predációtól, miközben a szülők táplálékot hordanak számukra.
+\end{itemize}
+
+Ezen irányok bevezetése nemcsak a szimuláció vizuális és funkcionális komplexitását növelné, hanem új dimenziókat nyitna az adaptív ágensek genetikai konvergenciájának és a mesterséges élet (\textit{Artificial Life}) kutatásának területén.
+
+\subsection{Játékmenet és gamifikáció: Interaktív ökoszisztéma-szimulátor és Sandbox mód}
+
+Mivel a keretrendszer natívan a Unity játékmotorra épül, a szimuláció funkcionális kiterjesztésének egy harmadik, magától értetődő iránya a projekt gamifikációja (\textit{gamification}). Ez a megközelítés a tiszta tudományos modellezést egy interaktív, oktatási vagy szórakoztató célú „God game” vagy túlélőjáték-mechanizmussá alakítaná át.
+
+\paragraph{Interaktív Sandbox és paraméter-tuning:}
+A jövőbeli fejlesztések során megvalósítható egy olyan felhasználói felület (UI), amelyen keresztül a felhasználó valós időben, közvetlenül beavatkozhat az ökoszisztéma működésébe. A játékos maga konfigurálhatná a kezdeti génkészleteket, manuálisan helyezhetne el új egyedeket, vagy akár globális környezeti katasztrófákat (pl. aszály, járványok) idézhetne elő, tesztelve a populációk túlélőképességét és evolúciós stabilitását.
+
+\paragraph{Közvetlen ágens-irányítás és túlélési mód:}
+A gamifikáció legmagasabb szintje egy olyan hibrid játékmód bevezetése lenne, ahol a felhasználó átvehetné az irányítást egy kiválasztott ágens (például egy nyúl vagy egy róka) felett. Ebben a túlélési módban a játékosnak magának kellene menedzselnie az egyed belső szükségleteit (éhség, szomjúság, staminaveszteség), miközben a környezetében lévő többi ágens továbbra is autonóm módon működik.
+
+\paragraph{Döntéshozatali architektúrák aszimmetrikus versenye:}
+Ez a megközelítés egy egyedülálló, aszimmetrikus versenyt eredményezne a humán intelligencia és a beépített mesterséges intelligencia-modellek között. A játékos közvetlenül összemérhetné túlélési stratégiáját és reflexeit:
+\begin{itemize}
+    \item a merev, szabályalapú, de kiszámítható \texttt{ClassicFSM} ágensekkel,
+    \item a pillanatnyi prioritásokat matematikailag súlyozó \texttt{Utility}-alapú egyedekkel, valamint
+    \item a komplex, asszociatív visszacsatolásokat és félelmet is modellezni képes, evolválódott \texttt{FCM} hálózatokkal.
+\end{itemize}
+
+Ez a fejlesztési irány nemcsak a szoftver demonstrációs értékét növelné, hanem kiváló alapként szolgálhatna oktatási szoftverekhez (pl. az ökológiai egyensúly és a természetes szelekció szemléltetésére), vagy akár egy komplex, önálló stratégiai játék prototípusaként is megállná a helyét.
