@@ -154,13 +154,75 @@ public class AnimalEventHandler : MonoBehaviour
 % 4.3
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A döntési folyamatok moduláris tervezése}
-A DecisionMaking absztrakt alaposztály vagy interfész bevezetése, amely lehetővé teszi a gondolkodásmódok dinamikus cseréjét (Strategy pattern).
+\label{sec:dontesi_folyamatok_modularis_tervezese}
 
-	9.3.1. Véges Állapotú Gép (FSM) tervezése: Állapotok (Kószálás, Menekülés, Táplálkozás) és az átmeneti mátrix bemutatása
+Az ökoszisztéma-szimulációban részt vevő ágensek túlélési esélyeit és viselkedésének realizmusát alapvetően meghatározza a döntéshozatali mechanizmusuk. Annak érdekében, hogy a különböző mesterséges intelligencia architektúrák (FSM, Utility AI, FCM) hatékonysága, számítási igénye és populációdinamikára gyakorolt hatása transzparens módon összehasonlítható legyen, a rendszert moduláris, cserélhető struktúrában kellett megtervezni.
 
-	9.3.2. Hasznossági alapú döntési rendszer (Utility AI): A hasznossági függvények matematikai megközelítése (lineáris kombinációk, normalizálás $[0,1]$ között)
+A szoftverarchitektúra gerincét a \textit{Strategy tervezési minta} alkotja. Ez a minta lehetővé teszi, hogy egy objektum (esetünkben az \texttt{Animal} osztály példányai) viselkedését futásidőben dinamikusan változtassuk meg anélkül, hogy magát az osztályt vagy az azt hívó környezetet módosítani kellene. A hívó \texttt{AnimalSpawner} komponens periodikusan (szimulációs lépésenként vagy fix \textit{tick}-enként) meghívja az ágens saját döntési vezérlőjét, amely a kiválasztott stratégiának megfelelően eldönti, hogy mi legyen az állat következő lépése.
 
-	9.3.3. Fuzzy Kognitív Térkép (FCM) tervezése: Az irányított gráf matematikai reprezentációja kódszinten (szomszédsági mátrixok kezelése ágensenként). Hogyan hat az éhség csomópont a félelem csomópontra az iterációs lépések során
+Az absztrakció alapját egy közös interfész vagy absztrakt alaposztály képezi, amely egyetlen bemeneti pontot definiál:
+\begin{center}
+    \texttt{Status Decide(Animal animal)}
+\end{center}
+Ezen interfész implementálásával a konkrét döntési logikák teljesen elszigetelhetők egymástól, biztosítva a magas kohéziót és az alacsony csatolást (\textit{loose coupling}).
+
+\subsection{Véges Állapotú Gép (FSM) tervezése}
+\label{subsec:fsm_tervezese}
+
+A legegyszerűbb, determinisztikus megközelítést a Véges Állapotú Gép (\textit{Finite State Machine -- FSM}) képviseli. Ebben az architektúrában az ágens viselkedése diszkrét állapotokra van osztva, és az állapotok közötti átmeneteket mereven rögzített szabályok (if-then struktúrák) vezérlik az ágens belső monitorozott változói (éhség, szomjúság, stamina) és környezeti ingerei (észlelt veszély) alapján.
+
+A szimuláció alapvető állapotait és azok átmeneti feltételeit a \ref{tab:fsm_matrix}. táblázatban összefoglalt állapot-átmeneti mátrix reprezentálja.
+
+\begin{table}[h!]
+\centering
+\caption{FSM állapot-átmeneti mátrix és kiváltó események}
+\label{tab:fsm_matrix}
+\begin{tabular}{|p{3.5cm}|p{3.5cm}|p{6.5cm}|}
+\hline
+\textbf{Kiinduló állapot} & \textbf{Célállapot} & \textbf{Kiváltó feltétel / Esemény} \\ \hline
+\texttt{WANDER} (Céltalan bolyongás) & \texttt{SEARCH} (Keresés) & Belső igény kritikus szint alá esik (éhség, szomjúság). \\ \hline
+\texttt{WANDER} / \texttt{SEARCH} & \texttt{FLEE} (Menekülés) & Ragadozó észlelése a szenzoros rádiuszon belül. \\ \hline
+\texttt{SEARCH} (Keresés) & \texttt{MOVE\_TOWARDS} & Megfelelő célpont (táplálék, víz, partner) detektálása. \\ \hline
+\texttt{MOVE\_TOWARDS} & \texttt{WANDER} & Célpont elfogyasztása / sikeres szaporodás / cél elvesztése. \\ \hline
+Bármely állapot & \texttt{REST} (Pihenés) & A stamina (energia) szintje teljesen kimerül ($=0$). \\ \hline
+\end{tabular}
+\end{table}
+
+Bár az FSM rendkívül alacsony számítási kapacitást igényel és könnyen átlátható, merevsége miatt nem képes komplex, árnyalt viselkedési formák vagy egyéni adaptációs stratégiák modellezésére, mivel nem mérlegeli az egymással versengő szükségletek prioritását.
+
+\subsection{Hasznossági alapú döntési rendszer (Utility AI)}
+\label{subsec:utility_ai_tervezese}
+
+A hasznossági alapú döntési rendszer (\textit{Utility AI}) szakít a bináris döntési szabályokkal, és matematikai megközelítést alkalmaz az ágens optimális cselekvésének kiválasztására. Minden lehetséges állapothoz vagy cselekvéshez egy $[0, 1]$ intervallumba eső \textit{hasznossági értéket} ($U$) rendel, és az ágens mindig a legmagasabb értékű tevékenységet választja.
+
+A döntés megalapozásához az ágens nyers belső állapotváltozóit először normalizálni kell. Ha $v$ a vizsgált belső érték (például az aktuális éhség), és $v_{max}$ a maximális kapacitás, a normalizált szükséglet ($n$) kifejezése:
+\begin{equation}
+    n = 1.0 - \left( \frac{v}{v_{max}} \right)
+\end{equation}
+Ezáltal az $n$ érték minél közelebb van az $1.0$-hez, a szükséglet annál sürgetőbb (például a teljesen üres gyomor esetén $n = 1.0$).
+
+A konkrét architektúrában az egyes motivációk végső hasznosságát a normalizált szükségletek és az egyed genetikai állományából származó súlyok (\textit{genes/weights}) lineáris kombinációja határozza meg:
+\begin{equation}
+    U_{action} = w_{action} \cdot n_{action}
+\end{equation}
+Ahol $w_{action} \in \mathbb{R}^+$ a viselkedési gén súlya (például \texttt{hungerWeight}). A döntési lépés során a rendszer kiértékeli az összes releváns cselekvést ($U_{eat}, U_{drink}, U_{rest}, U_{mate}$), majd a kiválasztási függvény az abszolút maximumot keresi meg:
+\begin{equation}
+    \text{Selected\_Status} = \arg\max_{action} (U_{action})
+\end{equation}
+Ez a módszer rugalmas, folyamatos átmenetet biztosít a viselkedésformák között, és lehetővé teszi, hogy az egyedek egyéni genetikai preferenciák alapján (pl. egy bátrabb vagy falánkabb egyed más súlyokkal dolgozik) reagáljanak a környezetre.
+
+\subsection{Fuzzy Kognitív Térkép (FCM) tervezése}
+\label{subsec:fcm_tervezese}
+
+A legösszetettebb, nemlineáris döntési modellt a Fuzzy Kognitív Térkép (\textit{Fuzzy Cognitive Map -- FCM}) adja. Az FCM egy olyan irányított gráf, ahol a csomópontok ($C_i$) az ágens belső állapotait, környezeti észleléseit vagy közvetlen cselekvési szándékait (outputok) reprezentálják, a köztük lévő élek ($W_{ji}$) pedig a kauzális kapcsolatok irányát és erősségét határozzák meg a $[-1, 1]$ tartományban.
+
+Kódszinten a gráf topológiáját egy ágensenként allokált szomszédsági mátrix (\textit{adjacency matrix}) reprezentálja, ahol a sorok és oszlopok száma megegyezik a koncepciók számával. Az iterációs lépések során a csomópontok aktivációs szintje folyamatosan frissül a szomszédos csomópontok hatásainak és a korábbi saját értéküknek a figyelembevételével. A matematikai transzformáció leírása az $t+1$-edik iterációban:
+\begin{equation}
+    A_i(t+1) = f\left( A_i(t) + \sum_{j=1}^{N} A_j(t) \cdot W_{ji} \right)
+\end{equation}
+Ahol $A_i(t)$ az $i$-edik csomópont aktivációs értéke a $t$ időpillanatban, $W_{ji}$ a $j$ csomópontból az $i$ csomópontba mutató él súlya, az $f(x)$ pedig egy nemlineáris kényszerítő függvény (általában a $[0,1]$ tartományra normalizáló logisztikus szigmoid függvény), amely meggátolja az értékek divergálását.
+
+Az FCM legfőbb ereje a komplex, visszacsatolt rendszerek modellezésében rejlik. Tekintsük azt a szimulációs forgatókönyvet, amelyben az \textit{Éhség} csomópont pozitív éllel kapcsolódik a \textit{Félelem} (vagy gátlástalan viselkedés) csomóponthoz. Az iterációs lépések során, ahogy az \textit{Éhség} aktivációja növekszik, az a súlyozott kapcsolaton keresztül közvetetten gerjeszti vagy módosítja a \textit{Félelem} csomópont belső potenciálját. Ha a ragadozó jelenléte miatti félelem magas, de az éhség eléri a kritikus szintet, a gráfban futó gerjesztések dinamikus egyensúlya eltolódik: a negatív vagy pozitív visszacsatolási hurkok miatt az egyed képes lesz kockázatosabb döntést hozni (pl. elmenekülés helyett mégis táplálkozni kezd). Ez a struktúra hűen modellezi az élőlények belső kognitív konfliktusait és a motivációk egymásra gyakorolt dinamikus hatásait.
 
 % 4.4
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
