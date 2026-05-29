@@ -1,0 +1,70 @@
+\chapter{Specifikáció}
+\label{chap:elemzes}
+
+Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét követelményekre. Mivel jelen dolgozat egy négy féléven átívelő kutatási és fejlesztési folyamat (\textit{Önálló Laboratórium 1-2}, majd \textit{Diplomatervezés 1-2}) szintézise, a követelmények elemzése során éles határvonalat kell húzni a kiindulópontként szolgáló alaprendszer, valamint a teljes MSc képzés során elért fokozatos mérnöki előrelépések között.
+
+\section{A fejlesztési folyamat evolúciója}
+
+A szoftverrendszer nem egyetlen fázisban nyerte el végső formáját. A specifikáció pontos megértéséhez így elengedhetetlen a fejlesztési mérföldkövek áttekintése:
+
+\begin{itemize}
+    \item \textbf{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten, merev, determinisztikus (FSM-alapú) döntési logikával és lokális, strukturálatlan adatmentéssel.
+    \item \textbf{Önálló Laboratórium 1-2:} Megtörtént a rendszer első nagyszabású strukturális refaktorálása a „god class” minták felszámolása és a felelősségi körök szétválasztása (Single Responsibility Principle) érdekében. Ekkor került bevezetésre a ragadozó faj, a rókák prototípusa, ennek következtében pedig az érzékelési és menekülési algoritmusok, valamint a kezdeti, lokális fájlalapú naplózó rendszer dátumozott CSV fájlokba.
+    \item \textbf{Diplomatervezés 1:} Az ágensek biológiai modellje kiegészült új örökölhető tulajdonságokkal (lopakodás, álcázás, bátorság...) és az életerő-alapú (health-based) rendszerrel. Megkezdődött a döntési folyamatok absztrakciója, és elkészült a hasznossági alapú (Utility-based AI), valamint a Fuzzy Kognitív Térkép (FCM) alapú döntési mechanizmusok matematikai prototípusa.
+    \item \textbf{Diplomatervezés 2:} A korábban kidolgozott elméleti modellek teljes körű integrációja és élesítése. A három különböző gondolkodásmód (FSM, Utility, FCM) stabil, párhuzamosan futtatható és versenyeztethető verzióvá vált. Az erőforrás-kezelési problémák elhárítására a rendszer eseményvezérelt kommunikációs architektúrát kapott. A tudományos kiértékelhetőség érdekében kiépítésre került egy elosztott telemetria-rendszer: a szimulációs adatok valós időben, aszinkron HTTP kliensen keresztül továbbítódnak egy külső idősoros adatbázisba (InfluxDB), az adatok vizualizációját pedig egy dedikált Grafana dashboard látja el.
+\end{itemize}
+
+\section{Funkcionális követelmények}
+
+A fenti evolúciós folyamat eredményeképpen a lezárt mérnöki rendszernek a következő funkcionális követelményeket kell teljesítenie:
+
+\begin{itemize}
+    \item \textbf{Többszintű populációdinamika és interakciók:} Legalább két egymásra utalt faj (préda és ragadozó) egyidejű szimulációja folyamatos térbeli interakciókkal (táplálkozás, vadászat, szaporodás, elhullás...).
+    \item \textbf{Dinamikusan cserélhető döntési architektúra:} Az ágensek számára biztosítani kell a lehetőséget, hogy három különböző logikai struktúra (Véges állapotgép, Hasznossági modell, vagy Fuzzy Kognitív Térkép) szerint hozzák meg döntéseiket, lehetővé téve ezen mechanizmusok közvetlen összehasonlítását.
+    \item \textbf{Genetikai öröklődés és mutáció:} Az egyedek fizikai tulajdonságai (sebesség, látótávolság) és döntési paraméterei (súlyok, gráf-élek) genotípus alapú (\texttt{Genome}) tárolása, kombinálása és mutációval kísért átörökítése az utódokba.
+    \item \textbf{Aszinkron külső adatkapcsolat:} A szimuláció futása közben keletkező események (születés, elhullási okok, populációméret, genetikai drift...) strukturált, valós idejű továbbítása külső tároló felé, a szimulációs főszál blokkolása nélkül.
+\end{itemize}
+
+\section{Nem-funkcionális követelmények}
+
+A szoftverarchitektúra minőségével szemben támasztott elvárások:
+
+\begin{itemize}
+    \item \textbf{Kiterjeszthetőség (Extensibility):} A rendszernek meg kell felelnie az Open/Closed elvnek. Új fajok, tulajdonságok vagy alternatív döntési mechanizmusok bevezetése nem igényelheti a meglévő szimulációs mag módosítását.
+    \item \textbf{Teljesítmény és Skálázhatóság:} A szimulációnak stabil képkockasebesség (FPS) mellett kell futnia több száz egyidejűleg aktív ágens jelenléte esetén is. Emiatt a hagyományos, \texttt{Update}-alapú környezetlekérdezést (polling) eseményvezérelt (C\# delegátumokra és eventekre épülő) architektúrával kell megvalósítani.
+    \item \textbf{Valós idejűség és Leválasztott I/O:} A statisztikai adatok gyűjtése, formázása és a hálózati HTTP kommunikáció menedzselése nem okozhat mikroszaggatásokat (stuttering) vagy késleltetést a Unity vizuális megjelenítési folyamataiban.
+    \item \textbf{Karbantarthatóság és Alacsony Csatolás (Low Coupling):} Az egyedek vizuális megjelenítésének, fizikai reprezentációjának és belső döntési logikájának szigorúan elválasztott komponensekként kell működniük, elkerülve a korai fejlesztési szakaszokra jellemző monolitikus struktúrákat.
+\end{itemize}
+
+\section{A szimulációs paraméterek specifikációja}
+
+A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyeket a rendszernek kezelnie kell. A szimuláció bemeneti adatait és a vizsgált változók rendszerezett listáját a \ref{table:parameters}. táblázat foglalja össze.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Kategória} & \textbf{Paraméterek} \\ \hline
+Környezet & Terület mérete, táplálék (fű) újratermelődési rátája \\ \hline
+Egyed (Genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb \\ \hline
+Új Genetikai Jegyek & Lopakodás (\textit{stealth}), álcázás (\textit{camouflage}), bátorság (\textit{bravery}) \\ \hline
+Populáció & Kezdeti egyedszám, mutációs ráta, választott gondolkodásmód \\ \hline
+Rendszer & Logolási gyakoriság, szimulációs időlépték (\textit{Timescale}), InfluxDB kliens beállítások \\ \hline
+\end{tabular}
+\caption{A szimuláció bővített kulcsparaméterei}
+\label{table:parameters}
+\end{table}
+
+A táblázatban felsorolt paraméterek finomhangolása alapvetően meghatározza a szimulált ökoszisztéma stabilitását. A jelenlegi fázis célja éppen ezen paraméterek hosszú távú hatásainak vizsgálata a különböző döntési architektúrák tükrében.
+
+\section{Felhasználói esetek (Use Cases)}
+
+A rendszer elsődleges felhasználója a kutató/hallgató, aki a következő műveleteket végzi:
+\begin{enumerate}
+	\item \textbf{Konfiguráció:} A szimuláció indítása előtt megválasztja a környezeti paramétereket, a kezdeti egyedszámokat és az ágensek által használt specifikus döntési modellt (FSM, Utility, FCM).
+
+	\textbf{Megfigyelés:} Valós időben, 3D-s környezetben követi a vizuális térben zajló populációdinamikai folyamatokat és egyedi interakciókat.
+
+	\item \textbf{Valós idejű elemzés:} A szimuláció futásával párhuzamosan, a külső Grafana dashboardon megjelenő valós idejű idősoros grafikonok és statisztikák (pl. átlagéletkor, elhullási okok aránya, genetikai értékek eloszlása) alapján kiértékeli a választott döntési rendszer stabilitását.
+\end{enumerate}
+% SF: ha ki tudod egészíteni kisebb al use case-ekkel a fentieket, akkor egy use case diagram is készíthető a fentiekből, egyébként mivel kevés use case van, nem szükséges
