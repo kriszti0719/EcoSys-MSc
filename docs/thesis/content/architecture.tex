@@ -331,50 +331,37 @@ private static IEnumerator Send(string body)
 
 A \texttt{yield return request.SendWebRequest();} utasítás pontján a Coroutine átadja a vezérlést, így a Unity főszál zavartalanul folytathatja a szimulációs keretek (Frames) számítását és renderelését. Amint a háttérszálon a HTTP POST kérés sikeresen lezajlik, a Coroutine a következő képkockában ott folytatódik, ahol abbamaradt, és ellenőrzi a válasz státuszát.
 
-\subsection{A HTTP POST kérések felépítése és az InfluxDB Line Protocol}
+\subsection{A HTTP POST kérések felépítése és az alkalmazott InfluxDB Line Protocol}
+\label{subsec:tervezes_line_protocol}
 
-Az adatok strukturált felküldése az InfluxDB által megkövetelt \textit{Line Protocol} formátumban történik. Ez egy szigorúan meghatározott, szöveges alapú formátum, amely minimalizálja a hálózati overheadet. Felépítése a következő:
+A \ref{subsec:influxdb}. fejezetben bemutatott elméleti alapozásra építve, a rendszer tervezési fázisában meg kellett határozni, hogy a szimuláció ágenseinek tulajdonságai miként feleltethetők meg az InfluxDB adatmodelljének. A telemetriai csomagok felépítésének optimalizálása kulcsfontosságú, hiszen a nagyszámú ágens folyamatos adatszolgáltatása jelentős hálózati terhelést jelenthet.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.85\textwidth]{figures/line_protocol.png} 
-    \caption{Az InfluxDB Line Protocol felépítése}
-    \label{fig:line_protocol}
-\end{figure}
-
-A formátumot alkotó szintaktikai elemek szemantikai jelentése és szerepe az idősor-alapú (\textit{Time Series}) adatmodellezésben a következő:
+A szimulációs entitások és események leképezése során a következő specifikus mérnöki döntések születtek:
 
 \begin{itemize}
-    \item \textbf{Measurement (Mérés):} A relációs adatbázisok táblaneveivel analóg strukturális elem (a rendszerben ilyen például a \texttt{death} mérés). Ez határozza meg a rögzíteni kívánt esemény vagy metrika alapvető kontextusát.
+    \item \textbf{Measurementek elkülönítése:} A rendszerben különálló méréseket definiáltam a különböző eseménytípusokhoz. Például a populáció pillanatnyi állapotát a \texttt{population}, az egyedek elhalálozását a \texttt{death}, míg a táplálékforrásokat a \texttt{food} mérés reprezentálja.
+    
+    \item \textbf{A Tag-ek megválasztása a nagy kardinalitás elkerülésével:} Mivel az InfluxDB a Tag-eket indexeli, a rosszul megválasztott, túl sűrűn változó értékek (\textit{High Cardinality}) az adatbázis index-robbanásához és teljesítménycsökkenéséhez vezetnének. Emiatt \textit{Tag}-ként kizárólag diszkrét, jól csoportosítható metaadatokat használ a rendszer:
+    \begin{itemize}
+        \item \texttt{species}: az ágens faja (pl. \texttt{BUNNY}), ami alapján a Grafana dashboardokon azonnali szűrések végezhetők fajonként
+        \item \texttt{cause}: az elhalálozás oka (pl. \texttt{HUNGER}, \texttt{AGE}), ami a mortalitási statisztikák alapja
+        \item \texttt{run\_id}: a szimulációs futás egyedi időbélyeg-alapú azonosítója. Ez teszi lehetővé, hogy a Grafana felületén több különböző paraméterezésű kísérlet (futtatás) eredményeit egymással összehasonlítsuk, vagy korábbi futtatások adatait teljesen elszeparáljuk
+    \end{itemize}
 
-    \item \textbf{Tag-ek (Címkék):} Kulcs-érték párok formájában megadott metaadatok, amelyeket az InfluxDB \textbf{automatikusan indexel}. Mivel az indexelés miatt ezeken a mezőkön a lekérdezések futási ideje konstans vagy logaritmikus, ide a diszkrét, kategorizálható tulajdonságokat (például \texttt{species}, \texttt{cause}, \texttt{run\_id}) érdemes helyezni. Fontos tervezési szabály, hogy a tag-ek értékei sztring típusúak, és nem tartalmazhatnak nagy kardinalitású, folyamatosan változó értékeket (példánkban a futás azonosítója fix a szimuláció alatt).
+    \item \textbf{A Field-ek meghatározása az evolúciós metrikákhoz:} Minden olyan attribútum, amely a mutációs algoritmusok hatására folyamatosan változik, vagy matematikai aggregáció (pl. átlagolás) tárgyát képezi, \textit{Field}-ként lett deklarálva.
 
-    \item \textbf{Field-ek (Mezők):} Kulcs-érték párok, amelyek a szimuláció \textbf{ténylegesen mért, változó célértékeit} (metrikáit) hordozzák (például \texttt{speed}, \texttt{sight}, \texttt{age}). A mezők értékei nem indexeltek, de rajtuk matematikai és statisztikai aggregációk (átlagolás, minimum- és maximumkeresés, integrálás) végezhetők. Értékük lehet lebegőpontos szám, egész szám, logikai érték vagy sztring.
+    Ilyenek az egyedek genetikai és aktuális fizikai jellemzői: a sebesség (\texttt{speed}), a látótávolság (\texttt{sight}), az adott állat vonzereje (\texttt{charm}). Ezeken a mezőkön a Grafana futásidőben képes kiszámítani a populációra vonatkozó átlagokat, így kirajzolva a természetes szelekció trendjeit.
 
-    \item \textbf{Timestamp (Időbélyeg):} Az esemény bekövetkezésének pontos ideje. Mivel az URL-ben a \texttt{precision=s} paramétert használjuk, ez másodperc alapú UNIX időbélyegként értelmeződik. Ha nincs explicit módon megadva, az InfluxDB a kérés szerverre érkezésének pillanatát rendeli hozzá a ponthoz.
+    \item \textbf{Időbélyeg (Timestamp) és precízió:} Annak érdekében, hogy a hálózaton továbbított bájtok számát csökkentsük, az alapértelmezett nanoszekundumos precízió helyett másodperces (\texttt{precision=s}) felbontást alkalmazunk a kérések küldésekor használt URL-ben, így az időbélyeg rövidebb, UNIX formátumban utazik.
 \end{itemize}
-
-A szintaxis szempontjából kritikus pont a \textbf{szóköz karakterek} elhelyezkedése: az első szóköz választja el az indexelt metaadatokat (Measurement és Tag-ek) a nem indexelt értékektől (Field-ek), míg a második szóköz különíti el a mezőket a záró időbélyegtől. A Tag-ek és Field-ek listáján belüli elemeket vesszővel (\texttt{,}) kell elválasztani, a kulcs-érték párokat pedig egyenlőségjellel (\texttt{=}), szóközök nélkül.
-
-A \texttt{DebugLogger.RegisterDeathToDb} metódus az egyedek pusztulásakor pontosan ebben a struktúrában állítja össze a telemetriai csomagot. A hatékony lekérdezhetőség érdekében a fix tulajdonságokat (faj, halál oka, szimulációs futás azonosítója...) \textit{Tag}-ként, míg a folyamatosan változó, mutációra képes genetikai és viselkedési attribútumokat \textit{Field}-ként definiálja a rendszer.
 
 Egy elpusztult nyúl (Bunny) adatainak felküldésekor generált Line Protocol sztring felépítése (a hiba elkerülése végett nyelvi kiemelés nélkül):
 
 \begin{lstlisting}[caption={Példa InfluxDB Line Protocol formátumú üzenetre}]
-death,run_id=20260527_224700,species=BUNNY,cause=CONSUMED age=1.2,speed=5.4,sight=15.0,
+death,
+run_id=20260527_224700,species=BUNNY,cause=CONSUMED age=1.2,speed=5.4,sight=15.0,
 lifeSpan=60.0,charm=42.0,pregnancyDuration=10.0,starving=30.0,drying=40.0,triedForBaby=2,
 gaveBirth=0,kids=0,step=1420
 \end{lstlisting}
 
-A formátum kulcsfontosságú elemei a szimuláció szempontjából:
-\begin{itemize}
-    \item \textbf{Measurement (\texttt{death}):} az esemény típusa (idősor-tábla neve)
-    \item \textbf{Tags (\texttt{run\_id}, \texttt{species}, \texttt{cause}):} indexelt metaadatok
-
-Ezek alapján a Grafana felületén rendkívül gyorsan lehet szűrni az adatokat (pl. külön vizualizálni a rókák és a nyulak halálozási okait).
-    \item \textbf{Fields (pl. \texttt{speed}, \texttt{sight}, \texttt{step}):} nem indexelt értékek
-
-Ezek hordozzák a populáció aktuális átlagértékeit, amelyekből a statisztikai trendek, az evolúciós növekedés vagy a természetes szelekció iránya számszerűsíthető.
-\end{itemize}
-
-Az így kiküldött adatok közvetlenül az InfluxDB \texttt{bucket}-jébe\footnote{Az InfluxDB kontextusában a \textit{bucket} egy logikai adattároló egység (analóg a relációs adatbázisok adatbázis-fogalmával), amely meghatározott adatmegőrzési szabályokkal (\textit{Retention Policy}) rendelkezik, és idősoros adatok (\textit{time series data}) strukturált tárolására szolgál.} kerülnek, ahonnan a Grafana dashboardok valós időben, másodperces felbontással képesek kirajzolni a populáció túlélési és adaptációs grafikonjait.
+Ez az elrendezés biztosítja, hogy a Grafana dashboardok másodperces frissítés mellett is rendkívül gyorsan képesek legyenek lekérdezni a több ezer adatpontot, hiszen a szűrést végző oszlopok (\texttt{species}, \texttt{cause}) mind indexeltek, míg a grafikonokon ábrázolt trendek (\texttt{speed}, \texttt{sight}) a rugalmasan aggregálható mezőkből származnak.
