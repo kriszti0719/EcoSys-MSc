@@ -7,14 +7,16 @@ Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét követel
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A fejlesztési folyamat evolúciója}
 
-A szoftverrendszer nem egyetlen fázisban nyerte el végső formáját. A specifikáció pontos megértéséhez így elengedhetetlen a fejlesztési mérföldkövek áttekintése:
+A szoftverrendszer nem egyetlen fázisban nyerte el végső formáját. A specifikáció pontos megértéséhez így elengedhetetlen a fejlesztési mérföldkövek áttekintése, meghúzva az éles határvonalat a kiindulópontot jelentő szakdolgozat és a mesterképzés során végzett kutató-fejlesztő munka között:
 
-\begin{itemize}
-    \item \textbf{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten, merev, determinisztikus (FSM-alapú) döntési logikával és lokális, strukturálatlan adatmentéssel.
-    \item \textbf{Önálló Laboratórium 1-2:} Megtörtént a rendszer első nagyszabású strukturális refaktorálása a „god class” minták felszámolása és a felelősségi körök szétválasztása (Single Responsibility Principle) érdekében. Ekkor került bevezetésre a ragadozó faj, a rókák prototípusa, ennek következtében pedig az érzékelési és menekülési algoritmusok, valamint a kezdeti, lokális fájlalapú naplózó rendszer dátumozott CSV fájlokba.
-    \item \textbf{Diplomatervezés 1:} Az ágensek biológiai modellje kiegészült új örökölhető tulajdonságokkal (lopakodás, álcázás, bátorság...) és az életerő-alapú (health-based) rendszerrel. Megkezdődött a döntési folyamatok absztrakciója, és elkészült a hasznossági alapú (Utility-based AI), valamint a Fuzzy Kognitív Térkép (FCM) alapú döntési mechanizmusok matematikai prototípusa.
-    \item \textbf{Diplomatervezés 2:} A korábban kidolgozott elméleti modellek teljes körű integrációja és élesítése. A három különböző gondolkodásmód (FSM, Utility, FCM) stabil, párhuzamosan futtatható és versenyeztethető verzióvá vált. Az erőforrás-kezelési problémák elhárítására a rendszer eseményvezérelt kommunikációs architektúrát kapott. A tudományos kiértékelhetőség érdekében kiépítésre került egy elosztott telemetria-rendszer: a szimulációs adatok valós időben, aszinkron HTTP kliensen keresztül továbbítódnak egy külső idősoros adatbázisba (InfluxDB), az adatok vizualizációját pedig egy dedikált Grafana dashboard látja el.
-\end{itemize}
+    \paragraph{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten, merev, determinisztikus (FSM-alapú) döntési logikával és lokális, strukturálatlan adatmentéssel.
+    \paragraph{Továbbfejlesztés és kutatás (MSc fázis):} A mesterképzés során a rendszer teljes körű strukturális és funkcionális metamorfózison ment keresztül. A fejlesztési eredmények az alábbi főbb pillérekre oszthatók:
+    \begin{itemize}
+        \item \textit{Architekturális refaktorálás:} Megtörtént a „god class” minták felszámolása és a felelősségi körök szétválasztása (Single Responsibility Principle). Az erőforrás-kezelési problémák elhárítására, valamint a komponensek közötti laza csatolás biztosítására a rendszer eseményvezérelt kommunikációs architektúrát kapott.
+        \item \textit{Ökoszisztéma-modell bővítése:} Bevezetésre került a ragadozó faj (rókák), amely maga után vonta az új érzékelési, menekülési és vadászati algoritmusok implementálását. Az ágensek biológiai modellje életerő-alapú (health-based) rendszerrel, valamint új, generációkon át öröklődő fenotípusos tulajdonságokkal (pl. álcázás, bátorság...) egészült ki.
+        \item \textit{Döntési architektúrák absztrakciója:} A merev FSM-en túlmutatóan kiépítésre került a hasznossági alapú (Utility-based AI), valamint a Fuzzy Kognitív Térkép (FCM) elvén működő döntési mechanizmus. A három különböző gondolkodásmód stabil, a szimuláció indításakor szabadon konfigurálható, párhuzamosan futtatható és egymással versenyeztethető ágens-architektúrává vált.
+        \item \textit{Elosztott telemetria és adatgyűjtés:} A kezdeti lokális, fájlalapú (CSV) naplózást egy modern, elosztott telemetria-rendszer váltotta fel. A szimulációs adatok valós időben, aszinkron HTTP kliensen keresztül továbbítódnak egy külső idősoros adatbázisba (InfluxDB), az adatok tudományos igényű vizualizációját és elemzését pedig egy dedikált Grafana dashboard látja el.
+    \end{itemize}
 
 % 2.2
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
