@@ -1,15 +1,20 @@
-\chapter{A megtervezett műszaki alkotás értékelése és kritikai elemzése}
-
+\chapter{Az eredmények értékelése}
+% 5.1
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Rendszer- és teljesítményelemzés (Kritikai reflexió)}
 	Az eseményvezérelt architektúra hatása
 
 	Az InfluxDB HTTP kapcsolat overheadje?
 
+% 5.2
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A döntési modellek kísérleti összehasonlítása}
 	Melyik gondolkodásmód bizonyult a legstabilabbnak?
 
 	A genetikai drift elemzése: hogyan változtak a populáció átlagértékei X generáció után
 
+% 5.3
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Továbbfejlesztési lehetőségek}
 
 A kifejlesztett ökoszisztéma-szimuláció egy stabil, moduláris alapkeretet biztosít, amely mind szoftverarchitekturális, mind biológiai modellezési szempontból jelentős továbbfejlesztési potenciállal rendelkezik. A jövőbeli kutatási és fejlesztési irányok három fő kategóriába csoportosíthatók.
@@ -18,14 +23,14 @@ A kifejlesztett ökoszisztéma-szimuláció egy stabil, moduláris alapkeretet b
 
 A jelenlegi implementáció a hagyományos objektumorientált (\textit{Object-Oriented Programming, OOP}) megközelítést alkalmazza, ahol minden ágens egy egyedi \texttt{MonoBehaviour} alapú \texttt{GameObject} a Unity színtéren. Bár ez a struktúra ideális a komplex állapotgépek és a Fuzzy Cognitive Map egyedi kiértékelésére, komoly teljesítménybeli korlátokat (\textit{performance bottleneck}) jelent a CPU és a memória-hozzáférés szintjén. A szimulált ágensek száma a hardverkapacitástól függően néhány száz, maximum egy-kétezer egyedben maximalizálódik, mivel az objektumok kezelése és a Unity belső alrendszereinek (pl. \texttt{Update()} ciklusok overheadje) jelentős erőforrást igényel.
 
-A szimuláció nagyságrendi skálázhatóságának biztosításához a technológiai jövőkép a **Unity DOTS (Data-Oriented Technology Stack)** és az **ECS (Entity Component System)** architektúra bevezetése.
+A szimuláció nagyságrendi skálázhatóságának biztosításához a technológiai jövőkép a \textbf{Unity DOTS (Data-Oriented Technology Stack)} és az \textbf{ECS (Entity Component System)} architektúra bevezetése.
 
 \begin{itemize}
     \item \textbf{Adatközpontú tervezés (ECS):} A \texttt{GameObject}-ek helyett az egyedeket egyszerű azonosítók (\textit{Entities}), a tulajdonságaikat (pozíció, éhség, genetikai súlyok) tiszta adatstruktúrák (\textit{Components}), a logikát pedig globális rendszerek (\textit{Systems}) reprezentálnák. Ez megszüntetné a memóriatöredezettséget, és lehetővé tenné a gyorsítótár-optimalizált (\textit{cache-friendly}) szekvenciális adatolvasást.
     \item \textbf{Párhuzamosítás (C\# Job System \& Burst Compiler):} Az ECS-re való átállással az egyedek döntéshozatali ciklusai (legyen az hasznossági alapú vagy FCM hálózat) natív gépi kódra fordulnának, és automatikusan szétoszthatók lennének a CPU összes elérhető magja között.
 \end{itemize}
 
-Ezen technológiai paradigmaváltás eredményeképpen a szimulációs kapacitás a jelenlegi néhány száz ágensről **több tízezer párhuzamosan működő ágensre** növekedne, ami már valódi, makroszintű populációdinamikai és makroevolúciós trendek vizsgálatát is lehetővé tenné.
+Ezen technológiai paradigmaváltás eredményeképpen a szimulációs kapacitás a jelenlegi néhány száz ágensről \textbf{több tízezer párhuzamosan működő ágensre} növekedne, ami már valódi, makroszintű populációdinamikai és makroevolúciós trendek vizsgálatát is lehetővé tenné.
 
 \subsection{Biológiai és ökológiai irány: A szimulációs hűség növelése}
 
@@ -65,3 +70,28 @@ Ez a megközelítés egy egyedülálló, aszimmetrikus versenyt eredményezne a 
 \end{itemize}
 
 Ez a fejlesztési irány nemcsak a szoftver demonstrációs értékét növelné, hanem kiváló alapként szolgálhatna oktatási szoftverekhez (pl. az ökológiai egyensúly és a természetes szelekció szemléltetésére), vagy akár egy komplex, önálló stratégiai játék prototípusaként is megállná a helyét.
+
+% 5.4
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Összefoglalás}
+
+Jelen diplomamunka egy négy féléven átívelő, szisztematikus kutatási és szoftverfejlesztési folyamat szintézise, melynek elsődleges célja egy olyan robusztus és moduláris ökoszisztéma-szimulációs keretrendszer létrehozása volt, amely alkalmas populációgenetikai, evolúciós és ágensalapú döntéshozatali modellek tudományos igényű vizsgálatára, valamint valós idejű telemetriai elemzésére.
+
+A fejlesztési folyamat kiindulópontját képező BSc szakdolgozati fázisban egy korlátozott funkcionalitású, monolitikus struktúrájú alkalmazás állt rendelkezésre. Ez a korai rendszer kizárólag egyetlen préda faj autonóm működését modellezte kódgenerált környezetben, merev, determinisztikus állapotátmenetekre támaszkodva, lokális és strukturálatlan adatmentés mellett.
+
+A mesterképzés (MSc) során elvégzett mérnöki munka alapvetően változtatta meg a szoftver irányvonalát: a korábbi korlátokat felszámolva a hangsúly a tiszta szoftverarchitekturális mintákra, a skálázhatóságra, a biológiai hűség növelésére és az elosztott adatgyűjtésre helyeződött át.
+
+A szoftvertechnológiai modernizáció első lépéseként a „god class” antipatternek felszámolásával egy tiszta, komponens-aggregációra épülő osztályhierarchiát alakítottam ki a Unity3D motor környezetében. A számítási kapacitás optimalizálása és az ágensek közötti decoupling érdekében a rendszert eseményvezérelt kommunikációs modellre ültettem át. Ez a megközelítés minimalizálta a felesleges, frame-enként lefutó állapotellenőrzéseket, biztosítva a CPU-erőforrások hatékony elosztását növekvő egyedszám mellett is.
+
+A biológiai hűség fokozása érdekében a szimulációs teret procedurálisan generált, folytonos 3D-s domborzattá terjesztettem ki, amely fizikai akadályaival közvetlen szelekciós nyomást gyakorol az ágensekre. Bevezetésre került a ragadozó faj (rókák), ezáltal sikerült digitális környezetben reprodukálni a klasszikus Lotka–Volterra-féle ragadozó-préda populáció-oszcillációkat. Az egyedek viselkedését egy komplex, mutációra és rekombinációra képes genetikai adatmodell (\texttt{Genome}) vezérli. A szuper-ágensek kialakulását versengő trade-off mechanizmusokkal akadályoztam meg, ahol a magasabb sebesség vagy látótávolság arányosan növeli az egyed metabolikus energiaköltségét.
+
+A dolgozat egyik legfontosabb tudományos és mérnöki eredménye a döntéshozatali folyamatok moduláris absztrakciója, amely lehetővé tette három radikálisan eltérő döntési paradigma párhuzamos integrációját és összehasonlítását:
+\begin{itemize}
+    \item \textbf{Véges állapotgép (ClassicFSM):} A szabályalapú, stabil, de futásidőben merev és evolúciós szempontból alkalmatlan megközelítés reprezentációja.
+    \item \textbf{Hasznossági alapú döntési rendszer (Utility AI):} Ahol az ágensek a normalizált belső szükségletek és külső ingerek lineáris kombinációjaként számítják ki az akciók prioritását. A súlyokat a \texttt{UtilityGenome} hordozza, folytonos adaptációs teret biztosítva a természetes szelekciónak.
+    \item \textbf{Fuzzy Kognitív Térkép (FCM):} A legkomplexebb integrált modell, amely egy irányított, súlyozott gráf segítségével, iteratív és nem-lineáris szigmoid aktivációs függvényeken keresztül modellezi a belső állapotok (pl. éhség, félelem) és akciók egymásra hatását a \texttt{FCMGenome} súlymátrixa alapján.
+\end{itemize}
+
+A szimulációk során keletkező adatok tudományos kiértékeléséhez egy professzionális ipari telemetriai pipeline-t terveztem és valósítottam meg. A Unity főszálának védelme érdekében aszinkron architektúrát alkalmazva, HTTP POST kéréseken keresztül transzportálom a strukturált populációdinamikai és genetikai adatokat egy külső InfluxDB idősor-adatbázisba. Az adatok vizuális reprezentációját, valós idejű statisztikai elemzését és a különböző döntési modellek stabilitásának összehasonlítását egy egyedileg konfigurált Grafana dashboard rendszer biztosítja.
+
+Összességében a kitűzött feladatokat hiánytalanul teljesítettem. A létrehozott szoftverrendszer nem csupán igazolta a biológiai alapelméletek digitális reprezentálhatóságát, hanem egy olyan skálázható és kiterjeszthető mérnöki keretrendszert biztosít, amely szilárd alapot nyújt a jövőbeli kutatásokhoz, legyen szó akár a Unity DOTS alapú masszív párhuzamosítással történő skálázásról, vagy a Sandbox módú gamifikációs továbbfejlesztésekről.
