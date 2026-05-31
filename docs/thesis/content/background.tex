@@ -3,6 +3,8 @@
 
 A szimulációs rendszerek tervezése előtt alapos irodalomkutatást végeztem az ACM Digital Library adatbázisában \footnote{Az ACM (Association for Computing Machinery) Digital Library a világ egyik legjelentősebb informatikai tudományos adatbázisa, amely hozzáférést biztosít neves szakfolyóiratokhoz és konferenciakiadványokhoz: \url{https://dl.acm.org/}}, valamint megvizsgáltam a területen elérhető népszerű szoftveres megoldásokat és oktatási célú projekteket. A kutatás célja az volt, hogy feltérképezzem az ágensalapú modellezés (Agent-Based Modeling – ABM) aktuális módszereit és a döntéshozatali algoritmusok implementációs lehetőségeit.
 
+% 3.1
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Irodalomkutatás és elméleti háttér}
 
 Az ökoszisztémák modellezése és az ágensalapú szimulációk területén végzett kutatásaim során több olyan tudományos publikációt vizsgáltam meg, amelyek alapjaiban határozták meg a fejlesztés irányvonalát. Az alábbiakban ezeket a munkákat részletezem, kiemelve a saját megoldásomtól való eltéréseket.
@@ -23,6 +25,42 @@ A fejlesztés során egy olyan moduláris keretrendszert alakítottam ki, amely 
 
 A saját megoldásom újdonsága, hogy ezeket a mechanizmusokat egy egységes, eseményvezérelt Unity-architektúrába integráltam, kiegészítve real-time HTTP alapú naplózással. Ezáltal lehetőség nyílik arra, hogy a statisztikai elemzés során számszerűsíthető legyen az egyes "gondolkodásmódok" hatása a populáció túlélési rátájára és stabilitására.
 
+A három architektúra közötti alapvető szoftvertechnológiai és elméleti különbségeket a \ref{table:decision_comparison}. táblázat foglalja össze részletesen:
+
+\small
+\begin{longtable}{| >{\RaggedRight}p{2.8cm} | >{\RaggedRight}p{3.8cm} | >{\RaggedRight}p{3.8cm} | >{\RaggedRight}p{3.8cm} |}
+\caption{Az FSM, Utility AI és FCM döntési architektúrák összehasonlítása}
+\label{table:decision_comparison} \\
+\hline
+\textbf{} & \textbf{Véges állapotgép \newline (FSM)} & \textbf{Hasznossági AI \newline (Utility)} & \textbf{Fuzzy Cognitive Map \newline (FCM)} \\ \hline
+
+\endhead
+
+\hline
+\multicolumn{4}{r}{\textit{Folytatás a következő oldalon...}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+\textbf{Alapvető működési elv} & Diszkrét állapotok és determinisztikus átmenetek összessége. & Súlyozott matematikai függvények és hasznossági értékek maximumkeresése. & Koncepciók (belső állapotok és akciók) irányított, súlyozott gráfja. \\ \hline
+
+\textbf{Döntéshozatali logika} & Feltételvezérelt (if-then), merev küszöbértékek alapján. & Folytonos, normalizált értékek lineáris kombinációja. & Iteratív, nem-lineáris állapotfrissítés szigmoid aktivációs függvénnyel. \\ \hline
+
+\textbf{Viselkedési determinizmus} & Teljesen determinisztikus és statikus; azonos ingerre mindig azonos válasz. & Dinamikus: az egyedi genom súlyai miatt azonos állapot más döntést szülhet. & Emergens és kontextusfüggő: a gráfon belüli visszacsatolások egyedi mintákat adnak. \\ \hline
+
+\textbf{Paraméterek reprezentációja} & \textit{Hardcoded} logikai szabályok és konstansok. & Elkülönített, örökölhető és mutálható leíró osztály: \texttt{UtilityGenome}. & Súlymatrixtól és topológiától függő egyedi tömb: \texttt{FCMGenome}. \\ \hline
+
+\textbf{Evolúciós alkalmasság} & Nem alkalmas; a struktúra futásidőben nem alakítható vagy finomhangolható. & Kiválóan alkalmas; a súlyok folytonos skálán való mutációja stabilan követhető. & Összetett; a súlyok mutációja mellett a topológia stabilitása nehezen garantálható. \\ \hline
+
+\textbf{Szoftver-architektúrális előnyök} & Rendkívül alacsony számítási igény, egyszerű és gyors implementáció. & Moduláris, könnyen skálázható, az ágensek szintjén jól elkülöníthető. & Komplex, nem-lineáris visszacsatolások és finom viselkedésformák modellezése. \\ \hline
+
+\textbf{Mérnöki korlátok és hátrányok} & Merev, skálázhatatlan; komplex rendszernél „állapotrobbanás” lép fel. & Nem veszi figyelembe az egyes döntési tényezők egymásra gyakorolt hatásait. & Magasabb számítási és memóriaigény, összetett debugolás és finomhangolás. \\ \hline
+\end{longtable}
+\normalsize
+
+% 3.2
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Hasonló alkotások és inspirációk}
 
 A szoftverfejlesztői közösségben, különösen a Unity3D motor köré csoportosulva, több figyelemre méltó projekt is foglalkozik ökológiai szimulációval. Ezek az alkotások jelentős inspirációt nyújtottak a fejlesztés során, ugyanakkor rávilágítottak olyan technikai korlátokra is, amelyeket jelen munka igyekszik feloldani.
@@ -61,6 +99,8 @@ A technikai implementációk mellett Primer youtube csatorna videósorozata \cit
 
 Az ő megközelítése segített validálni a saját modellmben alkalmazott „trade-off” mechanizmusokat. Primer rávilágított arra, hogy egy sikeres szimulációban minden előnyös tulajdonságnak (pl. nagyobb sebesség) rendelkeznie kell egy hátránnyal is (pl. magasabb alapanyagcsere-igény), különben a populáció instabillá válik. Bár Primer megoldásai absztrakt, rácsalapú vagy egyszerűsített 2D-s tereken futnak, a tőle átvett elméleti összefüggéseket én egy komplex, 3D-s Unity környezetbe ültettem át. Ez a váltás lehetővé tette, hogy az ő statisztikai alapú következtetéseit egy sokkal dinamikusabb, fizikai alapú interakciókkal (pl. tényleges ütközések, domborzati viszonyok) rendelkező rendszerben vizsgáljam tovább.
 
+% 3.3
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Következtetések és tervezési irányelvek}
 
 Az irodalomkutatás, valamint a létező szoftveres megoldások és devlogok elemzése alapján egyértelművé vált, hogy a biológiailag hiteles és szoftvertechnológiailag is fenntartható ökoszisztéma-szimuláció egyedi mérnöki megközelítést igényel. A vizsgált munkákból levont tanulságokat az alábbi konkrét tervezési döntések formájában integrálom a saját rendszerembe:
