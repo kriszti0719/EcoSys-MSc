@@ -136,8 +136,70 @@ Az eredő menekülési irányvektort ($\vec{V}_{flee}$) ezen vektorok normalizá
 Ez a matematikai megközelítés garantálja, hogy az ágens képes dinamikusan navigálni csapdahelyzetekben is, elkerülve, hogy az egyik ragadozótól menekülve közvetlenül egy másik torkába fusson.
 
 
-% 4.2
+% 4.3
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Öröklődő és mutálódó tulajdonságok}
+\label{sec:oroklodo_tulajdonsagok}
+
+A szimulációs rendszer egyik kulcsfontosságú eleme a fajok evolúciós fejlődésének és adaptációjának modellezése. Amikor két egyed sikeresen szaporodik, az utód nem statikus vagy véletlenszerűen generált értékekkel jön létre, hanem a szülők genetikai tulajdonságait örökli, amelyek a környezeti hatásokhoz való alkalmazkodás érdekében mutáción mehetnek keresztül.
+
+A tulajdonságok kombinálását és finomhangolását a \texttt{MutateTrait} függvény végzi, amely a szülők adott génértékei alapján határozza meg az utód alapértékét, majd egy előre meghatározott ráta szerint kismértékű mutációt (véletlenszerű eltérést) vihet végbe benne.
+
+Az alábbi kódrészlet szemlélteti, hogyan inicializálódnak az utód egyed tulajdonságai a szülők (\texttt{mother} és \texttt{father}) paraméterei alapján:
+
+\begin{lstlisting}[language=csh, caption={Az utód tulajdonságainak inicializálása és mutációja}, label={lst:mutation_init}]
+...
+bravery = Mathf.RoundToInt(MutateTrait(mother.bravery, father.bravery));
+eat.critical = Mathf.RoundToInt(MutateTrait(mother.eat.critical, father.eat_critical));
+drink.critical = Mathf.RoundToInt(MutateTrait(mother.drink.critical, father.drink_critical));
+movement.moveSpeed = MutateTrait(mother.movement.moveSpeed, father.moveSpeed);
+...
+\end{lstlisting}
+
+Az öröklődő és mutációnak kitett legfontosabb paraméterek és azok szimulációs szerepe a következőképpen foglalható össze:
+
+\paragraph{Életciklus és növekedés (\texttt{aging}):}
+
+\begin{itemize}
+	\item az utód egy minimális kezdeti életkorral (\texttt{age: 0.01f}) jön világra
+	\item a felnőttkori méretét (\texttt{size}) a szülők méretének számtani közepe határozza meg
+	\item míg a maximális élethosszát (\texttt{lifeSpan}) a szülők értékeiből mutációval származtatott időkorlát adja meg
+\end{itemize}
+
+A \texttt{lifeSpan} korlát fixálja azt a maximális életkort, amelyet az állat elérhet, még abban az optimális esetben is, ha a környezeti tényezők (éhség, szomjúság, ragadozók) nem okozzák a korábbi pusztulását.
+ 
+\paragraph{Bátorság (\texttt{bravery}):} Ez a viselkedési paraméter határozza meg, hogy az egyed mennyire tolerálja a veszélyt. Minél magasabb ez az érték, az állat annál közelebb engedi magához a ragadozókat, mielőtt menekülni kezdene. A magas érték kockázatos, viszont evolúciós előnyt is jelenthet, hiszen a túl óvatos (alacsony bátorságú) egyedek folyamatosan menekülnek, így nem marad elegendő idejük a táplálkozásra és a létfontosságú szükségletek kielégítésére.
+
+\paragraph{Kritikus szükségleti küszöbök (\texttt{eat.critical}, \texttt{drink.critical}):} Olyan belső határértékek, amelyek jelzik az egyed ágense számára, ha az éhség vagy szomjúság szintje kritikus fázisba lépett. Ezen értékek öröklődése és mutációja finomhangolja, hogy az állat mikor váltson át normál állapotból intenzív erőforrás-kereső üzemmódba.
+
+\paragraph{Mozgás és navigáció (\texttt{movement}):}
+\begin{itemize}
+	\item a helyváltoztatási sebesség (\texttt{moveSpeed}) szintén egy öröklődő, mutálódó gén, amely alapvetően meghatározza az egyed menekülési és zsákmányszerzési esélyeit
+	\item a fordulási sebesség (\texttt{rotSpeed}) közvetlenül ebből van származtatva (a lineáris sebesség harmincszorosaként), biztosítva, hogy a gyorsabb mozgású egyedek fordulási dinamikája is arányosan igazodjon a sebességükhöz
+\end{itemize}
+
+\paragraph{Érzékelés és rejtőzködés (\texttt{sensor}):}
+\begin{itemize}
+	\item az ágens környezetérzékelési sugara (\texttt{radius}), amely meghatározza a látótávolságot
+	\item a környezetbe való beolvadás képessége (\texttt{camouflage}),  amely a vizuális észlelhetőséget csökkenti
+	\item valamint a lopakodási képessége (\texttt{stealth}), amely a mozgás közbeni zajt vagy feltűnést hivatott modellezni
+\end{itemize}
+
+Ezek közvetlenül befolyásolják a préda-ragadozó interakciók sikerességét a látótávolságok és az észlelhetőség módosításával.
+    
+\paragraph{Szaporodási jellemzők (\texttt{reproduction}, \texttt{mating}) komponensek:}
+
+\begin{itemize}
+	\item az utód születésekor a párkeresés alapértelmezetten le van tiltva (\texttt{enableMating = false}), és csak a felnőtté válás után aktiválódik
+	\item a vemhesség időtartama (\texttt{pregnancyDuration}) öröklődő tulajdonság
+	\item a vonzerő (\texttt{charm}) pedig egy olyan mutálódó paraméter, amely közvetlenül befolyásolja annak a valószínűségét, hogy a kiszemelt partner elfogadja-e az egyed szaporodási ajánlatát
+\end{itemize}
+
+A fenti tulajdonságok kombinációja és folyamatos, generációkon átívelő mutációja teszi lehetővé, hogy a szimulációs térben természetes szelekció alakuljon ki, ahol a környezethez legjobban alkalmazkodó génkombinációk válnak dominánssá.
+
+% 4.4
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 \section{Eseményvezérelt kommunikációs modell}
 \label{sec:esemenyvezerelt}
 
@@ -208,7 +270,7 @@ public class AnimalEventHandler : MonoBehaviour
 }
 \end{lstlisting}
 
-% 4.3
+% 4.5
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A döntési folyamatok moduláris tervezése és implementációja}
 \label{sec:dontesi_folyamatok}
@@ -253,7 +315,21 @@ public class DecisionController
 
 A legegyszerűbb, determinisztikus megközelítést a Véges Állapotú Gép (\textit{Finite State Machine - FSM}) képviseli. Ebben az architektúrában az ágens viselkedése diszkrét állapotokra van osztva, és az állapotok közötti átmeneteket mereven rögzített szabályok (if-then struktúrák) vezérlik az ágens belső monitorozott változói (éhség, szomjúság, stamina) és környezeti ingerei (észlelt veszély) alapján.
 
-A szimuláció alapvető állapotait és azok átmeneti feltételeit a \ref{tab:fsm_matrix}. táblázatban összefoglalt állapot-átmeneti mátrix reprezentálja.
+A szimulációs ciklus során az ágens aktuális belső állapotát a \texttt{Status} felsorolásos típus (\textit{enum}) reprezentálja. Az egyes állapotokhoz rendelt funkcionális viselkedési minták és felelősségek a következők:
+
+\begin{itemize}
+    \item \textbf{\texttt{WANDER} (Céltalan bolyongás):} Az ágens alapértelmezett, nyugalmi állapota, amikor nincsenek kritikus belső szükségletei (éhség, szomjúság, szaporodási kényszer), vagy éppen végzett egy cselekvéssel és még nem döntött arról mi legyen a következő, illetve, amikor közvetlen külső fenyegetettség nem áll fenn. Ebben a fázisban az ágens alacsony sebességgel, csökkentett energiaráfordítással mozog a térben, periodikusan új, véletlenszerű irányvektorokat választva, hogy feltérképezze a környezetét.
+    
+    \item \textbf{\texttt{SEARCH} (Keresés):} Amikor egy belső motivációs változó eléri a kritikus küszöbértéket, az ágens kereső üzemmódba vált. Ebben az állapotban aktiválódik a szenzoros alrendszer (\textit{Sensor}): az ágens elkezdi pásztázni a környezetét a cél-rétegnek (\texttt{LayerMask}) megfelelő entitások (példából adódóan növények, vízforrások vagy akár potenciális partnerek) után kutatva, miközben folyamatosan a bolyongáshoz hasonló mozgásban marad.
+    
+    \item \textbf{\texttt{MOVE\_TOWARDS} (Célpont megközelítése):} Ez az állapot akkor aktiválódik, amikor a \texttt{SEARCH} fázisban lévő ágens szenzora sikeresen detektál egy valid célpontot. Ekkor a globális keresés leáll, és a mozgásvezérlő algoritmus közvetlenül a kiválasztott célpont 3D-s pozíciójára irányítja az ágenst a legrövidebb úton, megnövelt mozgási sebesség mellett.
+    
+    \item \textbf{\texttt{FLEE} (Menekülés):} A legmagasabb prioritású, reflexszerű állapot. Amennyiben a szenzormaszk ragadozó jelenlétét észleli, az ágens azonnal megszakít minden egyéb folyamatot. Ebben az állapotban a maximális elérhető sebességre kapcsolva, a fenyegetést jelentő forrásoktól számított eredő menekülési vektor irányában mozog, miközben a stamina-vesztesége drasztikusan megemelkedik.
+    
+    \item \textbf{\texttt{REST} (Pihenés):} Egy kényszerített, passzív állapot, amely a homeosztázis teljes felborulását akadályozza meg. Ha az ágens staminája (energiája) a kritikus zéró szintre csökken (például egy elhúzódó menekülési vagy keresési fázis következtében), az ágens helyben marad, mozgásképtelenné válik, és kizárólag az energiaraktárai fokozatos visszatöltésére fókuszál, teljesen kiszolgáltatottá válva a külső veszélyeknek.
+\end{itemize}
+
+A szimuláció átmeneti feltételeit a \ref{tab:fsm_matrix}. táblázatban összefoglalt állapot-átmeneti mátrix reprezentálja.
 
 \begin{table}[h!]
 \centering
