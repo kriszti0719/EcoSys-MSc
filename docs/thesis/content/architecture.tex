@@ -1,24 +1,30 @@
-\chapter{A tervezés részletes leírása és szoftverarchitektúrája}
-\label{chap:tervezes}
+\chapter{A szimulációs rendszer architektúrája és technikai megvalósítása}
+\label{chap:architektura}
 
-A specifikációban rögzített funkcionális és nem-funkcionális követelmények elérése érdekében a szimulációs keretrendszer tervezése során kiemelt figyelmet fordítottam a modern szoftvertechnológiai minták alkalmazására.
+A specifikációban rögzített funkcionális és nem-funkcionális követelmények elérése érdekében a szimulációs keretrendszer tervezése és implementációja során kiemelt figyelmet fordítottam a modern szoftvertechnológiai minták és az optimális játékmotor-specifikus megoldások alkalmazására.
 
-Az MSc szintű diplomaterv célkitűzéseinek megfelelően a tervezés fókuszában a monolitikus struktúrák felbontása, a tiszta komponens-alapú aggregáció, valamint a skálázhatóságot garantáló eseményvezérelt működés állt.
+Az MSc szintű diplomaterv célkitűzéseinek megfelelően a fejlesztés fókuszában a monolitikus struktúrák felbontása, a tiszta komponens-alapú aggregáció, a futásidejű döntéshozatali modellek absztrakciója, valamint a skálázhatóságot garantáló eseményvezérelt működés állt. Ez a fejezet részletesen bemutatja a rendszer szoftverarchitektúráját, az ágensek belső dekompozícióját, a három integrált döntési modellt, valamint az elosztott aszinkron telemetria technikai implementációját.
 
 Ez a fejezet részletesen bemutatja a rendszer szoftverarchitektúráját, az ágensek belső dekompozícióját és az alkalmazott kommunikációs modelleket a megvalósított forráskód alapján.
 
 % 4.1
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\section{Architekturális áttekintés}
+\section{Architekturális tervezés és osztályhierarchia}
 \label{sec:architektura}
 
-A projekt fejlesztése során a legfőbb szoftvertechnológiai kihívást az ágensek belső felépítésének menedzselése jelentette. A játékmotor-fejlesztésben gyakran előforduló „Istenszerű osztály” (\textit{God Class}) antiminta elkerülése érdekében a rendszer egy hibrid, absztrakcióra és komponens-aggregációra épülő architektúrát kapott.
+A projekt fejlesztése során a legfőbb szoftvertechnológiai kihívást az ágensek belső felépítésének menedzselése jelentette. A játékmotor-fejlesztésben gyakran előforduló „Istenszerű osztály” (\textit{God Class}) antipattern elkerülése érdekében a rendszer egy hibrid, absztrakcióra és komponens-aggregációra épülő architektúrát kapott, amely szétválasztja az adathordozó, az érzékelő és a végrehajtó rétegeket.
 
-A hierarchia csúcsán a \texttt{MonoBehaviour}-ból származtatott absztrakt \texttt{Animal} osztály áll, amely nem közvetlenül implementálja a biológiai és fizikai funkciókat, hanem összefogja, konfigurálja és koordinálja a specializált részkomponenseket.
+\begin{figure}[h!]
+\centering
+% TODO: UML
+% \includegraphics[width=0.85\textwidth]{figures/animal_components.pdf}
+\caption{Az ágensek komponens-alapú aggregált osztálystruktúrája}
+\label{fig:animal_components}
+\end{figure}
 
-Az \texttt{Animal} ősosztály felelőssége a közös állapotváltozók, a térbeli referenciák, valamint a genotípushoz kapcsolódó alapvető tulajdonságok tárolása.
+A hierarchia csúcsán a Unity \texttt{MonoBehaviour}-jából származtatott absztrakt \texttt{Animal} osztály áll, amely nem közvetlenül implementálja a biológiai és fizikai funkciókat, hanem összefogja, konfigurálja és koordinálja a specializált részkomponenseket. Az \texttt{Animal} ősosztály felelőssége a közös állapotváltozók, a térbeli referenciák, valamint a genotípushoz kapcsolódó alapvető tulajdonságok tárolása.
 
-A tényleges működési logikát a finomabb granularitású komponensek valósítják meg:
+A tényleges működési logikát a finomabb granularitású, jól elszigetelt komponensek valósítják meg:
 \begin{enumerate}
     \item \textbf{Fiziológiai komponensek} - a belső biológiai szükségletek és az életciklus fenntartásáért felelős modulok gyűjteménye:
     \label{item:fiziologia_enum}
@@ -26,7 +32,7 @@ A tényleges működési logikát a finomabb granularitású komponensek valós�
         \item \texttt{Age}: az egyed folyamatos öregedését és fiatalkori növekedését vezérli a \texttt{lifeSpan} és \texttt{adultSize} paraméterek alapján
         \item \texttt{Eat}: a \texttt{currentHunger} értékcsökkenését menedzseli, kritikus szintnél kiváltja az \texttt{OnHungerCritical} eseményt, illetve kezeli a táplálkozással járó érték és státusz változásokat, illetve frissítí a kapcsolódó \texttt{HungerBar} vizuális elemet
         \item \texttt{Drink}: az \texttt{Eat} komponenshez hasonlóan működik a \texttt{currentThirst} változó mentén, vízhiány esetén az \texttt{OnThirstCritical} triggerelésével
-        \item \texttt{Rest}: a fáradtságot és a pihenési hajlandóságot szabályozza, úgy, hogy tesz egy valószínűségi alapú döntést, amivel pihenés állapotba kényszerítheti az ágenst
+        \item \texttt{Rest}: a fáradtságot és a pihenési hajlandóságot szabályozza, úgy, hogy tesz egy valószínűségi alapú döntést (minél fáradtabb az egyed, annál valószínűbb, hogy megáll pihenni), amivel pihenés állapotba kényszerítheti az ágenst
     \end{itemize}
 
     \item \textbf{Reprodukciós komponensek} - az evolúciós motor alapját képező, párválasztási és utódnemzési folyamatokat tömörítő réteg:
@@ -43,7 +49,7 @@ A tényleges működési logikát a finomabb granularitású komponensek valós�
     \end{itemize}
 \end{enumerate}
 
-A kiterjeszthetőséget és az Open/Closed elv érvényesülését az absztrakt metódusok (például \texttt{getTargetLayerToMate()}) biztosítják. Ezek révén a specifikus fajok, mint a \texttt{Bunny} és a \texttt{Fox}, destruktív kódmódosítás nélkül, deklaratív módon határozzák meg a saját rétegmaszk-alapú interakcióikat a Unity \texttt{LayerMask} rendszerében:
+A kiterjeszthetőséget és az \textit{Open/Closed} elv érvényesülését az absztrakt metódusok (például \texttt{getTargetLayerToMate()}) biztosítják. Ezek révén a specifikus fajok, mint a \texttt{Bunny} és a \texttt{Fox}, destruktív kódmódosítás nélkül, deklaratív módon határozzák meg a saját rétegmaszk-alapú interakcióikat a Unity \texttt{LayerMask} rendszerében:
 
 \begin{lstlisting}[language=csh, caption={Nyulak esetén a célréteg kiválasztása}, label={lst:bunny_layer}]
 public class Bunny : Animal, IEdible
@@ -87,12 +93,63 @@ public void Eating()
 
 % 4.2
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\section{Eseményvezérelt kommunikációs modell és az állapotgép frissítése}
+\section{A ragadozó-préda dinamika kiterjesztése}
+
+A szimulációs keretrendszer MSc fázisú továbbfejlesztésének egyik legfontosabb mérföldköve az egyfajos (kizárólag prédát tartalmazó) modellből egy komplexebb, többfajos ökoszisztéma kialakítása volt. Az alaphelyzet kiterjesztése során a rendszer három fő entitásosztályra tagozódik:
+
+\begin{itemize}
+    \item \textbf{a primer termelőkre:} (növényzet/táplálék), 
+    \item \textbf{a primer fogyasztókra:} nyulak, mint préda, 
+    \item \textbf{a szekunder fogyasztókra:} rókák, mint ragadozók.
+\end{itemize}
+
+A ragadozó faj (róka) bevezetése nem csupán biológiai, hanem komoly szoftverarchitekturális kihívást is jelentett. Mivel a BSc fázisból származó alaprendszer monolitikus jegyeket hordozott, az új faj integrálását egy átfogó strukturális refaktorálás előzte meg. Az ágensek viselkedésének és belső logikájának elemzése során első lépésként a korábbi általános ágenskódból kiszervezésre kerültek a kifejezetten nyúl-specifikus attribútumok és állapottátmenetek egy dedikált \texttt{Bunny} osztályba. Ez a lépés alapozta meg azt a tiszta osztályhierarchiát, amely lehetővé tette, hogy az új \texttt{Fox} osztály implementálása minimális kódmódosítással, az alapértelmezett ágens-komponensek újrahasznosításával valósulhasson meg.
+
+A komponensalapú architektúra mellett a skálázhatóságot az interfész-vezérelt tervezés (\textit{Interface-Driven Design}) biztosítja. A táplálkozási lánc modellezésére bevezetésre került az \texttt{IEdible} interfész. Ez az absztrakció egységesíti a szimulációban elfogyasztható entitások kezelését.
+
+\begin{lstlisting}[language=csh, caption={Az IEdible interfész vázlatos struktúrája}]
+public interface IEdible
+{
+    float GetNutritionalValue();
+    void OnConsumed();
+}
+\end{lstlisting}
+
+Az \texttt{IEdible} interfészt minden osztály implementálja, ami elfogyasztható, legyen szó növényi táplálékról, vagy a nyúl (\texttt{Bunny}) ágensekről. Ennek köszönhetően a ragadozó vagy préda ágens táplálékszerző és célpont-választó algoritmusai teljesen függetlenné válhattak a célpont konkrét típusától. Ha a jövőben a rendszer egy újabb trofikus szinttel bővülne (például egy csúcsragadozóval, amely a rókákra vadászik), a \texttt{Fox} osztály szintén ellátható az \texttt{IEdible} interfésszel anélkül, hogy a globális interakciós logikát újra kellene írni.
+
+Az új ragadozó entitás megjelenése a préda viselkedési mintáinak bővítését is megkövetelte, amely egy új ágensállapot, a menekülés (\texttt{FLEE}) bevezetését jelentette. A hatékonyság érdekében a prédaágensek nem minden frame-ben futtatnak le komplex környezetanalízist, hanem egy diszkrét időzítő alapján, periodikusan (X időközönként) vizsgálják a szenzoros környezetüket. Amennyiben a szenzormaszk ragadozót detektál, a préda azonnal megszakítja az aktuális (például keresési vagy táplálkozási) folyamatát, és menekülő fázisba lép.
+
+A menekülési vektor meghatározása kritikus fontosságú a túlélés szempontjából. Amennyiben egy nyúl látóterében csupán egyetlen ragadozó tartózkodik, a menekülés iránya a ragadozó pozíciójából a préda pozíciójába mutató vektorral ellentétes. Összetettebb szituációkban, amikor a préda környezetében egyszerre több ragadozó is jelen van, akkor a rendszer egy súlyozott vektorösszegzést alkalmaz az optimális menekülési útvonal kiszámítására.
+
+Ha a nyúl környezetében lévő ragadozók pozícióvektorai $\vec{P}_{fox, i}$ és a nyúl pozíciója $\vec{P}_{bunny}$, akkor az egyes ragadozóktól vett távolodási irányvektorok:
+
+\begin{equation}
+\vec{D}i = \vec{P}{bunny} - \vec{P}_{fox, i}
+\end{equation}
+
+Az eredő menekülési irányvektort ($\vec{V}_{flee}$) ezen vektorok normalizált összege (vagy a távolsággal fordítottan arányos súlyozott összege) adja meg, biztosítva, hogy az ágens geometriailag a legbiztonságosabb, a fenyegetésektől átlagosan legtávolabbi pályát válassza:
+
+\begin{equation}
+\vec{V}{flee} = \text{normalize}\left( \sum{i=1}^{n} \vec{D}_i \right)
+\end{equation}
+
+Ez a matematikai megközelítés garantálja, hogy az ágens képes dinamikusan navigálni csapdahelyzetekben is, elkerülve, hogy az egyik ragadozótól menekülve közvetlenül egy másik torkába fusson.
+
+
+% 4.2
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Eseményvezérelt kommunikációs modell}
 \label{sec:esemenyvezerelt}
 
-A szimuláció skálázhatóságát és valós idejű futását a leválasztott, eseményvezérelt kommunikációs architektúra garantálja, amely teljes mértékben felszámolja a képkocka-alapú folyamatos lekérdezést (\textit{polling}).
+A szimuláció skálázhatóságát és valós idejű futását a leválasztott, eseményvezérelt kommunikációs architektúra garantálja, amely teljes mértékben felszámolja a képkocka-alapú folyamatos lekérdezést (\textit{polling}). Az ágensek belső és külső eseményeinek szinkronizációjáért egy dedikált komponens, az \texttt{AnimalEventHandler} felel, amely hídként működik a fiziológiai komponensek és az \texttt{Animal} központi állapotgépe között.
 
-Az ágensek belső és külső eseményeinek szinkronizációjáért egy dedikált komponens, az \texttt{AnimalEventHandler} felel, amely hídként működik a fiziológiai komponensek (lásd: \ref{item:fiziologia_enum}. pontban) és az \texttt{Animal} központi állapotgépe között.
+\begin{figure}[h!]
+\centering
+% TODO: szekvenciadiagram esemény lefutásáról (pl. HungerCritical -> State change)
+% \includegraphics[width=0.85\textwidth]{figures/event_sequence.pdf}
+\caption{Eseményvezérelt állapotátmenet szekvenciadiagramja}
+\label{fig:event_sequence}
+\end{figure}
 
 Az \texttt{Animal} osztály a \texttt{Subscribe()} metódusban iratkozik fel a részkomponensek által publikált C\# eseményekre (\texttt{Action}), amelyeket az \texttt{AnimalEventHandler} delegált metódusai kezelnek le. Ez a felépítés drasztikusan csökkenti a CPU terhelését, mivel a szimulált egyedek nem futtatnak felesleges ellenőrzéseket a Unity \texttt{Update()} ciklusában. Az állapotváltozások diszkrét, eseményalapú triggerelése a következő főbb láncolatokon keresztül zajlik:
 
@@ -153,23 +210,48 @@ public class AnimalEventHandler : MonoBehaviour
 
 % 4.3
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\section{A döntési folyamatok moduláris tervezése}
-\label{sec:dontesi_folyamatok_modularis_tervezese}
+\section{A döntési folyamatok moduláris tervezése és implementációja}
+\label{sec:dontesi_folyamatok}
 
 Az ökoszisztéma-szimulációban részt vevő ágensek túlélési esélyeit és viselkedésének realizmusát alapvetően meghatározza a döntéshozatali mechanizmusuk. Annak érdekében, hogy a különböző mesterséges intelligencia architektúrák (FSM, Utility AI, FCM) hatékonysága, számítási igénye és populációdinamikára gyakorolt hatása transzparens módon összehasonlítható legyen, a rendszert moduláris, cserélhető struktúrában kellett megtervezni.
 
-A szoftverarchitektúra gerincét a \textit{Strategy tervezési minta} alkotja. Ez a minta lehetővé teszi, hogy egy objektum (esetünkben az \texttt{Animal} osztály példányai) viselkedését futásidőben dinamikusan változtassuk meg anélkül, hogy magát az osztályt vagy az azt hívó környezetet módosítani kellene. A hívó \texttt{AnimalSpawner} komponens periodikusan (szimulációs lépésenként vagy fix \textit{tick}-enként) meghívja az ágens saját döntési vezérlőjét, amely a kiválasztott stratégiának megfelelően eldönti, hogy mi legyen az állat következő lépése.
+A szoftverarchitektúra gerincét egy közös vezérlő, a \texttt{DecisionController} alkotja, amely futásidőben delegálja a döntési feladatokat az enum típusú \texttt{DecisionMode}-nak megfelelően. Ez az úgy nevezett \textit{Strategy tervezési minta}, amely lehetővé teszi, hogy egy objektum (esetünkben az \texttt{Animal} osztály példányai) viselkedését futásidőben dinamikusan változtassuk meg anélkül, hogy magát az osztályt vagy az azt hívó környezetet módosítani kellen
 
-Az absztrakció alapját egy közös interfész vagy absztrakt alaposztály képezi, amely egyetlen bemeneti pontot definiál:
-\begin{center}
-    \texttt{Status Decide(Animal animal)}
-\end{center}
-Ezen interfész implementálásával a konkrét döntési logikák teljesen elszigetelhetők egymástól, biztosítva a magas kohéziót és az alacsony csatolást (\textit{loose coupling}).
+\begin{figure}[h!]
+\centering
+% TODO: Strategy minta, ahol látszik a DecisionController és a három konkrét Decision impl
+% \includegraphics[width=0.85\textwidth]{figures/strategy_pattern.pdf}
+\caption{A döntéshozatali modellek Strategy tervezési mintára épülő struktúrája}
+\label{fig:strategy_pattern}
+\end{figure}
 
-\subsection{Véges Állapotú Gép (FSM) tervezése}
-\label{subsec:fsm_tervezese}
+Az absztrakció alapját képező központi elágazási logikát és a stratégiák hívását az alábbi implementáció mutatja be:
 
-A legegyszerűbb, determinisztikus megközelítést a Véges Állapotú Gép (\textit{Finite State Machine -- FSM}) képviseli. Ebben az architektúrában az ágens viselkedése diszkrét állapotokra van osztva, és az állapotok közötti átmeneteket mereven rögzített szabályok (if-then struktúrák) vezérlik az ágens belső monitorozott változói (éhség, szomjúság, stamina) és környezeti ingerei (észlelt veszély) alapján.
+\begin{lstlisting}[language=csh, caption={A döntési stratégiák futásidejű vezérlése (DecisionController.cs)}, label={lst:decision_controller}]
+public class DecisionController
+{
+    public DecisionMode mode;
+    public ClassicFSMDecision classic;
+    public UtilityDecision utility;
+    public FCMDecision fcm;
+
+    public Status Decide(Animal a)
+    {
+        switch (mode)
+        {
+            case DecisionMode.ClassicFSM: return classic.Decide(a);
+            case DecisionMode.Utility: return utility.Decide(a);
+            case DecisionMode.FCM: return fcm.Decide(a);
+            default: return Status.WANDER;
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{Véges Állapotú Gép (ClassicFSM) megvalósítása}
+\label{subsec:fsm}
+
+A legegyszerűbb, determinisztikus megközelítést a Véges Állapotú Gép (\textit{Finite State Machine - FSM}) képviseli. Ebben az architektúrában az ágens viselkedése diszkrét állapotokra van osztva, és az állapotok közötti átmeneteket mereven rögzített szabályok (if-then struktúrák) vezérlik az ágens belső monitorozott változói (éhség, szomjúság, stamina) és környezeti ingerei (észlelt veszély) alapján.
 
 A szimuláció alapvető állapotait és azok átmeneti feltételeit a \ref{tab:fsm_matrix}. táblázatban összefoglalt állapot-átmeneti mátrix reprezentálja.
 
@@ -180,9 +262,9 @@ A szimuláció alapvető állapotait és azok átmeneti feltételeit a \ref{tab:
 \begin{tabular}{|p{3.5cm}|p{3.5cm}|p{6.5cm}|}
 \hline
 \textbf{Kiinduló állapot} & \textbf{Célállapot} & \textbf{Kiváltó feltétel / Esemény} \\ \hline
-\texttt{WANDER} (Céltalan bolyongás) & \texttt{SEARCH} (Keresés) & Belső igény kritikus szint alá esik (éhség, szomjúság). \\ \hline
-\texttt{WANDER} / \texttt{SEARCH} & \texttt{FLEE} (Menekülés) & Ragadozó észlelése a szenzoros rádiuszon belül. \\ \hline
-\texttt{SEARCH} (Keresés) & \texttt{MOVE\_TOWARDS} & Megfelelő célpont (táplálék, víz, partner) detektálása. \\ \hline
+\texttt{WANDER} & \texttt{SEARCH} & Belső igény kritikus szint alá esik (éhség, szomjúság). \\ \hline
+\texttt{WANDER} / \texttt{SEARCH} & \texttt{FLEE} & Ragadozó észlelése a szenzoros rádiuszon belül. \\ \hline
+\texttt{SEARCH} & \texttt{MOVE\_TOWARDS} & Megfelelő célpont (táplálék, víz, partner) detektálása. \\ \hline
 \texttt{MOVE\_TOWARDS} & \texttt{WANDER} & Célpont elfogyasztása / sikeres szaporodás / cél elvesztése. \\ \hline
 Bármely állapot & \texttt{REST} (Pihenés) & A stamina (energia) szintje teljesen kimerül ($=0$). \\ \hline
 \end{tabular}
@@ -191,7 +273,7 @@ Bármely állapot & \texttt{REST} (Pihenés) & A stamina (energia) szintje telje
 Bár az FSM rendkívül alacsony számítási kapacitást igényel és könnyen átlátható, merevsége miatt nem képes komplex, árnyalt viselkedési formák vagy egyéni adaptációs stratégiák modellezésére, mivel nem mérlegeli az egymással versengő szükségletek prioritását.
 
 \subsection{Hasznossági alapú döntési rendszer (Utility AI)}
-\label{subsec:utility_ai_tervezese}
+\label{subsec:utility}
 
 A hasznossági alapú döntési rendszer (\textit{Utility AI}) szakít a bináris döntési szabályokkal, és matematikai megközelítést alkalmaz az ágens optimális cselekvésének kiválasztására. Minden lehetséges állapothoz vagy cselekvéshez egy $[0, 1]$ intervallumba eső \textit{hasznossági értéket} ($U$) rendel, és az ágens mindig a legmagasabb értékű tevékenységet választja.
 
@@ -209,20 +291,131 @@ Ahol $w_{action} \in \mathbb{R}^+$ a viselkedési gén súlya (például \texttt
 \begin{equation}
     \text{Selected\_Status} = \arg\max_{action} (U_{action})
 \end{equation}
+
+A matematikai modell C\# nyelvű leképezése és a célobjektumok maszkolása a \texttt{UtilityDecision} osztályban az alábbi módon valósul meg:
+
+\begin{lstlisting}[language=csh, caption={A hasznossági alapú döntési logika implementációja}, label={lst:utility_decision}]
+public class UtilityDecision
+{
+    ...
+
+    public Status Decide(Animal a)
+    {
+        float hungerNormalized = 1f - (a.eat.currentHunger / 100f);     
+        float thirstNormalized = 1f - (a.drink.currentThirst / 100f);   
+        float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina); 
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);  
+
+        float eatU = genome.hungerWeight * hungerNormalized;
+        float drinkU = genome.thirstWeight * thirstNormalized;
+        float restU = genome.energyWeight * energyNormalized;
+        float mateU = genome.mateWeight * mateNormalized;
+
+        float max = Mathf.Max(eatU, drinkU, restU, mateU);
+
+        if (max == restU) return Status.REST;
+
+        if (max == eatU) a.setTargetLayerToEat();
+        else if (max == drinkU) a.sensor.targetMask = LayerMask.GetMask("Drink");
+        else a.setTargetLayerToMate();
+
+        return Status.SEARCH;
+    }
+}
+\end{lstlisting}
+
 Ez a módszer rugalmas, folyamatos átmenetet biztosít a viselkedésformák között, és lehetővé teszi, hogy az egyedek egyéni genetikai preferenciák alapján (pl. egy bátrabb vagy falánkabb egyed más súlyokkal dolgozik) reagáljanak a környezetre.
 
 \subsection{Fuzzy Kognitív Térkép (FCM) tervezése}
-\label{subsec:fcm_tervezese}
+\label{subsec:fcm}
 
-A legösszetettebb, nemlineáris döntési modellt a Fuzzy Kognitív Térkép (\textit{Fuzzy Cognitive Map -- FCM}) adja. Az FCM egy olyan irányított gráf, ahol a csomópontok ($C_i$) az ágens belső állapotait, környezeti észleléseit vagy közvetlen cselekvési szándékait (outputok) reprezentálják, a köztük lévő élek ($W_{ji}$) pedig a kauzális kapcsolatok irányát és erősségét határozzák meg a $[-1, 1]$ tartományban.
+A legösszetettebb, nemlineáris döntési modellt a Fuzzy Kognitív Térkép (\textit{Fuzzy Cognitive Map - FCM}) adja. Az FCM egy olyan irányított gráf, ahol a csomópontok ($C_i$) az ágens belső állapotait, környezeti észleléseit vagy közvetlen cselekvési szándékait (outputok) reprezentálják, a köztük lévő élek ($W_{ji}$) pedig a kauzális kapcsolatok irányát és erősségét határozzák meg a $[-1, 1]$ tartományban.
 
-Kódszinten a gráf topológiáját egy ágensenként allokált szomszédsági mátrix (\textit{adjacency matrix}) reprezentálja, ahol a sorok és oszlopok száma megegyezik a koncepciók számával. Az iterációs lépések során a csomópontok aktivációs szintje folyamatosan frissül a szomszédos csomópontok hatásainak és a korábbi saját értéküknek a figyelembevételével. A matematikai transzformáció leírása az $t+1$-edik iterációban:
+\begin{figure}[h!]
+\centering
+% TODO: gráfábra az FCM csomópontokkal (Hunger, Fear, Flee, Eat stb.) és az élek kapcsolatával
+% \includegraphics[width=0.75\textwidth]{figures/fcm_graph.pdf}
+\caption{A döntéshozatali Fuzzy Kognitív Térkép hálózati topológiája}
+\label{fig:fcm_graph}
+\end{figure}
+
+Az iterációs lépések során a csomópontok aktivációs szintje folyamatosan frissül a szomszédos csomópontok hatásainak és a korábbi saját értéküknek a figyelembevételével. A matematikai transzformáció leírása az $t+1$-edik iterációban:
 \begin{equation}
     A_i(t+1) = f\left( A_i(t) + \sum_{j=1}^{N} A_j(t) \cdot W_{ji} \right)
 \end{equation}
-Ahol $A_i(t)$ az $i$-edik csomópont aktivációs értéke a $t$ időpillanatban, $W_{ji}$ a $j$ csomópontból az $i$ csomópontba mutató él súlya, az $f(x)$ pedig egy nemlineáris kényszerítő függvény (általában a $[0,1]$ tartományra normalizáló logisztikus szigmoid függvény), amely meggátolja az értékek divergálását.
+Ahol $f(x)$ egy nemlineáris kényszerítő függvény, amely jelen esetben a $[0,1]$ tartományra normalizáló logisztikus szigmoid függvény (\texttt{Mathf.Clamp01}), amely megakadályozza az értékek divergálását a hálózaton futó gerjesztési ciklusok során.
 
-Az FCM legfőbb ereje a komplex, visszacsatolt rendszerek modellezésében rejlik. Tekintsük azt a szimulációs forgatókönyvet, amelyben az \textit{Éhség} csomópont pozitív éllel kapcsolódik a \textit{Félelem} (vagy gátlástalan viselkedés) csomóponthoz. Az iterációs lépések során, ahogy az \textit{Éhség} aktivációja növekszik, az a súlyozott kapcsolaton keresztül közvetetten gerjeszti vagy módosítja a \textit{Félelem} csomópont belső potenciálját. Ha a ragadozó jelenléte miatti félelem magas, de az éhség eléri a kritikus szintet, a gráfban futó gerjesztések dinamikus egyensúlya eltolódik: a negatív vagy pozitív visszacsatolási hurkok miatt az egyed képes lesz kockázatosabb döntést hozni (pl. elmenekülés helyett mégis táplálkozni kezd). Ez a struktúra hűen modellezi az élőlények belső kognitív konfliktusait és a motivációk egymásra gyakorolt dinamikus hatásait.
+A gráf matematikai működését leképező önálló motor és az értékek frissítése az alábbi kód szerint fut le:
+
+\begin{lstlisting}[language=csh, caption={FCM hálózati frissítési ciklus (FCM.cs)}, label={lst:fcm_model}]
+public class FCMModel
+{
+    private Dictionary<string, FCMNode> nodes = new Dictionary<string, FCMNode>();
+    private List<FCMLink> links = new List<FCMLink>();
+
+    public void Update()
+    {
+        foreach (var node in nodes.Values)
+            node.nextValue = 0f;
+
+        // Kauzális élek mentén történő értékgerjesztés:
+        foreach (var link in links)
+            link.to.nextValue += link.from.value * link.weight;
+
+        // Értékek szorítása és matematikai normalizálása:
+        foreach (var node in nodes.Values)
+            node.value = Mathf.Clamp01(node.nextValue);
+    }
+}
+\end{lstlisting}
+
+Az \texttt{FCMDecision} osztály integrálja ezt a hálózatot a Unity fizikai környezetébe, frame-enként táplálva a bemeneteket és kiértékelve a domináns kimenetet:
+
+\begin{lstlisting}[language=csh, caption={Az FCM döntéshozatali logika integrációja}, label={lst:fcm_decision}]
+public class FCMDecision
+{
+    private FCMModel model;
+
+    public FCMDecision(FCMGenome genome)
+    {
+        model = FCMFactory.Create(genome);
+    }
+
+    public Status Decide(Animal a)
+    {
+        float hungerNormalized = 1f - (a.eat.currentHunger / 100f);
+        float thirstNormalized = 1f - (a.drink.currentThirst / 100f);
+        float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina);
+        float fearNormalized = a.spottedThreats.Any() ? 1f : 0f;
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);
+
+        model.SetInput("Hunger", hungerNormalized);
+        model.SetInput("Thirst", thirstNormalized);
+        model.SetInput("Energy", energyNormalized);
+        model.SetInput("Fear", fearNormalized);
+        model.SetInput("Mate", mateNormalized);
+
+        model.Update();
+
+        float eat = model.GetOutput("Eat");
+        float drink = model.GetOutput("Drink");
+        float rest = model.GetOutput("Rest");
+        float flee = model.GetOutput("Flee");
+        float mate = model.GetOutput("MateAct");
+
+        float max = Mathf.Max(eat, drink, rest, flee, mate);
+
+        if (max == flee) return Status.FLEE;
+        if (max == rest) return Status.REST;
+
+        if (max == eat) a.setTargetLayerToEat();
+        else if (max == drink) a.sensor.targetMask = LayerMask.GetMask("Drink");
+        else a.setTargetLayerToMate();
+
+        return Status.SEARCH;
+    }
+}
+\end{lstlisting}
 
 % 4.4
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -235,17 +428,38 @@ Az evolúciós szimuláció sarokköve a populációgenetikai adatmodell, amely 
 A moduláris tervezési elveknek megfelelően a genetikai reprezentáció két fő komponensre válik szét a döntési architektúrákhoz igazodva: a \texttt{UtilityGenome} és az \texttt{FCMGenome} osztályokra.
 
 \paragraph{Megjegyzés a klasszikus FSM architektúrával kapcsolatban:}
-Fontos kiemelni, hogy a hagyományos végesállapotú gép (\texttt{ClassicFSM}) döntéshozatali mód nem rendelkezik dedikált genetikai adatmodellel. Mivel a klasszikus FSM állapotátmenetei merev, determinisztikus szabályrendszereken alapulnak (pl. fix küszöbértékek az éhség vagy szomjúság kritikus szintjeire), a viselkedési logika nem tartalmaz szabadon konfigurálható vagy finomhangolható súlyparamétereket. Ebből adódóan az FSM-alapú egyedek fenotípusa homogén, nem mutatnak egyedi variabilitást, és nem vesznek részt az evolúciós (mutációs és keresztezési) ciklusban. A genetikai kódolás kizárólag a rugalmasabb, adaptív döntési architektúrák sajátja.
+Fontos kiemelni, hogy a hagyományos végesállapotú gép (\texttt{ClassicFSM}) döntéshozatali mód nem rendelkezik dedikált genetikai adatmodellel. Mivel a klasszikus FSM állapotátmenetei merev, determinisztikus szabályrendszereken alapulnak, a viselkedési logika nem tartalmaz szabadon konfigurálható súlyparamétereket. Ebből adódóan az FSM-alapú egyedek fenotípusa homogén, nem mutatnak egyedi variabilitást, és nem vesznek részt az evolúciós (mutációs és keresztezési) ciklusban.
 
 \paragraph{A fizikai és döntési paraméterek tárolása (\texttt{UtilityGenome}):}
 A \texttt{UtilityGenome} osztály az egyedek alapvető belső késztetéseinek (motivációinak) súlyozásáért felelős. Ezen paraméterek határozzák meg, hogy az egyed milyen prioritással reagál a létfontosságú környezeti és fiziológiai változásokra. Az osztály belső struktúrája a következő lebegőpontos (\texttt{float}) értékeket tárolja:
 \begin{itemize}
-    \item \texttt{hungerWeight}: Az éhségérzet prioritása a hasznossági függvényben.
-    \item \texttt{thirstWeight}: A szomjúságérzet súlya a vízkeresési motivációban.
-    \item \texttt{energyWeight}: A staminaveszteség és a pihenési hajlandóság együtthatója.
-    \item \texttt{mateWeight}: A szaporodási ösztön dominanciája kedvező körülmények esetén.
+    \item \texttt{hungerWeight}: az éhségérzet prioritása a hasznossági függvényben
+    \item \texttt{thirstWeight}: a szomjúságérzet súlya a vízkeresési motivációban
+    \item \texttt{energyWeight}: a staminaveszteség és a pihenési hajlandóság együtthatója
+    \item \texttt{mateWeight}: a szaporodási ösztön dominanciája kedvező körülmények esetén
 \end{itemize}
 Ezek a \texttt{float} típusú gének homogén, normalizált teret alkotnak, amely közvetlenül skálázza a döntéshozatalkor számított hasznossági értékeket.
+
+\begin{lstlisting}[language=csh, caption={A UtilityGenome osztály belső felépítése}, label={lst:utility_genome}]
+public class UtilityGenome
+{
+    public float hungerWeight = 1f;
+    public float thirstWeight = 1f;
+    public float energyWeight = 1f;
+    public float mateWeight = 1f;
+
+    public UtilityGenome Clone()
+    {
+        return new UtilityGenome
+        {
+            hungerWeight = this.hungerWeight,
+            thirstWeight = this.thirstWeight,
+            energyWeight = this.energyWeight,
+            mateWeight = this.mateWeight
+        };
+    }
+}
+\end{lstlisting}
 
 \paragraph{A kognitív térkép élsúlyainak kódolása (\texttt{FCMGenome}):}
 A Fuzzy Cognitive Map alapú döntéshozatalhoz egy jóval komplexebb, hálózatos genetikai struktúrára van szükség. Az \texttt{FCMGenome} nem nevesített változókként, hanem egy egydimenziós \texttt{float[]} tömbként (\texttt{weights}) tárolja a gráf élsúlyait. 
@@ -255,6 +469,27 @@ A Fuzzy Cognitive Map alapú döntéshozatalhoz egy jóval komplexebb, hálózat
 \end{itemize}
 
 Az egyedek replikációjakor és inicializálásakor kritikus fontosságú a genetikai állomány mély másolása (deep copy), amelyet mindkét osztályban a \texttt{Clone()} tagfüggvény valósít meg, megakadályozva a memóriacímek referenciáinak nemkívánatos átfedését a szülő és az utód egyedek között.
+
+\begin{lstlisting}[language=csh, caption={Az FCMGenome osztály felépítése}, label={lst:fcm_genome}]
+public class FCMGenome
+{
+    public float[] weights;
+
+    public FCMGenome(int linkCount)
+    {
+        weights = new float[linkCount];
+        for (int i = 0; i < linkCount; i++)
+            weights[i] = UnityEngine.Random.Range(-1f, 1f);
+    }
+
+    public FCMGenome Clone()
+    {
+        FCMGenome g = new FCMGenome(weights.Length);
+        Array.Copy(weights, g.weights, weights.Length);
+        return g;
+    }
+}
+\end{lstlisting}
 
 \subsection{A mutációs algoritmus tervezése és matematikai modellje}
 
@@ -288,13 +523,13 @@ A számtani közép alapú rekombináció biztosítja, hogy az utódok a szülő
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Elosztott Telemetria és Aszinkron Adatgyűjtés}
 
-A szimuláció evolúciós és populációdinamikai folyamatainak pontos elemzéséhez elengedhetetlen a futás közbeni adatok valós idejű rögzítése. Ugyanakkor egy több száz egyedet mozgató ökoszisztémában a mérési pontok (születések, halálozások, különböző populációszámok...) elmentése jelentős I/O-terhelést jelenthet. Ezért a rendszer az adatokat egy külső idősor-adatbázisba (InfluxDB) továbbítja.
+A szimuláció evolúciós folyamatainak pontos elemzéséhez elengedhetetlen a futás közbeni adatok valós idejű rögzítése. Ugyanakkor egy több száz egyedet mozgató ökoszisztémában a mérési pontok (születések, halálozások, különböző populációszámok...) elmentése jelentős I/O-terhelést jelenthet. Ezért a rendszer az adatokat egy külső idősor-adatbázisba (InfluxDB) továbbítja.
 
 \subsection{A Unity főszál (Main Thread) védelme}
 
 A Unity architektúrájából adódóan a fizikai kalkulációk, a renderelés és a szkriptek alapértelmezetten egyetlen főszálon (\textit{Main Thread}) futnak. Ha a HTTP-kéréseket szinkron módon, a főszálat blokkolva küldenénk el, az az adatbázis válaszidejétől függően komoly fagyásokat (\textit{micro-stuttering}) okozna, ami felborítaná a szimuláció valós idejű dinamikáját.
 
-A probléma elkerülése érdekében az \texttt{InfluxLogger} osztály aszinkron módon, Unity \textit{Coroutine}-ok (kooperatív többfeladatosság) segítségével valósítja meg az adatgyűjtést. Bár a Coroutine-ok technikailag a főszálon ütemeződnek, a végrehajtást darabokra bontják, és a hálózati művelet válaszára való várakozást átadják a háttérben futó hálózati worker szálaknak.
+A probléma elkerülése érdekében az \texttt{InfluxLogger} osztály aszinkron módon, Unity \textit{Coroutine}-ok (kooperatív többfeladatosság) segítségével valósítja meg az adatgyűjtést, háttérbe szorítva a hálózati I/O műveleteket. Bár a Coroutine-ok technikailag a főszálon ütemeződnek, a végrehajtást darabokra bontják, és a hálózati művelet válaszára való várakozást átadják a háttérben futó hálózati worker szálaknak.
 
 Az adatok naplózását az \texttt{InfluxLogger.Log(string line)} statikus metódus indítja meg, amely egy \texttt{MonoBehaviour} példányon keresztül ütemezi be a \texttt{Send} nevű aszinkron folyamatot:
 
@@ -332,7 +567,7 @@ private static IEnumerator Send(string body)
 A \texttt{yield return request.SendWebRequest();} utasítás pontján a Coroutine átadja a vezérlést, így a Unity főszál zavartalanul folytathatja a szimulációs keretek (Frames) számítását és renderelését. Amint a háttérszálon a HTTP POST kérés sikeresen lezajlik, a Coroutine a következő képkockában ott folytatódik, ahol abbamaradt, és ellenőrzi a válasz státuszát.
 
 \subsection{A HTTP POST kérések felépítése és az alkalmazott InfluxDB Line Protocol}
-\label{subsec:tervezes_line_protocol}
+\label{subsec:line_protocol_implementacio}
 
 A \ref{subsec:influxdb}. fejezetben bemutatott elméleti alapozásra építve, a rendszer tervezési fázisában meg kellett határozni, hogy a szimuláció ágenseinek tulajdonságai miként feleltethetők meg az InfluxDB adatmodelljének. A telemetriai csomagok felépítésének optimalizálása kulcsfontosságú, hiszen a nagyszámú ágens folyamatos adatszolgáltatása jelentős hálózati terhelést jelenthet.
 
@@ -355,7 +590,7 @@ A szimulációs entitások és események leképezése során a következő spec
     \item \textbf{Időbélyeg (Timestamp) és precízió:} Annak érdekében, hogy a hálózaton továbbított bájtok számát csökkentsük, az alapértelmezett nanoszekundumos precízió helyett másodperces (\texttt{precision=s}) felbontást alkalmazunk a kérések küldésekor használt URL-ben, így az időbélyeg rövidebb, UNIX formátumban utazik.
 \end{itemize}
 
-Egy elpusztult nyúl (Bunny) adatainak felküldésekor generált Line Protocol sztring felépítése (a hiba elkerülése végett nyelvi kiemelés nélkül):
+Egy elpusztult nyúl (\texttt{Bunny}) adatainak felküldésekor generált Line Protocol sztring felépítése:
 
 \begin{lstlisting}[caption={Példa InfluxDB Line Protocol formátumú üzenetre}]
 death,
