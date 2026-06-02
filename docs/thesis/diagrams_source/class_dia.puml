@@ -1,0 +1,77 @@
+﻿@startuml
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+abstract class "MonoBehaviour" as MB
+
+abstract class Animal {
+    + status : Status
+    + prevStatus : Status
+    + targetRef : GameObject
+    + rejectedBy : List<GameObject>
+    + spottedThreats : List<GameObject>
+    + species : Species
+    + predators : List<Species>
+    + isMale : bool
+    + bravery : int
+    --
+    + {abstract} getTargetLayerToMate() : int
+    + {abstract} getTargetLayerToEat() : int
+    + {abstract} setSpeciesSpecificTraits() : void
+    # SetComponents() : void
+    + SetTraits(rnd : float) : void
+    + Step() : void
+    + Decide() : void
+}
+
+MB <|-- Animal
+MB <|-- Sensor
+MB <|-- Movement
+MB <|-- Eat
+MB <|-- Drink
+MB <|-- Rest
+MB <|-- Mating
+MB <|-- Reproduction
+
+' Aggregációk az Animal és a komponensek között
+Animal *--> "1" Sensor : sensor
+Animal *--> "1" Movement : movement
+Animal *--> "1" Eat : eat
+Animal *--> "1" Drink : drink
+Animal *--> "1" Rest : rest
+Animal *--> "1" Mating : mating
+Animal *--> "1" Reproduction : reproduction
+Animal *--> "1" AnimalEventHandler : animalEventHandler
+
+' Döntési mechanizmus (Strategy minta)
+Animal --> "1" DecisionController : "alkalmazza"
+
+class DecisionController {
+    + mode : DecisionMode
+    + Decide(a : Animal) : Status
+}
+
+interface "IDecisionStrategy" as IDS {
+    + Decide(a : Animal) : Status
+}
+
+class ClassicFSMDecision {
+    + Decide(a : Animal) : Status
+}
+
+class UtilityDecision {
+    - genome : UtilityGenome
+    + Decide(a : Animal) : Status
+}
+
+class FCMDecision {
+    - model : FCMModel
+    + Decide(a : Animal) : Status
+}
+
+DecisionController *--> "1" ClassicFSMDecision : classic
+DecisionController *--> "1" UtilityDecision : utility
+DecisionController *--> "1" FCMDecision : fcm
+
+@enduml

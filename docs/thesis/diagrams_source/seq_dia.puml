@@ -1,0 +1,56 @@
+﻿@startuml
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+
+autonumber "<b>[0]"
+
+box "Ágens Keretrendszer" #F9F9F9
+actor "Unity Engine\n(FixedUpdate/Update)" as Engine
+participant "Animal" as A
+participant "AnimalEventHandler" as AEH
+end box
+
+box "Fiziológiai Komponensek" #FFF
+participant "Eat" as E
+participant "Sensor" as S
+end box
+
+== Inicializáció (Feliratkozás) ==
+A -> A : Subscribe()
+activate A
+A -> E : += OnHungerCritical
+A -> AEH : Delegálás: HandleHungerCritical
+deactivate A
+
+== Időléptetés és Esemény Triggerelés ==
+Engine -> A : Step()
+activate A
+A -> E : Step()
+activate E
+
+note over E: Éhség szint növekedés...\n(currentHunger < critical)
+
+E -> A : OnHungerCritical.Invoke()
+activate A
+A -> AEH : HandleHungerCritical()
+activate AEH
+note over AEH: Logika lefutása\n(pl. állapot előkészítés)
+AEH --> A
+deactivate AEH
+deactivate A
+deactivate E
+deactivate A
+
+== Döntéshozatal (Polling helyett Esemény hatására) ==
+Engine -> A : Decide()
+activate A
+
+note over A: switch(status) vizsgázata\n(Éhség miatt célpont keresés)
+
+A -> A : setTargetLayerToEat()
+A -> S : targetMask = LayerMask.GetMask("Eat/Prey")
+A -> A : status = Status.SEARCH
+
+deactivate A
+@enduml
