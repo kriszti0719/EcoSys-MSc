@@ -1,7 +1,7 @@
-\chapter{Specifikáció}
-\label{chap:elemzes}
+\chapter{Specifikáció és felhasznált technológiák}
+\label{chap:specifikacio}
 
-Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét követelményekre. Mivel jelen dolgozat egy négy féléven átívelő kutatási és fejlesztési folyamat (\textit{Önálló Laboratórium 1-2}, majd \textit{Diplomatervezés 1-2}) szintézise, a követelmények elemzése során éles határvonalat kell húzni a kiindulópontként szolgáló alaprendszer, valamint a teljes MSc képzés során elért fokozatos mérnöki előrelépések között.
+Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét műszaki követelményekre. A feladat nem csupán egy működő szimuláció elkészítése, hanem egy olyan keretrendszer kialakítása, amely szoftvertechnológiai szempontból is megállja a helyét.
 
 % 2.1
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,14 +52,14 @@ A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyek
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|p{10.5cm}|}
 \hline
 \textbf{Kategória} & \textbf{Paraméterek} \\ \hline
 Környezet & Terület mérete, táplálék (fű) újratermelődési rátája \\ \hline
-Egyed (Genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb \\ \hline
-Új Genetikai Jegyek & Lopakodás (\textit{stealth}), álcázás (\textit{camouflage}), bátorság (\textit{bravery}) \\ \hline
+Egyed (genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb \\ \hline
+Új genetikai jegyek & Lopakodás (\textit{stealth}), álcázás (\textit{camouflage}), bátorság (\textit{bravery}) \\ \hline
 Populáció & Kezdeti egyedszám, mutációs ráta, választott gondolkodásmód \\ \hline
-Rendszer & Logolási gyakoriság, szimulációs időlépték (\textit{Timescale}), InfluxDB kliens beállítások \\ \hline
+Rendszer & Logolási gyakoriság, szimulációs időlépték (\textit{Timescale}), \newline InfluxDB kliens beállítások \\ \hline
 \end{tabular}
 \caption{A szimuláció bővített kulcsparaméterei}
 \label{table:parameters}

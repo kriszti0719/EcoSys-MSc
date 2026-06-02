@@ -1,0 +1,23 @@
+\chapter{Összefoglalás}
+\label{chap:osszefoglalas}
+
+Jelen diplomamunka egy négy féléven átívelő, szisztematikus kutatási és szoftverfejlesztési folyamat szintézise, melynek elsődleges célja egy olyan robusztus és moduláris ökoszisztéma-szimulációs keretrendszer létrehozása volt, amely alkalmas populációgenetikai, evolúciós és ágensalapú döntéshozatali modellek tudományos igényű vizsgálatára, valamint valós idejű telemetriai elemzésére.
+
+A fejlesztési folyamat kiindulópontját képező BSc szakdolgozati fázisban egy korlátozott funkcionalitású, monolitikus struktúrájú alkalmazás állt rendelkezésre. Ez a korai rendszer kizárólag egyetlen préda faj autonóm működését modellezte kódgenerált környezetben, merev, determinisztikus állapotátmenetekre támaszkodva, lokális és strukturálatlan adatmentés mellett.
+
+A mesterképzés (MSc) során elvégzett mérnöki munka alapvetően változtatta meg a szoftver irányvonalát: a korábbi korlátokat felszámolva a hangsúly a tiszta szoftverarchitekturális mintákra, a skálázhatóságra, a biológiai hűség növelésére és az elosztott adatgyűjtésre helyeződött át.
+
+A szoftvertechnológiai modernizáció első lépéseként a „god class” antipatternek felszámolásával egy tiszta, komponens-aggregációra épülő osztályhierarchiát alakítottam ki a Unity3D motor környezetében. A számítási kapacitás optimalizálása és az ágensek közötti decoupling érdekében a rendszert eseményvezérelt kommunikációs modellre ültettem át. Ez a megközelítés minimalizálta a felesleges, frame-enként lefutó állapotellenőrzéseket, biztosítva a CPU-erőforrások hatékony elosztását növekvő egyedszám mellett is.
+
+A biológiai hűség fokozása érdekében a szimulációs teret procedurálisan generált, folytonos 3D-s domborzattá terjesztettem ki, amely fizikai akadályaival közvetlen szelekciós nyomást gyakorol az ágensekre. Bevezetésre került a ragadozó faj (rókák), ezáltal sikerült digitális környezetben reprodukálni a klasszikus Lotka–Volterra-féle ragadozó-préda populáció-oszcillációkat. Az egyedek viselkedését egy komplex, mutációra és rekombinációra képes genetikai adatmodell (\texttt{Genome}) vezérli. A szuper-ágensek kialakulását versengő trade-off mechanizmusokkal akadályoztam meg, ahol a magasabb sebesség vagy látótávolság arányosan növeli az egyed metabolikus energiaköltségét.
+
+A dolgozat egyik legfontosabb tudományos és mérnöki eredménye a döntéshozatali folyamatok moduláris absztrakciója, amely lehetővé tette három radikálisan eltérő döntési paradigma párhuzamos integrációját és összehasonlítását:
+\begin{itemize}
+    \item \textbf{Véges állapotgép (ClassicFSM):} A szabályalapú, stabil, de futásidőben merev és evolúciós szempontból alkalmatlan megközelítés reprezentációja.
+    \item \textbf{Hasznossági alapú döntési rendszer (Utility AI):} Ahol az ágensek a normalizált belső szükségletek és külső ingerek lineáris kombinációjaként számítják ki az akciók prioritását. A súlyokat a \texttt{UtilityGenome} hordozza, folytonos adaptációs teret biztosítva a természetes szelekciónak.
+    \item \textbf{Fuzzy Kognitív Térkép (FCM):} A legkomplexebb integrált modell, amely egy irányított, súlyozott gráf segítségével, iteratív és nem-lineáris szigmoid aktivációs függvényeken keresztül modellezi a belső állapotok (pl. éhség, félelem) és akciók egymásra hatását a \texttt{FCMGenome} súlymátrixa alapján.
+\end{itemize}
+
+A szimulációk során keletkező adatok tudományos kiértékeléséhez egy professzionális ipari telemetriai pipeline-t terveztem és valósítottam meg. A Unity főszálának védelme érdekében aszinkron architektúrát alkalmazva, HTTP POST kéréseken keresztül transzportálom a strukturált populációdinamikai és genetikai adatokat egy külső InfluxDB idősor-adatbázisba. Az adatok vizuális reprezentációját, valós idejű statisztikai elemzését és a különböző döntési modellek stabilitásának összehasonlítását egy egyedileg konfigurált Grafana dashboard rendszer biztosítja.
+
+Összességében a kitűzött feladatokat hiánytalanul teljesítettem. A létrehozott szoftverrendszer nem csupán igazolta a biológiai alapelméletek digitális reprezentálhatóságát, hanem egy olyan skálázható és kiterjeszthető mérnöki keretrendszert biztosít, amely szilárd alapot nyújt a jövőbeli kutatásokhoz, legyen szó akár a Unity DOTS alapú masszív párhuzamosítással történő skálázásról, vagy a Sandbox módú gamifikációs továbbfejlesztésekről.
