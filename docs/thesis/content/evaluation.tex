@@ -1,11 +1,57 @@
 \chapter{Az eredmények értékelése}
 \label{chap:ertekeles}
+
 % 5.1
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Rendszer- és teljesítményelemzés (Kritikai reflexió)}
-	Az eseményvezérelt architektúra hatása
 
-	Az InfluxDB HTTP kapcsolat overheadje?
+Az ökoszisztéma-szimuláció futtatása során nyert adatok és a vizuális megfigyelések rávilágítottak arra, hogy az ágensalapú modellezés (ABM) és a folytonos 3D-s tér bevezetése olyan komplex, nem-lineáris viselkedésformákat eredményez, amelyek a hagyományos matematikai modellekkel (pl. alap Lotka-Volterra egyenletek) közvetlenül nem jósolhatók meg. Az alábbiakban a szoftvertechnológiai architektúra kritikai elemzését és a szimuláció során tapasztalt emergens jelenségeket részletezem.
+
+\subsection{Az eseményvezérelt architektúra hatása és korlátai}
+A BSc szakaszban alkalmazott hagyományos, folyamatos lekérdezésen (polling, update-alapú állapotellenőrzés) alapuló logikát a jelenlegi rendszerben egy eseményvezérelt architektúra váltotta fel (lásd: \ref{sec:esemenyvezerelt}. fejezet). Ez szoftvertechnológiai szempontból drasztikusan csökkentette a felesleges CPU-ciklusok számát, hiszen az ágensek nem kérdezik le minden képkockában a környezetük állapotát, hanem csak releváns triggerekre (pl. éhségküszöb átlépése, ütközés, vizuális észlelés) reagálnak.
+
+Ugyanakkor a szimuláció hosszútávú futtatása során (jellemzően magasabb ágensszám mellett) az eseményvezérelt működés egy sajátos szinkronizációs limitációt (úgynevezett élhelyzetet vagy konvergencia-problémát) hozott felszínre. Bizonyos esetekben az ágensek mozgási logikája és a Unity beépített útvonalkereső/fizikai alrendszere között olyan időszerűsítési konfliktus lép fel, amely az egyedek egy helyben forgását, vagy a mozgási rutinok időszakos befagyását eredményezi. Ez a jelenség rávilágít arra, hogy a tisztán eseményalapú aszinkron üzenetkezelés és a determinisztikus fizikai szimuláció finomhangolása további szálkezelési optimalizációt igényel.
+
+\subsection{Az InfluxDB HTTP kapcsolat overheadje}
+A telemetriai adatok valós idejű külső adatbázisba (InfluxDB) történő továbbítása alapvető követelmény volt a transzparens monitorozáshoz. A megvalósított HTTP-alapú API hívások azonban jelentős hálózati és számítási overheadet generálnak, ha az események (születés, elhullás, táplálkozás) sűrűsége hirtelen megnövekszik (ez az eset pedig elég gyakori tud lenni). 
+
+A mérések alapján a szimuláció vizuális képkockasebessége (FPS) lokális minimumot ér el a populációrobbanások fázisaiban. Ennek oka, hogy a szinkron vagy nem megfelelően csoportosított HTTP post kérések blokkolják a Unity fő futási szálát (Main Thread). A teljesítménybeli akadások kiküszöbölésére a jövőben egy köztes puffertár (batching) vagy dedikált háttérszálon futó loggoló kliens bevezetése szükséges.
+
+% 5.2
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Emergens biológiai mintázatok és populációdinamikai anomáliák}
+
+A szimuláció futása során az ágensek egyéni döntési mechanizmusai (legyen az FSM, Utility AI vagy Fuzzy Cognitive Map) és a genetikai mutációk olyan kollektív mintázatokat hoztak létre, amelyek szigorú ökológiai elméletekkel magyarázhatók.
+
+\subsection{A térbeli Allee-effektus és lokális sűrűségfüggés}
+A klasszikus ökológiában Allee-effektusnak nevezzük azt a jelenséget, amikor egy populáció egyedsűrűségének vagy méretének csökkenése közvetlenül rontja az egyedek túlélési vagy szaporodási esélyeit. A kifejlesztett 3D-s szimulációs térben ez a jelenség nem globálisan, hanem lokálisan, térbeli kiterjedésben jelentkezett látványosan.
+
+Elsősorban a préda-populáció (nyulak) esetében jól megfigyelhető, hogy az egyedek nem egyenletesen oszlanak el a procedurálisan generált terepen, hanem szigetszerű, sűrű gócokba (aggregációkba) tömörülnek. Ez a lokális sűrűségfüggés kettős hatással bír:
+\begin{enumerate}
+  \item egyrészt a gócban a nyulak gyorsabban megtalálják a párjukat (növekszik a reprodukciós ráta),
+  \item másrészt viszont a lokális táplálékforrásokat rendkívül gyorsan kimerítik.
+\end{enumerate}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/allee.png}
+	\caption{A préda-populáció lokális sűrűségfüggése: a nyulak jól elkülöníthető gócokba tömörülnek a szaporodási siker maximalizálása érdekében.}
+	\label{fig:allee_nyulak}
+\end{figure}
+
+Ez a térbeli fragmentáció drámai hatással van a ragadozók (rókák) túlélésére is. Amennyiben egy ragadozó egyed a szimulációs tér olyan részére (például a sziget túloldalára) kerül, ahol a préda-gócok nincsenek jelen, a lokális Allee-effektus miatt halálra van ítélve. Bár a szimuláció globális statisztikái szerint a nyulak száma magas, a róka látótávolságának és mozgási sebességének korlátai (melyeket a Genome osztály határoz meg) megakadályozzák, hogy átszelje a "kiürített" területeket. Az ilyen elszigetelt ragadozók energiája gyorsan elfogy, és még azelőtt elpusztulnak, hogy elérnék a préda-gócokat.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\textwidth]{figures/elszigetelt_roka.png}
+	\caption{Elszigetelt ragadozó (róka) a szimulációs tér egy préda nélküli zónájában. A globálisan stabil nyúlpopuláció ellenére a térbeli Allee-effektus lokális éhhalálhoz vezet.}
+	\label{fig:allee_roka}
+\end{figure}
+
+\subsection{Stabilitási anomáliák és a "Trade-off" mechanizmusok hiánya}
+A szimulációk során tapasztalt egyik legfontosabb anomália, hogy bizonyos futásoknál a nyulak populációja robbanásszerű növekedésnek indul, még kifejezetten magas (pl. 200 egyedet számláló) rókapopuláció jelenléte mellett is. 
+
+Biológiai szempontból ez ellentmond a klasszikus Lotka-Volterra oszcillációnak. A jelenség elemzése során megállapítható, hogy a hiba a genetikai algoritmus mutációs rátájának és a tulajdonságok közötti kompromisszumok (trade-off) egyensúlyának hiányára vezethető vissza. Ha a mutációk során a préda sebessége vagy látótávolsága úgy növekszik meg, hogy az nem jár arányosan magasabb alapenergia-felhasználással (anyagcsere-igény), a préda "szuper-ágenssé" válik. Ekkor a ragadozók képtelenek kifejteni a szükséges szelekciós nyomást, ami a préda korlátlan dominanciájához, majd a táplálék teljes elfogyása után a rendszer hirtelen, kaotikus összeomlásához vezet.
 
 % 5.2
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
