@@ -1,0 +1,40 @@
+﻿@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam dpi 300
+
+title ClassicFSM állapotátmenet diagram
+
+state WANDER : alapértelmezett bolyongás\n(alacsony energiafogyasztás)
+state SEARCH : keresési üzemmód\n(Sensor aktív)
+state MOVE_TOWARDS : célirányos megközelítés\n(megnövelt sebesség)
+state FLEE : menekülés\n(maximális prioritás)
+state REST : Kényszerített pihenés\n(mozgásképtelen állapot)
+
+[*] --> WANDER
+
+WANDER --> SEARCH : Kritikus szint\n(Éhség / Szomjúság)
+WANDER --> FLEE : Ragadozó észlelése\n(Sensor radius)
+
+SEARCH --> MOVE_TOWARDS : Célpont detektálása\n(Táplálék / Víz / Partner)
+SEARCH --> FLEE : Ragadozó észlelése
+
+MOVE_TOWARDS --> WANDER : Akció sikeres / cél elveszett pl. megette valaki\n(evés / ivás / szaporodás)
+MOVE_TOWARDS --> FLEE : Ragadozó észlelése
+
+FLEE --> WANDER : Veszély elmúlt
+
+note left of REST
+  Bármely állapotból,
+  ha Stamina elfogyott
+end note
+
+WANDER --> REST : Stamina == 0
+SEARCH --> REST : Stamina == 0
+MOVE_TOWARDS --> REST : Stamina == 0
+FLEE --> REST : Stamina == 0
+
+REST --> WANDER : Ha Stamina visszatöltődött,\n vagy letelt az előre kisorsolt szünet (BreakEnded)
+
+@enduml
