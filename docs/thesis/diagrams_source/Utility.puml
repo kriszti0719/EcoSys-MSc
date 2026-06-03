@@ -1,0 +1,30 @@
+﻿@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam dpi 300
+
+title Utility AI döntési folyamat
+| 1. Nyers belső állapotok (Unity) |
+start
+:a.eat.currentHunger\na.drink.currentThirst\na.rest.currentStamina\na.mating.currentMatingUrge;
+
+| 2. Normalizációs réteg [0, 1] |
+:Matematikai transzformáció:\n""n = 1.0 - (v / v_max)"";
+
+| 3. Genetikai súlyozás (Genome) |
+:Szorzás a kromoszóma súlyaival:\n""U_action = w_action * n_action"";
+
+| 4. Szelekciós függvény (ArgMax) |
+:Mathf.Max(eatU, drinkU, restU, mateU);
+if (A maximális érték a restU?) then (igen)
+  |5. Állapotváltás|
+  :Status.REST;
+else (nem)
+  | 5. Állapotváltás |
+  :Megfelelő célobjektum réteg maszkolása\n(setTargetLayer / LayerMask);
+  :Status.SEARCH;
+endif
+
+stop
+@enduml
