@@ -50,14 +50,14 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             }
             currentMatingUrge--;
         }
-        public void Mating()
+        public void Mating(Animal mate)
         {
             currentMatingUrge = maxMatingUrge;
             enableMating = false;
             matingCooldown = maxMatingCooldown;
             animal.triedForBaby++;
             
-            IsSuccess();
+            IsSuccess(mate);
             
             animal.targetRef = null;
             animal.sensor.targetMask = LayerMask.GetMask("None");
@@ -68,7 +68,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             bool accepted = (mate.mating.charm + (100 - currentMatingUrge)) < charm;
             return accepted;
         }
-        private void IsSuccess()
+        private void IsSuccess(Animal mate)
         {
             if (!animal.isMale)
             {
@@ -80,6 +80,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
                 if (animal.reproduction.isPregnant)
                 {
                     animal.reproduction.currentPregnancy = animal.reproduction.pregnancyDuration;
+                    animal.reproduction.mateTraits = new MateTraits(mate);
+                    animal.reproduction.mate = mate;
                 }
                 else
                     animal.reproduction.mate = null;
