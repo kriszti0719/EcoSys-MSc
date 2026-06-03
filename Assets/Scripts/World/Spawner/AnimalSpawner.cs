@@ -1,8 +1,11 @@
 ﻿using Assets.Scripts.Animals.Common.Behaviour;
 using Assets.Scripts.Datatypes;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
 
 public class AnimalSpawner : Spawner
 {
@@ -29,29 +32,117 @@ public class AnimalSpawner : Spawner
 
     protected int step = 0;
 
-    private string filePathDeathData;
-    private string filePathPopulation;
-
-    private int BunnyCntr;
+    private int BunnyNameCntr;
+    private int FoxNameCntr;
     private int FoxCntr;
+    private int BunnyCntr;
 
-    public int getStep() => step;
+    public List<Animal> animals = new List<Animal>();
+    public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
+
+    [Header("Counter")]
+    public int maxStepCnt;
+    public int maxDecideCnt;
+    public int maxAgeCnt;
+
     public override void Generate()
     {
         Clear();
-        BunnyCntr = 0;
-        FoxCntr = 0;
+
+        BunnyNameCntr = 0;
+        FoxNameCntr = 0;
         GenerateAnimal animal = new GenerateAnimal(null, null, Species.FOX, animalSizeMin, animalSizeMax);
         SpawnAnimals(animal, amount);
+
         animal = new GenerateAnimal(null, null, Species.BUNNY, animalSizeMin2, animalSizeMax2);
         SpawnAnimals(animal, amount2);
     }
+    private void AddTasks()
+    {
+        ScheduledTask registerPopulation = new ScheduledTask(
+            _name: "Register Population",
+            _interval: 10f,
+            _timer: 0f,
+            _action: () =>
+            {
+                RegisterPopulation();
+            });
+        scheduledTasks.Add(registerPopulation);
+        ScheduledTask decide = new ScheduledTask(
+            _name: "Decide",
+            _interval: maxDecideCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals.ToList())
+                    a.Decide();
+            });
+        scheduledTasks.Add(decide);
+        ScheduledTask step = new ScheduledTask(
+            _name: "Step",
+            _interval: maxStepCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals.ToList())
+                    a.Step();
+            });
+        scheduledTasks.Add(step);
+        ScheduledTask age = new ScheduledTask(
+            _name: "Age",
+            _interval: maxAgeCnt,
+            _timer: 0f,
+            _action: () =>
+            {
+                foreach (var a in animals.ToList())
+                    a.aging.Aging();
+            });
+        scheduledTasks.Add(age);
+    }
+    public override void Clear()
+    {
+        while (transform.childCount != 0)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
+
+        animals.Clear();
+        scheduledTasks.Clear();
+    }
     protected virtual void Start()
     {
+        FoxNameCntr = amount;
+        BunnyNameCntr = amount2;
+
         FoxCntr = amount;
         BunnyCntr = amount2;
 
-        StartCoroutine(RegisterPopulation());
+        DebugLogger.setLogPath();
+        AddTasks();
+
+        InfluxLogger.Init(
+        _url: "http://localhost:8086",
+        _token: "KeWK_betKl_J8Aqgnd6Nh-D2UrUabSBsfjPR-pu_C8QA9UX6y6V3z_lZNMm3jIDCXSeE4aWW_KBGIIe4GTcyUA==",
+        _org: "EcoSys",
+        _bucket: "ecosys",
+        runner: this
+    );
+    }
+    void Update()
+    {
+        float dt = Time.deltaTime;
+
+        foreach (var task in scheduledTasks)
+        {
+            task.timer += dt;
+
+            if (task.timer >= task.interval)
+            {
+                task.action?.Invoke();
+
+                task.timer -= task.interval;
+            }
+        }
     }
     private void SpawnAnimals(GenerateAnimal animal, int amount)
     {
@@ -82,15 +173,16 @@ public class AnimalSpawner : Spawner
             Die instantiatedDie = instantiatedPrefab.AddComponent<Die>();
             Age instantiatedAge = instantiatedPrefab.AddComponent<Age>();
 
-            EventHandler instantiatedEventHandler = instantiatedPrefab.AddComponent<EventHandler>();
+            AnimalEventHandler instantiatedAnimalEventHandler = instantiatedPrefab.AddComponent<AnimalEventHandler>();
 
             switch (animal.species)
             {
                 case Species.BUNNY:
-                    BunnyCntr++;
-                    instantiatedPrefab.name = $"{animal.species}_{BunnyCntr}";
+                    BunnyNameCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{BunnyNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Bunny");
                     Bunny instantiatedBunny = instantiatedPrefab.AddComponent<Bunny>();
+                    animals.Add(instantiatedBunny);
 
                     isMale(instantiatedBunny, instantiatedPrefab);
                     changeBunnyColor(instantiatedBunny.isMale, instantiatedPrefab);
@@ -107,10 +199,11 @@ public class AnimalSpawner : Spawner
                     setBars(instantiatedBunny, instantiatedPrefab, animal);
                     break;
                 case Species.FOX:
-                    FoxCntr++;
-                    instantiatedPrefab.name = $"{animal.species}_{FoxCntr}";
+                    FoxNameCntr++;
+                    instantiatedPrefab.name = $"{animal.species}_{FoxNameCntr}";
                     instantiatedPrefab.layer = LayerMask.NameToLayer("Fox");
                     Fox instantiatedFox = instantiatedPrefab.AddComponent<Fox>();
+                    animals.Add(instantiatedFox);
 
                     isMale(instantiatedFox, instantiatedPrefab);
                     if (animal.mother != null)
@@ -207,7 +300,7 @@ public class AnimalSpawner : Spawner
         instantiatedMating.transform.position = new Vector3(instantiatedPrefab.transform.position.x, instantiatedPrefab.transform.position.y + bottom, instantiatedPrefab.transform.position.z);
         instantiatedMating.GetComponent<Billboard>().cam = mainCamera;
 
-        instantiatedAnimal.SetBars(barsContainer);
+        instantiatedAnimal.SetBars(barsContainer, animal.mother == null);
     }
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
@@ -275,20 +368,18 @@ public class AnimalSpawner : Spawner
             }
         }
     }
-
-    IEnumerator RegisterPopulation()
+    public void RegisterPopulation()
     {
-        DebugLogger.setLogPath();
+        step++;
+        if (FoxCntr != 0) FoxCntr = Counter("FOX");
+        if (BunnyCntr != 0) BunnyCntr = Counter("BUNNY");
+        if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
 
-        while (true)
-        {
-            step++;
-            DebugLogger.RegisterPopulation(step, counterFox: Counter("FOX"), counterBunny: Counter("BUNNY"));
-            yield return new WaitForSeconds(10f);
-        }
+        DebugLogger.RegisterPopulation(step, BunnyCntr, FoxCntr);
     }
-    public void RegisterDeath(Animal animal)
+    public void RemoveAnimal(Animal animal)
     {
         DebugLogger.RegisterDeath(step: step, animal: animal);
+        animals.Remove(animal);
     }
 }

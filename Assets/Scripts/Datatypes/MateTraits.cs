@@ -14,7 +14,6 @@ public class MateTraits
     public int drink_critical;
     public float moveSpeed;
     public int radius;
-    public int reproductiveUrge;
     public int pregnancyDuration;
     public int charm;
     public int camouflage;
@@ -23,13 +22,12 @@ public class MateTraits
 
     public MateTraits(Animal animal)
     {
-        this.size = animal.aging.size;
+        this.size = animal.aging.adultSize;
         this.lifeSpan = animal.aging.lifeSpan;
         this.eat_critical = animal.eat.critical;
         this.drink_critical = animal.drink.critical;
         this.moveSpeed = animal.movement.moveSpeed;
         this.radius = animal.sensor.radius;
-        this.reproductiveUrge = animal.reproduction.reproductiveUrge;
         this.pregnancyDuration = animal.reproduction.pregnancyDuration;
         this.charm = animal.mating.charm;
         this.camouflage = animal.sensor.camouflage;

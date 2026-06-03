@@ -11,22 +11,26 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     public class Mate : MonoBehaviour
     {
         private Animal animal;
-        [SerializeField]
-        private int currentMatingUrge;
+        [HideInInspector] public MatingUrgeBar matingBar;
         public bool enableMating;
-        private int mateDuration = 1;
-        public MatingUrgeBar matingBar;
-        private int maxMatingUrge = 100;
-        [SerializeField]
         public int charm;
+        public int maxMatingUrge = 100;
+        public int currentMatingUrge;
+        public int maxMatingCooldown = 150;
+        public int matingCooldown = 0;
         void Start()
         {
             animal = GetComponent<Animal>();
         }
-        public void setBar(GameObject barsContainer)
+        public void setBar(GameObject barsContainer, bool randomize = false)
         {
-            this.matingBar = barsContainer.GetComponentInChildren<MatingUrgeBar>();
-            currentMatingUrge = maxMatingUrge;
+            matingBar = barsContainer.GetComponentInChildren<MatingUrgeBar>();
+            currentMatingUrge = randomize ? UnityEngine.Random.Range(40, maxMatingUrge) : maxMatingUrge;
+            if (randomize)
+            {
+                matingCooldown = UnityEngine.Random.Range(0, maxMatingCooldown);
+                enableMating = matingCooldown == 0;
+            }
             matingBar.SetMaxMatingUrge(maxMatingUrge);
         }
         public void updateBar()
@@ -35,50 +39,49 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         public void Step()
         {
-            if(animal.status == Status.MATE)
+            if (matingCooldown > 0)
             {
-                currentMatingUrge = maxMatingUrge;
-                enableMating = false;
+                matingCooldown--;
             }
-            else
+
+            if (matingCooldown == 0 && animal.aging.currentAge >= 1 && !animal.reproduction.isPregnant)
             {
-                currentMatingUrge--;
+                enableMating = true;
             }
+            currentMatingUrge--;
         }
-        public void Mating()
+        public void Mating(Animal mate)
         {
+            currentMatingUrge = maxMatingUrge;
+            enableMating = false;
+            matingCooldown = maxMatingCooldown;
+            animal.triedForBaby++;
             
-        }
-        public void ToMate()
-        {
-            animal.breakCounter = mateDuration;
+            IsSuccess(mate);
+            
+            animal.targetRef = null;
+            animal.sensor.targetMask = LayerMask.GetMask("None");
+            (animal.prevStatus, animal.status) = (animal.status, Status.WANDER);
         }
         public bool IsAcceptable(Animal mate)
         {
-            //int charmDifference = mate.charm - charm; // Jó eséllyel pozitív, de lehet - is
-            //float matingUrgeDifference = currentMatingUrge / 100f;
-            //float acceptanceChance = Mathf.Clamp01(0.5f + charmDifference * 0.01f + matingUrgeDifference); 
-            //float randomValue = Random.value;
-
             bool accepted = (mate.mating.charm + (100 - currentMatingUrge)) < charm;
             return accepted;
         }
-        public void IsSuccess()
+        private void IsSuccess(Animal mate)
         {
-            if (!animal.isMale)     //TODO:  && !isPregnant
+            if (!animal.isMale)
             {
-                // Base success rate for pregnancy
                 float baseSuccessRate = 0.8f;
-                // Random chance factor between -10% to +10%
                 float randomChanceFactor = UnityEngine.Random.Range(-0.1f, 0.1f);
-                // Calculate the overall success rate
                 float overallSuccessRate = baseSuccessRate + randomChanceFactor;
 
-                // Check if the mating is successful based on the calculated success rate
                 animal.reproduction.isPregnant = UnityEngine.Random.value < overallSuccessRate;
                 if (animal.reproduction.isPregnant)
                 {
                     animal.reproduction.currentPregnancy = animal.reproduction.pregnancyDuration;
+                    animal.reproduction.mateTraits = new MateTraits(mate);
+                    animal.reproduction.mate = mate;
                 }
                 else
                     animal.reproduction.mate = null;

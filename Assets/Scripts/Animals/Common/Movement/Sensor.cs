@@ -5,19 +5,20 @@ using UnityEngine;
 
 public class Sensor : MonoBehaviour
 {
+    [HideInInspector] public Animal animal;
     [Range(0, 360)]
     public int angle = 160;
     public int radius;
     public int camouflage;
     public int stealth;
-    // The layer masks for filtering targets and obstructions:
+    
     public LayerMask targetMask;
     public LayerMask obstructionMask;
 
     public bool canSeeTarget;
-    public Animal animal;
-    public int secCntr = 0;
     public bool danger = false;
+
+    public event System.Action OnTargetSpotted;
 
     private void Start()
     {
@@ -33,7 +34,6 @@ public class Sensor : MonoBehaviour
     }
     private IEnumerator FOVRoutine()
     {
-        /// We only calculate just 5 times per second
         WaitForSeconds wait = new WaitForSeconds(0.2f);
 
         while (true)
@@ -48,64 +48,57 @@ public class Sensor : MonoBehaviour
         GameObject nearestTarget = null;
         float nearestDistance = Mathf.Infinity;
 
+        if (animal.targetRef != null)
+        {
+            float dist = Vector3.Distance(transform.position, animal.targetRef.transform.position);
+            if (dist <= radius)
+            {
+                nearestTarget = animal.targetRef;
+                nearestDistance = dist;
+            }
+        }
+
         foreach (var targetCollider in rangeChecks)
         {
             Transform target = targetCollider.transform;
             if (animal.rejectedBy.Contains(target.gameObject))
                 continue;
 
-            //If already has been caught
-            Animal targetAnimal = target.GetComponent<Animal>();
-            if (targetAnimal != null && targetAnimal.status == Status.CAUGHT)
+            if (animal.targetRef == target.gameObject)
                 continue;
+
+            Animal targetAnimal = target.GetComponent<Animal>();
 
             Vector3 directionToTarget = (target.position - transform.position).normalized;
             if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)
             {
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-                // Check if the target is the nearest and is not obstructed
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                if (distanceToTarget < nearestDistance && !Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
                     float camouflage = targetAnimal != null ? targetAnimal.sensor.camouflage : 0f;
-                    float detectionChance = Mathf.Clamp01(1f - camouflage);
+                    float detectionChance = 1f - Mathf.Clamp01(camouflage / 100f);
 
                     if (Random.value > detectionChance)
                         continue;
 
-                    if (distanceToTarget < nearestDistance)
-                    {
-                        nearestTarget = target.gameObject;
-                        nearestDistance = distanceToTarget;
-                    }
+                    nearestTarget = target.gameObject;
+                    nearestDistance = distanceToTarget;
                 }
             }
         }
 
         canSeeTarget = nearestTarget != null;
-        animal.targetRef = canSeeTarget ? nearestTarget : null;
-    }
-    public bool FieldOfViewCheck(LayerMask _targetMask, GameObject _targetRef)
-    {
-        Collider[] rangeChecks = Physics.OverlapSphere(transform.position, radius, _targetMask);
 
-        foreach (var targetCollider in rangeChecks)
+        if (canSeeTarget && animal.targetRef == null)
         {
-            Transform target = targetCollider.transform;
-
-            if (target.gameObject != _targetRef) { continue; }
-
-            Vector3 directionToTarget = (target.position - transform.position).normalized;
-            if (Vector3.Angle(transform.forward, directionToTarget) < angle / 2)
-            {
-                float distanceToTarget = Vector3.Distance(transform.position, target.position);
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
-                {
-                    return true;
-                }
-            }
+            animal.targetRef = nearestTarget;
+            OnTargetSpotted?.Invoke();
         }
-        return false;
+        else
+        {
+            animal.targetRef = nearestTarget;
+        }
     }
     public void CheckForPredators()
     {
@@ -128,7 +121,6 @@ public class Sensor : MonoBehaviour
                 float detectionChance = Mathf.Clamp01(distanceFactor * (1f - (camouflage + stealth) / 200f)); // combine (distance + camouflage + stealth)
                 float roll = Random.value;
 
-                // --- Perception roll ---
                 if (roll < detectionChance)
                 {
                     if (!animal.spottedThreats.Contains(predator.gameObject))
@@ -139,7 +131,6 @@ public class Sensor : MonoBehaviour
             }
         }
 
-        // Remove predators that are no longer visible
         foreach (var threat in animal.spottedThreats)
         {
             bool isStillVisible = predatorsInRange.Any(predatorCollider =>
@@ -154,10 +145,11 @@ public class Sensor : MonoBehaviour
             }
         }
 
-        // Remove no longer visible threats
         foreach (var threat in toRemove)
         {
             animal.spottedThreats.Remove(threat);
         }
+
+        danger = animal.spottedThreats.Any();
     }
 }

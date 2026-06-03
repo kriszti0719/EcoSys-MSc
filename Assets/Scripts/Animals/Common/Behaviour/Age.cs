@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Assets.Scripts.Animals.Common.Behaviour
 {
@@ -14,44 +15,36 @@ namespace Assets.Scripts.Animals.Common.Behaviour
     {
         private Animal animal;
         private float aging = 0.5f;
-        private float secCnt;
-        public float currentAge;
+        public float adultSize;
         public float lifeSpan;
-        public float size;
+        public float currentAge;
 
         public event Action OnAgeLimitReached;
         void Start()
         {
             animal = GetComponent<Animal>();
-            secCnt = 0;
         }
         private bool AgeLimitReached() => currentAge >= lifeSpan;
         public void setAging(float _age, float _size, float _lifeSpan)
         {
-            this.currentAge = _age;
-            this.size = _size;
-            this.lifeSpan = _lifeSpan;
+            currentAge = _age;
+            adultSize = _size;
+            lifeSpan = _lifeSpan;
         }
         public void Aging()
         {
-            if (currentAge <= 1 & secCnt == 0)
+            if (currentAge < 1)
             {
                 Grow();
                 currentAge += aging / 100f;
-                secCnt = 2;
             }
-            else if(secCnt == 0)
+
+            currentAge += aging;
+            
+            if (AgeLimitReached())
             {
-                animal.mating.enableMating = true;
-                animal.reproduction.Mature();
-                currentAge += aging;
-                if (AgeLimitReached())
-                {
-                    OnAgeLimitReached?.Invoke();
-                }
-                secCnt = 200;
+                OnAgeLimitReached?.Invoke();
             }
-            secCnt--;
         }
         private void Grow()
         {
@@ -59,9 +52,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             if (currentAge < 0.4)
                 animal.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
             else
-                animal.transform.localScale = new Vector3(size * currentAge, size * currentAge, size * currentAge);
+                animal.transform.localScale = new Vector3(adultSize * currentAge, adultSize * currentAge, adultSize * currentAge);
             animal.barsContainer.transform.SetParent(animal.transform);
-
         }
     }
 }

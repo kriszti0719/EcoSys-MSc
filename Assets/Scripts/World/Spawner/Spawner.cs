@@ -27,15 +27,7 @@ public abstract class Spawner : MonoBehaviour
     [SerializeField] protected GameObject prefab;
     [SerializeField] protected int amount;
     public abstract void Generate();
-
-    public void Clear()
-    {
-        while(transform.childCount != 0)
-        {
-            DestroyImmediate(transform.GetChild(0).gameObject);
-        }
-    }
-
+    public abstract void Clear();
     protected int Counter(string name)
     {
         Transform[] children = this.GetComponentsInChildren<Transform>(true);

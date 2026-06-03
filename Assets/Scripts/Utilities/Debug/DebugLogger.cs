@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using System.Globalization;
 
 
 public static class DebugLogger
@@ -13,9 +14,7 @@ public static class DebugLogger
     private static string filePathDeath;
     private static string filePathPopulation;
     private static string filePathFood;
-    private static string filePathDeathLatest;
-    private static string filePathPopulationLatest;
-    private static string filePathFoodLatest;
+    private static string timestamp;
 
     public static void setLogPath()
     {
@@ -25,35 +24,20 @@ public static class DebugLogger
             string dataDirectory = Path.Combine(projectRoot, ".logs");
 
             Directory.CreateDirectory(dataDirectory);
-            string timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
-            filePathDeathLatest = Path.Combine(dataDirectory, $"latest_DeathData.csv");
-            filePathPopulationLatest = Path.Combine(dataDirectory, $"latest_PopulationData.csv");
-            filePathFoodLatest = Path.Combine(dataDirectory, $"latest_FoodData.csv");
 
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
+                writer.WriteLine("Step;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
             }
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
                 writer.WriteLine("Time;BunnyPop;FoxPop");
             }
             using (StreamWriter writer = new StreamWriter(filePathFood))
-            {
-                writer.WriteLine("Time;Food");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathDeathLatest))
-            {
-                writer.WriteLine("Step;Species;DeathCause;Age;Speed;Sight;ReproductiveUrge;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathPopulationLatest))
-            {
-                writer.WriteLine("Time;BunnyPop;FoxPop");
-            }
-            using (StreamWriter writer = new StreamWriter(filePathFoodLatest))
             {
                 writer.WriteLine("Time;Food");
             }
@@ -78,6 +62,7 @@ public static class DebugLogger
     public static void Warning(string message) => Log(msg: message, level_str: "Warning: ", level: LogLevel.Warn);
     public static void Info(string message) => Log(msg: message, level_str: "Notice: ", level: LogLevel.Info);
     public static void Notice(string message) => Log(msg: message, level_str: "Info: ", level: LogLevel.Notice);
+    public static void ShowNotification(string message) => Notifier.Show( message );
     private static string GetColorForLevel(LogLevel level)
     {
         switch (level)
@@ -95,10 +80,6 @@ public static class DebugLogger
         {
             writer.WriteLine($"{step};{counterBunny};{counterFox}");
         }
-        using (StreamWriter writer = new StreamWriter(filePathPopulationLatest, true))
-        {
-            writer.WriteLine($"{step};{counterBunny};{counterFox}");
-        }
     }
     public static void RegisterFood(int cnt, int step = 1)
     {
@@ -106,45 +87,65 @@ public static class DebugLogger
         {
             writer.WriteLine($"{step};{cnt}");
         }
-        using (StreamWriter writer = new StreamWriter(filePathFoodLatest, true))
-        {
-            writer.WriteLine($"{step};{cnt}");
-        }
     }
-
     public static void RegisterDeath(int step, Animal animal)
     {
         using (StreamWriter writer = new StreamWriter(filePathDeath, true))
         {
             string dataLine = $"{step};" +
-                $"{animal.species.ToPrint()};" +
-                $"{animal.cause.ToPrint()};" +
-                $"{animal.aging.currentAge}" +
-                $";{animal.movement.moveSpeed};" +
+                $"{animal.species.ToString()};" +
+                $"{animal.isMale};" +
+                $"{animal.cause.ToString()};" +
+                $"{animal.aging.currentAge};" +
+                $"{animal.movement.moveSpeed};" +
                 $"{animal.sensor.radius};" +
-                $"{animal.reproduction.reproductiveUrge};" +
-                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
+                $"{animal.aging.lifeSpan};" +
+                $"{animal.mating.charm};" +
                 $"{animal.reproduction.pregnancyDuration};" +
                 $"{animal.prevStatus};" +
                 $"{animal.eat.critical};" +
-                $"{animal.drink.critical}";
+                $"{animal.drink.critical};" +
+                $"{animal.triedForBaby};" +
+                $"{animal.gaveBirth};" +
+                $"{animal.kids}"
+                ;
             writer.WriteLine(dataLine);
+            
+            // RegisterDeathToDb(step, animal);
         }
-        using (StreamWriter writer = new StreamWriter(filePathDeathLatest, true))
-        {
-            string dataLine = $"{step};" +
-                $"{animal.species.ToPrint()};" +
-                $"{animal.cause.ToPrint()};" +
-                $"{animal.aging.currentAge}" +
-                $";{animal.movement.moveSpeed};" +
-                $"{animal.sensor.radius};" +
-                $"{animal.reproduction.reproductiveUrge};" +
-                $"{animal.aging.lifeSpan};{animal.mating.charm};" +
-                $"{animal.reproduction.pregnancyDuration};" +
-                $"{animal.prevStatus};" +
-                $"{animal.eat.critical};" +
-                $"{animal.drink.critical}";
-            writer.WriteLine(dataLine);
-        }
+
+    }
+    public static void RegisterDeathToDb(int step, Animal animal)
+    {
+        string F(float v) => v.ToString(CultureInfo.InvariantCulture);
+
+        string line =
+            $"death,run_id={timestamp},species={animal.species.ToString()},cause={animal.cause.ToString()} " +
+            $"age={F(animal.aging.currentAge)}," +
+            $"speed={F(animal.movement.moveSpeed)}," +
+            $"sight={F(animal.sensor.radius)}," +
+            $"lifeSpan={F(animal.aging.lifeSpan)}," +
+            $"charm={F(animal.mating.charm)}," +
+            $"pregnancyDuration={F(animal.reproduction.pregnancyDuration)}," +
+            $"starving={F(animal.eat.critical)}," +
+            $"drying={F(animal.drink.critical)}," +
+            $"triedForBaby={animal.triedForBaby}," +
+            $"gaveBirth={animal.gaveBirth}," +
+            $"kids={animal.kids}," +
+            $"step={step}"
+            ;
+
+        InfluxLogger.Log(line);
+        DebugLogger.Info(line);
+    } 
+}
+
+
+public static class Notifier
+{
+    public static void Show(string message)
+    {
+        System.Diagnostics.Process.Start("powershell",
+            $"-Command \"Add-Type -AssemblyName PresentationFramework;[System.Windows.MessageBox]::Show('{message}')\"");
     }
 }

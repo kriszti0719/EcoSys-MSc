@@ -7,11 +7,7 @@ using UnityEngine;
 
 public class Bunny : Animal, IEdible
 {
-    private int eatDuration = 5;
-    private int nutrition = 20;
-    private int currentDuration;
-
-    public event Action OnConsumed;
+    private int nutrition = 100;
 
     protected override void Start()
     {
@@ -47,48 +43,8 @@ public class Bunny : Animal, IEdible
         predators = new List<Species>();
         predators.Add(Species.FOX);
     }
-    public void AboutToBeConsumed()
+    public void Consumed()
     {
-        cause = CauseOfDeath.CONSUMED;
-        (prevStatus, status) = (status, Status.CAUGHT);
-        currentDuration = eatDuration;
-        StartCoroutine(ToBeConsumed());
+        die.HandleDeath(CauseOfDeath.CONSUMED);
     }
-    public IEnumerator ToBeConsumed()
-    {
-        while (currentDuration > 0)
-        {
-            if (OnConsumed != null)
-            {
-                yield return new WaitForSeconds(1f);
-                currentDuration--;
-            }
-            else
-            {
-                yield break;
-            }
-        }
-        OnConsumed?.Invoke();
-        Consumed();
-    }
-    private void Consumed()
-    {
-        die.Destroy();
-    }
-    //public bool DamageHealth(int damage = 10)
-    //{
-    //    // --- Damage roll ---
-    //    float roll = UnityEngine.Random.Range(0.75f, 1.25f);
-    //    int actualDamage = Mathf.RoundToInt(damage * roll);
-
-    //    currentHealth = Mathf.Max(0, currentHealth - actualDamage);
-
-    //    if (currentHealth == 0)
-    //    {
-    //        AboutToBeConsumed();
-    //        return true;
-    //    }
-
-    //    return false;
-    //}
 }

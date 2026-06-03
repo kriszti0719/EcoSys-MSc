@@ -71,6 +71,14 @@ public class ForestSpawner : Spawner
         SpawnTree(prefab12, amount12);
         SpawnTree(prefab13, amount13);
     }
+    public override void Clear()
+    {
+        while (transform.childCount != 0)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
+    }
+
 
     public void SpawnTree(GameObject prefab, int amount)
     {

@@ -34,14 +34,14 @@ namespace Assets.Scripts.Datatypes
 
             if (_father != null && _mother != null)
             {
-                if (_father.size < _mother.aging.size)
+                if (_father.size < _mother.aging.adultSize)
                 {
                     this.sizeMin = _father.size;
-                    this.sizeMax = _mother.aging.size;
+                    this.sizeMax = _mother.aging.adultSize;
                 }
                 else
                 {
-                    this.sizeMin = _mother.aging.size;
+                    this.sizeMin = _mother.aging.adultSize;
                     this.sizeMax = _father.size;
                 }
             }
