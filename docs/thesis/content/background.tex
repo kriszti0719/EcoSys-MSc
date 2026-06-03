@@ -20,8 +20,17 @@ A fejlesztés során egy olyan moduláris keretrendszert alakítottam ki, amely 
 \begin{itemize}
     \item \textbf{Véges állapotgép (FSM):} A BSc szakaszban kidolgozott megoldás továbbvitele, ahol az ágensek viselkedését előre rögzített állapotátmeneti szabályok határozzák meg. Bár a módszer stabil, mérnöki szempontból viszont rugalmatlan, mivel nem teszi lehetővé az egyedi adaptációt és az evolúciós fejlődést.
     \item \textbf{Hasznossági alapú döntéshozatal (Utility AI):} Ebben a modellben az ágensek különböző súlyozott szempontok alapján számítják ki az egyes cselekvések várható hasznosságát. A súlyokat egy különálló, genotípust leíró osztály (\texttt{Genome}) tárolja, amely az öröklődés során mutálódni képes. Ez a megközelítés már lehetőséget ad az ökoszisztéma evolúciós fejlődésének megfigyelésére.
-    \item \textbf{Fuzzy Cognitive Map (FCM):} A legkomplexebb alkalmazott módszer, amelyben a döntéshozatalt egy irányított, súlyozott gráf reprezentálja. Itt a belső állapotok és fogalmak egymásra gyakorolt hatása révén apró változások is finom, nem-lineáris viselkedésformákat eredményezhetnek. A rendszer tervezésekor külön figyelmet fordítottam ezen komplex gráfszerkezet hatékony tárolására és az eseményvezérelt architektúrába való integrálására.
+    \item \textbf{Fuzzy Cognitive Map (FCM):} A legkomplexebb alkalmazott módszer, amelyben a döntéshozatalt egy irányított, súlyozott gráf reprezentálja. Itt a belső állapotok és fogalmak egymásra gyakorolt hatása révén apró változások is finom, nem-lineáris viselkedésformákat eredményezhetnek. A rendszer tervezésekor külön figyelmet fordítottam ezen komplex gráfszerkezet hatékony tárolására és az eseményvezérelt architektúrába való integrálására. Az FCM elméleti működését és a komplex, közvetett kauzális összefüggések kezelését egy klasszikus környezetgazdaságtani példán keresztül a \ref{fig:fcm_theoretical_example}. ábra szemlélteti.
 \end{itemize}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fcm_eg.png}
+\caption{Klasszikus Fuzzy Kognitív Térkép elméleti példája: közvetlen és közvetett kauzális kapcsolatok rendszere \cite{Uni26}}
+\label{fig:fcm_theoretical_example}
+\end{figure}
+
+A fenti modellben jól megfigyelhető, hogy az egyes koncepciók nemcsak közvetlenül, hanem közvetett kauzális láncokon keresztül is befolyásolják egymást. Például a mocsaras élőhelyek (\textit{Wetlands}) védelme egyaránt növeli a turizmust és a vízminőség javításán keresztül a halállományt (\textit{Fish}), amelyek végül egymást erősítve, kumulatív módon fejtik ki pozitív hatásukat a teljes gazdasági bevételre (\textit{Income}).
 
 A saját megoldásom újdonsága, hogy ezeket a mechanizmusokat egy egységes, eseményvezérelt Unity-architektúrába integráltam, kiegészítve real-time HTTP alapú naplózással. Ezáltal lehetőség nyílik arra, hogy a statisztikai elemzés során számszerűsíthető legyen az egyes "gondolkodásmódok" hatása a populáció túlélési rátájára és stabilitására.
 

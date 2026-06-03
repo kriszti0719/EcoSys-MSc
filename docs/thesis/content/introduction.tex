@@ -7,6 +7,18 @@ A diplomamunka alapvető motivációja egy olyan digitális laboratórium létre
 
 A projektem gyökerei a BSc képzés idejére nyúlnak vissza, ahol az első ágensalapú modellek implementálása megtörtént. A koncepció kidolgozásakor inspirációként szolgált Sebastian Lague ismert ökoszisztéma-szimulációs projektje, amely rávilágított a Unity3D motorban rejlő lehetőségekre a biológiai modellezés terén.
 
+Az ötletet a klasszikus evolúcióelmélet adta, amelynek egyik legismertebb gyakorlati példája a darwini pintyek csőrmorfológiájának adaptációja a környezeti táplálékforrásokhoz (lásd az \ref{fig:darwin_finches}. ábrát). Elsősorban fizikai és morfológiai jegyek változásán keresztül mutatja be a természetes szelekciót, a jelen diplomamunka egy ettől eltérő, ám valamilyen módon mégis analóg megközelítést alkalmaz. 
+A koncepció elméleti hátterét és a természetes szelekció modellekben betöltött szerepét Purdom is részletesen tárgyalja \cite{Georgia14}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/evolution.png}
+\caption{A darwini pintyek adaptív radiációja: a csőr alakjának változása a táplálkozási specializáció függvényében \cite{Georgia14}}
+\label{fig:darwin_finches}
+\end{figure}
+
+A digitális laboratóriumomban a szelekciós nyomást nem a táplálék fizikai jellege, hanem a ragadozó-préda dinamika, közelebbről a rókák (\textit{Vulpes vulpes}) populációba történő bevezetése jelentette. A szimuláció során a morfológiai átalakulások helyett a viselkedési és fiziológiai tulajdonságok, mint például az ágensek futási sebessége vagy a kockázatvállalási hajlandóságot meghatározó bátorság, transzgenerációs eltolódásait vizsgáltam. A lassú egyedek eliminációja révén a rendszerben egy diszkrét, számszerűsíthető evolúciós nyomás alakult ki, amely kiváló alapot biztosított a későbbi statisztikai elemzésekhez és a komplex döntési folyamatok implementálásához.
+
 Míg a kezdeti inspiráció a vizuális reprezentációra és az alapvető túlélési logikára fókuszált, a saját fejlesztésem hamar túllépett ezen a kereten. Az eddigi megoldásokhoz képest a hangsúly eltolódott a szoftvertechnológiai precizitás, a skálázhatóság és a professzionális adatkezelés irányába. A korábbi monolitikus struktúrát felváltotta egy moduláris felépítés, amely lehetővé tette a komplexebb, fajspecifikus viselkedésformák és az eseményvezérelt működés integrálását.
 
 A dolgozatban bemutatott rendszer egy Unity3D alapú, eseményvezérelt ökoszisztéma-szimuláció. A keretrendszer legfőbb újdonsága a populációgenetikai folyamatok mély integrációja: az egyedek DNS-alapú öröklődési mechanizmusokkal rendelkeznek, amelyek meghatározzák fizikai jellemzőiket és viselkedési stratégiáikat.

@@ -9,7 +9,15 @@ Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét műszaki
 
 A szoftverrendszer nem egyetlen fázisban nyerte el végső formáját. A specifikáció pontos megértéséhez így elengedhetetlen a fejlesztési mérföldkövek áttekintése, meghúzva az éles határvonalat a kiindulópontot jelentő szakdolgozat és a mesterképzés során végzett kutató-fejlesztő munka között:
 
-    \paragraph{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten, merev, determinisztikus (FSM-alapú) döntési logikával és lokális, strukturálatlan adatmentéssel.
+    \paragraph{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten. Rendelkeztek alapszükségletekkel, amit a szimuláció során státusz-jelzőkkel lehetett nyomon követni, ahogy az a \ref{fig:kiindulo}. ábrán is látható. Emellett merev, determinisztikus (FSM-alapú) döntési logikával működtek, a projekt pedig lokális, strukturálatlan adatmentéssel.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/sensor_bunny.png} 
+    \caption{A kiinduló állapot}
+    \label{fig:kiindulo}
+\end{figure}
+
     \paragraph{Továbbfejlesztés és kutatás (MSc fázis):} A mesterképzés során a rendszer teljes körű strukturális és funkcionális metamorfózison ment keresztül. A fejlesztési eredmények az alábbi főbb pillérekre oszthatók:
     \begin{itemize}
         \item \textit{Architekturális refaktorálás:} Megtörtént a „god class” minták felszámolása és a felelősségi körök szétválasztása (Single Responsibility Principle). Az erőforrás-kezelési problémák elhárítására, valamint a komponensek közötti laza csatolás biztosítására a rendszer eseményvezérelt kommunikációs architektúrát kapott.
@@ -41,7 +49,7 @@ A szoftverarchitektúra minőségével szemben támasztott elvárások:
     \item \textbf{Kiterjeszthetőség (Extensibility):} A rendszernek meg kell felelnie az Open/Closed elvnek. Új fajok, tulajdonságok vagy alternatív döntési mechanizmusok bevezetése nem igényelheti a meglévő szimulációs mag módosítását.
     \item \textbf{Teljesítmény és Skálázhatóság:} A szimulációnak stabil képkockasebesség (FPS) mellett kell futnia több száz egyidejűleg aktív ágens jelenléte esetén is. Emiatt a hagyományos, \texttt{Update}-alapú környezetlekérdezést (polling) eseményvezérelt (C\# delegátumokra és eventekre épülő) architektúrával kell megvalósítani.
     \item \textbf{Valós idejűség és Leválasztott I/O:} A statisztikai adatok gyűjtése, formázása és a hálózati HTTP kommunikáció menedzselése nem okozhat mikroszaggatásokat (stuttering) vagy késleltetést a Unity vizuális megjelenítési folyamataiban.
-    \item \textbf{Karbantarthatóság és Alacsony Csatolás (Low Coupling):} Az egyedek vizuális megjelenítésének, fizikai reprezentációjának és belső döntési logikájának szigorúan elválasztott komponensekként kell működniük, elkerülve a korai fejlesztési szakaszokra jellemző monolitikus struktúrákat.
+    \item \textbf{Karbantarthatóság és Low Coupling:} Az egyedek vizuális megjelenítésének, fizikai reprezentációjának és belső döntési logikájának szigorúan elválasztott komponensekként kell működniük, elkerülve a korai fejlesztési szakaszokra jellemző monolitikus struktúrákat.
 \end{itemize}
 
 % 2.4
@@ -88,7 +96,19 @@ A szimulációs keretrendszer megvalósítása komplex szoftverarchitekturális 
 
 \subsection{A Unity játékmotor és a komponens-alapú architektúra}
 
-A szimuláció magját a \textit{Unity} játékmotor képezi. A Unity választását elsősorban a fejlett 3D-s renderelő motorja, a beépített fizikai alrendszere, valamint az objektumorientált, komponens-alapú szoftverfejlesztési paradigmája indokolta.
+A szimuláció vizuális és fizikai alapját a  \textit{Unity3D} motor biztosítja. A fejlesztés során kiemelt szempont volt, hogy a rendszer ne csak futási időben (\textit{runtime}) működjön autonóm módon, hanem a szerkesztőfelületen keresztül (\textit{editor scripting}) is rugalmasan konfigurálható és inicializálható legyen. A szoftver fejlesztői környezetét, a generált 3D-s ökoszisztémát, valamint a komponensek konfigurációs interfészét a \ref{fig:unity}. ábra szemlélteti.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/unity.png} 
+    \caption{A Unity rendszer felépítése}
+    \label{fig:unity}
+\end{figure}
+
+\paragraph{Az editor-szintű komponensvezérlés és ágens-generálás:}
+Amint a \ref{fig:unity}. ábrán megfigyelhető, a komplex szimulációs tér egy tagolt, szigetszerű topológiát formáz, amely megakadályozza az ágensek játéktérről történő lefutását, és természetes határokat szab az ökoszisztémának. A jobb oldali \textit{Inspector} ablakban látható egyedi szkript-komponensek (\texttt{Animal Spawner}, \texttt{Map Generator}) felelősek a futás előtti inicializálásért. 
+
+A rendszer az objektumorientált megközelítést követve a játéktérben lévő entitásokhoz dinamikusan rendeli hozzá a viselkedési és döntéshozatali logikát tartalmazó C\# szkripteket (mint az \texttt{Animal.cs}), miközben a grafikus felületen (\textit{UI Canvas}) keresztül real-time rendereli az egyedek feje felett megjelenő homeosztatikus állapotjelző sávokat (\textit{Stamina, Hunger, Thirst, Mating Urge}).
 
 A hagyományos objektumorientált programozás merev osztályhierarchiáival szemben a Unity a \textbf{Composition over Inheritance} elvét követi a \textbf{színterek (\textit{Scenes})} és \textbf{játékobjektumok (\textit{GameObjects})} szintjén. 
 
@@ -137,7 +157,7 @@ Az adatbázis az adatokat egy REST API-n keresztül, HTTP POST kérések segíts
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.85\textwidth]{figures/line_protocol.png} 
-    \caption{Az InfluxDB Line Protocol felépítése}
+    \caption{Az InfluxDB Line Protocol felépítése \cite{InfluxData26}}
     \label{fig:line_protocol}
 \end{figure}
 
