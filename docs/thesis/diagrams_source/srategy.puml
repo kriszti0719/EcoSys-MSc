@@ -1,0 +1,48 @@
+﻿@startuml
+skinparam monochrome true
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam dpi 300
+skinparam classAttributeIconSize 0
+
+title Strategy tervezési minta - Döntéshozatali architektúra
+
+class Animal {
+    + DecisionController decisionController
+}
+
+class DecisionController {
+    - DecisionMode currentMode
+    - ClassicFSM fsm
+    - UtilityDecision utilityAI
+    - FCMDecision fcm
+    + Status Decide(Animal a)
+}
+
+enum DecisionMode {
+    FSM
+    UTILITY
+    FCM
+}
+
+class ClassicFSM {
+    + Status Decide(Animal a)
+}
+
+class UtilityDecision {
+    + Status Decide(Animal a)
+}
+
+class FCMDecision {
+    - FCMModel model
+    + Status Decide(Animal a)
+}
+
+' Kapcsolatok és asszociációk
+Animal *-- DecisionController : "birtokol (1..1)"
+DecisionController .> DecisionMode : "használja az állapotot"
+DecisionController *-- ClassicFSM : "delegálhat ide"
+DecisionController *-- UtilityDecision : "delegálhat ide"
+DecisionController *-- FCMDecision : "delegálhat ide"
+
+@enduml

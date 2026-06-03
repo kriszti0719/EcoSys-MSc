@@ -310,15 +310,16 @@ public class AnimalEventHandler : MonoBehaviour
 
 Az ökoszisztéma-szimulációban részt vevő ágensek túlélési esélyeit és viselkedésének realizmusát alapvetően meghatározza a döntéshozatali mechanizmusuk. Annak érdekében, hogy a különböző mesterséges intelligencia architektúrák (FSM, Utility AI, FCM) hatékonysága, számítási igénye és populációdinamikára gyakorolt hatása transzparens módon összehasonlítható legyen, a rendszert moduláris, cserélhető struktúrában kellett megtervezni.
 
-A szoftverarchitektúra gerincét egy közös vezérlő, a \texttt{DecisionController} alkotja, amely futásidőben delegálja a döntési feladatokat az enum típusú \texttt{DecisionMode}-nak megfelelően. Ez az úgy nevezett \textit{Strategy tervezési minta}, amely lehetővé teszi, hogy egy objektum (esetünkben az \texttt{Animal} osztály példányai) viselkedését futásidőben dinamikusan változtassuk meg anélkül, hogy magát az osztályt vagy az azt hívó környezetet módosítani kellen
+A szoftverarchitektúra gerincét egy közös vezérlő, a \texttt{DecisionController} alkotja, amely futásidőben delegálja a döntési feladatokat az enum típusú \texttt{DecisionMode}-nak megfelelően. Ez az úgy nevezett \textit{Strategy tervezési minta}, amely lehetővé teszi, hogy egy objektum (esetünkben az \texttt{Animal} osztály példányai) viselkedését futásidőben dinamikusan változtassuk meg anélkül, hogy magát az osztályt vagy az azt hívó környezetet módosítani kellene.
 
 \begin{figure}[h!]
 \centering
-% TODO: Strategy minta, ahol látszik a DecisionController és a három konkrét Decision impl
-% \includegraphics[width=0.85\textwidth]{figures/strategy_pattern.pdf}
-\caption{A döntéshozatali modellek Strategy tervezési mintára épülő struktúrája}
+\includegraphics[width=0.85\textwidth]{figures/strategy_pattern.png}
+\caption{A döntéshozatali modellek Strategy tervezési mintára épülő szoftverstruktúrája}
 \label{fig:strategy_pattern}
 \end{figure}
+
+A \ref{fig:strategy_pattern}. ábrán látható módon a \texttt{DecisionController} kompozíciós kapcsolaton keresztül tokosítja be a három különböző döntési logikát. Bár az egyszerűség és a Unity komponens-életciklusának szoros integrációja miatt a konkrét implementációk nem egy közös interfészből származnak, hanem a vezérlő ágaztatja el őket a \texttt{DecisionMode} állapota szerint, az architektúra funkcionálisan tökéletesen leképezi a Strategy minta alapelvét: a döntési algoritmusok teljesen el vannak szeparálva magától az ágenstől.
 
 Az absztrakció alapját képező központi elágazási logikát és a stratégiák hívását az alábbi implementáció mutatja be:
 
@@ -539,7 +540,7 @@ A \ref{fig:fcm_network}. ábrán látható $\mathit{w}_{0}\dots\mathit{w}_{7}$ j
 
 A szimuláció során ezen súlyok mátrixa nem statikus, hanem a populációgenetikai algoritmus (\texttt{Breeding} és \texttt{Mutation}) révén generációról generációra evolválódik. A környezetileg kedvezőtlen vagy önveszélyes viselkedési mintákat (példából adódóan a ragadozó jelenléte mellett is pozitív vagy semleges $\mathit{w}_{5}$ értékkel rendelkező, vakmerő táplálékszerzést) eredményező súlyok a természetes szelekció során eliminálódnak, mivel az érintett ágensek elhullanak a reprodukciós fázis elérése előtt. Ezzel szemben a túlélést és hatékony erőforrás-menedzsmentet biztosító súlyok átlagolódva öröklődnek az utódokba, lehetőséget biztosítva az ökoszisztéma szintű adaptív stratégiák autonóm kialakulására.
 
-% 4.4
+% 4.6
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A populációgenetikai adatmodell}
 
