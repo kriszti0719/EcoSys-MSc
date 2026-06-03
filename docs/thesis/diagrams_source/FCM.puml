@@ -8,7 +8,7 @@ title Fuzzy kognitív térkép (FCM)
 
 left to right direction
 
-rectangle "Bemeneti réteg (Szenzorok & receptorok)" {
+rectangle "Bemeneti réteg (szenzorok, receptorok)" {
   [Hunger] as IN_Hunger
   [Thirst] as IN_Thirst
   [Energy] as IN_Energy
@@ -16,7 +16,7 @@ rectangle "Bemeneti réteg (Szenzorok & receptorok)" {
   [Mate] as IN_Mate
 }
 
-rectangle "Döntési és akció réteg (Outputs)" {
+rectangle "Döntési és akció réteg (outputs)" {
   [Eat] as OUT_Eat
   [Drink] as OUT_Drink
   [Rest] as OUT_Rest
@@ -24,15 +24,15 @@ rectangle "Döntési és akció réteg (Outputs)" {
   [MateAct] as OUT_MateAct
 }
 
-' Alapvető fiziológiai kapcsolatok
+' Alapvető fiziológiai kapcsolatok:
 IN_Hunger --> OUT_Eat : "w[0]"
 IN_Thirst --> OUT_Drink : "w[1]"
 IN_Energy --> OUT_Rest : "w[2]"
 IN_Fear --> OUT_Flee : "w[3]"
 IN_Mate --> OUT_MateAct : "w[4]"
 
-' Keresztirányú komplex kapcsolatok
-IN_Fear --> OUT_Eat : "w[5] (Kockázat)"
+' Keresztirányú komplex kapcsolatok:
+IN_Fear --> OUT_Eat : "w[5] (kockázat)"
 IN_Energy --> OUT_MateAct : "w[6]"
 IN_Hunger --> OUT_Rest : "w[7]"
 

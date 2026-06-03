@@ -3,6 +3,8 @@ skinparam classAttributeIconSize 0
 skinparam monochrome true
 skinparam shadowing false
 
+title Osztálydiagram
+
 abstract class "MonoBehaviour" as MB
 
 abstract class Animal {
@@ -10,17 +12,12 @@ abstract class Animal {
     + prevStatus : Status
     + targetRef : GameObject
     + rejectedBy : List<GameObject>
-    + spottedThreats : List<GameObject>
-    + species : Species
     + predators : List<Species>
-    + isMale : bool
-    + bravery : int
+    + spottedThreats : List<GameObject>
     --
     + {abstract} getTargetLayerToMate() : int
     + {abstract} getTargetLayerToEat() : int
-    + {abstract} setSpeciesSpecificTraits() : void
     # SetComponents() : void
-    + SetTraits(rnd : float) : void
     + Step() : void
     + Decide() : void
 }
@@ -45,7 +42,7 @@ Animal *--> "1" Reproduction : reproduction
 Animal *--> "1" AnimalEventHandler : animalEventHandler
 
 ' Döntési mechanizmus (Strategy minta)
-Animal --> "1" DecisionController : "alkalmazza"
+Animal --> "1" DecisionController : "(alkalmazza)"
 
 class DecisionController {
     + mode : DecisionMode
