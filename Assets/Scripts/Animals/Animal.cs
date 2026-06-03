@@ -23,7 +23,7 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public Material color;
     [HideInInspector] public List<GameObject> destructibles = new List<GameObject>();
 
-    [HideInInspector] public bool isMale;
+    public bool isMale;
     [HideInInspector] public int bravery;
 
     private int maxOxygen = 10;
@@ -73,8 +73,9 @@ public abstract class Animal : MonoBehaviour
     public void SetTraits(float rnd)
     {
         SetComponents();
-
-        aging.setAging(1, rnd, UnityEngine.Random.Range(4f, 6f));
+        
+        float randomLifeSpan = UnityEngine.Random.Range(4f, 6f);
+        aging.setAging(UnityEngine.Random.Range(1f, randomLifeSpan - 0.5f), rnd, randomLifeSpan);
         bravery = UnityEngine.Random.Range(20, 40);
         movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
         movement.rotSpeed = movement.moveSpeed * 30;
@@ -226,7 +227,7 @@ public abstract class Animal : MonoBehaviour
                         return;
                     }
 
-                    if (status == Status.SEARCH && sensor.targetMask == (1 << getTargetLayerToMate()))
+                    if (status == Status.SEARCH && sensor.targetMask == getTargetLayerToMate())
                     {
                         if (targetRef != null)
                         {
@@ -296,16 +297,13 @@ public abstract class Animal : MonoBehaviour
                         {
                             if (distanceToTarget < 7f)
                             {
-                                reproduction.mate = mateAnimal;
-                                mateAnimal.reproduction.mate = this;
-
-                                mating.Mating();
-                                mateAnimal.mating.Mating();
+                                mating.Mating(mateAnimal);
+                                mateAnimal.mating.Mating(this);
                                 (prevStatus, status) = (Status.WANDER, Status.WANDER);
                                 return;
                             }
                         }
-                        else if (distanceToTarget < 5f)
+                        else if (distanceToTarget < 10f)
                         {
                             if (targetRef.GetComponent<IEdible>() != null)
                             {

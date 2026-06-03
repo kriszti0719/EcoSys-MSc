@@ -107,16 +107,24 @@ public class Movement : MonoBehaviour
 
         int groundLayerMask = LayerMask.GetMask("Island");
 
+        float currentMinDist = MIN_WANDER_DIST;
+        float currentMaxDist = MAX_WANDER_DIST;
+
+        if (animal != null && animal.status == Status.WANDER && Random.value < 0.15f)
+        {
+            currentMinDist = 30f;
+            currentMaxDist = 75f; 
+        }
+
         while (!validPointFound && attempts < 15)
         {
             attempts++;
             float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-            float dist = Random.Range(MIN_WANDER_DIST, MAX_WANDER_DIST);
-            
+            float dist = Random.Range(currentMinDist, currentMaxDist);
+        
             Vector3 offset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * dist;
             Vector3 potentialTarget = transform.position + offset;
 
-            // Raycast down to check the height of the island at that point
             if (Physics.Raycast(new Vector3(potentialTarget.x, 100f, potentialTarget.z), Vector3.down, out RaycastHit hit, 200f, groundLayerMask))
             {
                 if (hit.point.y >= 22f)

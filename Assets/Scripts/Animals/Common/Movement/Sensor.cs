@@ -48,10 +48,23 @@ public class Sensor : MonoBehaviour
         GameObject nearestTarget = null;
         float nearestDistance = Mathf.Infinity;
 
+        if (animal.targetRef != null)
+        {
+            float dist = Vector3.Distance(transform.position, animal.targetRef.transform.position);
+            if (dist <= radius)
+            {
+                nearestTarget = animal.targetRef;
+                nearestDistance = dist;
+            }
+        }
+
         foreach (var targetCollider in rangeChecks)
         {
             Transform target = targetCollider.transform;
             if (animal.rejectedBy.Contains(target.gameObject))
+                continue;
+
+            if (animal.targetRef == target.gameObject)
                 continue;
 
             Animal targetAnimal = target.GetComponent<Animal>();
@@ -61,8 +74,7 @@ public class Sensor : MonoBehaviour
             {
                 float distanceToTarget = Vector3.Distance(transform.position, target.position);
 
-                // Check if the target is the nearest and is not obstructed
-                if (!Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
+                if (distanceToTarget < nearestDistance && !Physics.Raycast(transform.position, directionToTarget, distanceToTarget, obstructionMask))
                 {
                     float camouflage = targetAnimal != null ? targetAnimal.sensor.camouflage : 0f;
                     float detectionChance = 1f - Mathf.Clamp01(camouflage / 100f);
@@ -70,11 +82,8 @@ public class Sensor : MonoBehaviour
                     if (Random.value > detectionChance)
                         continue;
 
-                    if (distanceToTarget < nearestDistance)
-                    {
-                        nearestTarget = target.gameObject;
-                        nearestDistance = distanceToTarget;
-                    }
+                    nearestTarget = target.gameObject;
+                    nearestDistance = distanceToTarget;
                 }
             }
         }
