@@ -1,66 +1,179 @@
-\chapter{Specifikáció}
-\label{chap:elemzes}
+\chapter{Specifikáció és felhasznált technológiák}
+\label{chap:specifikacio}
 
 Ebben a fejezetben a diplomaterv kitűzött céljait bontom le konkrét műszaki követelményekre. A feladat nem csupán egy működő szimuláció elkészítése, hanem egy olyan keretrendszer kialakítása, amely szoftvertechnológiai szempontból is megállja a helyét.
 
+% 2.1
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{A fejlesztési folyamat evolúciója}
+
+A szoftverrendszer nem egyetlen fázisban nyerte el végső formáját. A specifikáció pontos megértéséhez így elengedhetetlen a fejlesztési mérföldkövek áttekintése, meghúzva az éles határvonalat a kiindulópontot jelentő szakdolgozat és a mesterképzés során végzett kutató-fejlesztő munka között:
+
+    \paragraph{Kiindulási állapot (BSc fázis):} Egy egyszerűsített, monolitikus architektúrájú szimuláció, amely kizárólag egyetlen préda faj (nyulak) jelenlétét kezelte egy kódgenerált szigeten. Rendelkeztek alapszükségletekkel, amit a szimuláció során státusz-jelzőkkel lehetett nyomon követni, ahogy az a \ref{fig:kiindulo}. ábrán is látható. Emellett merev, determinisztikus (FSM-alapú) döntési logikával működtek, a projekt pedig lokális, strukturálatlan adatmentéssel.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/sensor_bunny.png} 
+    \caption{A kiinduló állapot}
+    \label{fig:kiindulo}
+\end{figure}
+
+    \paragraph{Továbbfejlesztés és kutatás (MSc fázis):} A mesterképzés során a rendszer teljes körű strukturális és funkcionális metamorfózison ment keresztül. A fejlesztési eredmények az alábbi főbb pillérekre oszthatók:
+    \begin{itemize}
+        \item \textit{Architekturális refaktorálás:} Megtörtént a „god class” minták felszámolása és a felelősségi körök szétválasztása (Single Responsibility Principle). Az erőforrás-kezelési problémák elhárítására, valamint a komponensek közötti laza csatolás biztosítására a rendszer eseményvezérelt kommunikációs architektúrát kapott.
+        \item \textit{Ökoszisztéma-modell bővítése:} Bevezetésre került a ragadozó faj (rókák), amely maga után vonta az új érzékelési, menekülési és vadászati algoritmusok implementálását. Az ágensek biológiai modellje életerő-alapú (health-based) rendszerrel, valamint új, generációkon át öröklődő fenotípusos tulajdonságokkal (pl. álcázás, bátorság...) egészült ki.
+        \item \textit{Döntési architektúrák absztrakciója:} A merev FSM-en túlmutatóan kiépítésre került a hasznossági alapú (Utility-based AI), valamint a Fuzzy Kognitív Térkép (FCM) elvén működő döntési mechanizmus. A három különböző gondolkodásmód stabil, a szimuláció indításakor szabadon konfigurálható, párhuzamosan futtatható és egymással versenyeztethető ágens-architektúrává vált.
+        \item \textit{Elosztott telemetria és adatgyűjtés:} A kezdeti lokális, fájlalapú (CSV) naplózást egy modern, elosztott telemetria-rendszer váltotta fel. A szimulációs adatok valós időben, aszinkron HTTP kliensen keresztül továbbítódnak egy külső idősoros adatbázisba (InfluxDB), az adatok tudományos igényű vizualizációját és elemzését pedig egy dedikált Grafana dashboard látja el.
+    \end{itemize}
+
+% 2.2
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Funkcionális követelmények}
 
-A rendszernek a következő alapvető funkciókat kell ellátnia:
+A fenti evolúciós folyamat eredményeképpen a lezárt mérnöki rendszernek a következő funkcionális követelményeket kell teljesítenie:
 
 \begin{itemize}
-    \item \textbf{Ágensalapú szimulációs környezet:} A Unity3D motoron belül egy lehatárolt, 3D-s élettér biztosítása, ahol az egyedek interakcióba léphetnek egymással és a környezettel.
-    \item \textbf{Többszintű populációdinamika:} Legalább két faj (préda és ragadozó) jelenléte, amelyek életciklusuk során táplálkoznak, szaporodnak és elpusztulnak.
-    \item \textbf{Genetikai öröklődés modellje:} Az egyedek tulajdonságainak (sebesség, látótávolság, energiafelhasználás) genotípus alapú tárolása és mutációval kombinált átörökítése az utódokba.
-    \item \textbf{Eseménykezelés és naplózás:} A szimuláció során bekövetkező releváns események (születés, halál, vadászat) detektálása és strukturált formában történő rögzítése.
-    \item \textbf{Külső adatkapcsolat:} A kinyert adatok HTTP protokollon keresztül történő továbbítása egy külső tároló/elemző egység felé.
+    \item \textbf{Többszintű populációdinamika és interakciók:} Legalább két egymásra utalt faj (préda és ragadozó) egyidejű szimulációja folyamatos térbeli interakciókkal (táplálkozás, vadászat, szaporodás, elhullás...).
+    \item \textbf{Dinamikusan cserélhető döntési architektúra:} Az ágensek számára biztosítani kell a lehetőséget, hogy három különböző logikai struktúra (Véges állapotgép, Hasznossági modell, vagy Fuzzy Kognitív Térkép) szerint hozzák meg döntéseiket, lehetővé téve ezen mechanizmusok közvetlen összehasonlítását.
+    \item \textbf{Genetikai öröklődés és mutáció:} Az egyedek fizikai tulajdonságai (sebesség, látótávolság) és döntési paraméterei (súlyok, gráf-élek) genotípus alapú (\texttt{Genome}) tárolása, kombinálása és mutációval kísért átörökítése az utódokba.
+    \item \textbf{Aszinkron külső adatkapcsolat:} A szimuláció futása közben keletkező események (születés, elhullási okok, populációméret, genetikai drift...) strukturált, valós idejű továbbítása külső tároló felé, a szimulációs főszál blokkolása nélkül.
 \end{itemize}
 
-Fontos kiemelni, hogy a fenti követelményekből a BSc projekt során az ágensalapú környezet alapjai és egy kezdeti préda-populáció (nyulak) modellje készült el. Ebben a fázisban már megjelentek az örökölhető tulajdonságok, azonban a rendszer architektúrája még monolitikus volt, és a szimuláció kizárólag egyetlen faj túlélési stratégiáit vizsgálta zárt környezetben.
-
-A jelenlegi munka során az alábbi követelmények teljesítése jelenti az előrelépést:
-\vspace{0.3cm}
-\begin{itemize}
-    \item A \textbf{ragadozó faj (rókák)} bevezetése, amely megteremti a valódi populációdinamikai interakciókat.
-    \item A rendszer \textbf{teljes refaktorálása} moduláris, eseményvezérelt architektúrává, megszüntetve a korábbi kódminta strukturális hiányosságait.
-    \item \textbf{Logolás és a külső adatbázis-kapcsolat (InfluxDB, Grafana)} implementálása, amely korábban statikus fájl alapú vagy hiányzó funkció volt.
-\end{itemize}
-
+% 2.3
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Nem-funkcionális követelmények}
 
-A szoftver minőségére vonatkozó elvárások:
+A szoftverarchitektúra minőségével szemben támasztott elvárások:
 
 \begin{itemize}
-    \item \textbf{Kiterjeszthetőség (Extensibility):} Az architektúrának lehetővé kell tennie új fajok vagy viselkedésminták hozzáadását a meglévő kód bázis minimális módosításával (Open/Closed Principle).
-    \item \textbf{Teljesítmény, skálázhatóság és valós idejűség:} A szimulációnak stabil képkockasebesség mellett kell futnia több száz aktív ágens jelenléte esetén is. Ehhez szükséges az állapotellenőrzések (polling) kiváltása eseményvezérelt logikával, biztosítva, hogy a statisztikai adatok gyűjtése és külső adatbázisba továbbítása ne okozzon észrevehető akadást vagy késleltetést a vizuális megjelenítésben.
-    \item \textbf{Karbantarthatóság:} A BSc szakaszban azonosított „god class” struktúra felszámolása, a felelősségi körök szétválasztása (Single Responsibility Principle).
+    \item \textbf{Kiterjeszthetőség (Extensibility):} A rendszernek meg kell felelnie az Open/Closed elvnek. Új fajok, tulajdonságok vagy alternatív döntési mechanizmusok bevezetése nem igényelheti a meglévő szimulációs mag módosítását.
+    \item \textbf{Teljesítmény és Skálázhatóság:} A szimulációnak stabil képkockasebesség (FPS) mellett kell futnia több száz egyidejűleg aktív ágens jelenléte esetén is. Emiatt a hagyományos, \texttt{Update}-alapú környezetlekérdezést (polling) eseményvezérelt (C\# delegátumokra és eventekre épülő) architektúrával kell megvalósítani.
+    \item \textbf{Valós idejűség és Leválasztott I/O:} A statisztikai adatok gyűjtése, formázása és a hálózati HTTP kommunikáció menedzselése nem okozhat mikroszaggatásokat (stuttering) vagy késleltetést a Unity vizuális megjelenítési folyamataiban.
+    \item \textbf{Karbantarthatóság és Low Coupling:} Az egyedek vizuális megjelenítésének, fizikai reprezentációjának és belső döntési logikájának szigorúan elválasztott komponensekként kell működniük, elkerülve a korai fejlesztési szakaszokra jellemző monolitikus struktúrákat.
 \end{itemize}
 
+% 2.4
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A szimulációs paraméterek specifikációja}
 
 A pontosabb elemzés érdekében rögzíteni kell azokat a változókat, amelyeket a rendszernek kezelnie kell. A szimuláció bemeneti adatait és a vizsgált változók rendszerezett listáját a \ref{table:parameters}. táblázat foglalja össze.
 
 \begin{table}[h!]
 \centering
-\begin{tabular}{|l|l|}
+\begin{tabular}{|l|p{10.5cm}|}
 \hline
 \textbf{Kategória} & \textbf{Paraméterek} \\ \hline
-Környezet & Terület mérete, táplálék (fű) újratermelődési rátája. \\ \hline
-Egyed (Genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb. \\ \hline
-Populáció & Kezdeti egyedszám, mutációs ráta. \\ \hline
-Rendszer & Logolási gyakoriság, szimulációs időlépték (Timescale). \\ \hline
+Környezet & Terület mérete, táplálék (fű) újratermelődési rátája \\ \hline
+Egyed (genetika) & Mozgási sebesség, látómező szöge/távolsága, éhségküszöb \\ \hline
+Új genetikai jegyek & Lopakodás (\textit{stealth}), álcázás (\textit{camouflage}), bátorság (\textit{bravery}) \\ \hline
+Populáció & Kezdeti egyedszám, mutációs ráta, választott gondolkodásmód \\ \hline
+Rendszer & Logolási gyakoriság, szimulációs időlépték (\textit{Timescale}), \newline InfluxDB kliens beállítások \\ \hline
 \end{tabular}
-\caption{A szimuláció kulcsparaméterei}
+\caption{A szimuláció bővített kulcsparaméterei}
 \label{table:parameters}
 \end{table}
 
-A táblázatban felsorolt paraméterek finomhangolása alapvetően meghatározza a szimulált ökoszisztéma stabilitását. Például a mutációs ráta és a kezdeti populációméret közötti egyensúly kritikus a természetes szelekció modellezésekor.
+A táblázatban felsorolt paraméterek finomhangolása alapvetően meghatározza a szimulált ökoszisztéma stabilitását. A jelenlegi fázis célja éppen ezen paraméterek hosszú távú hatásainak vizsgálata a különböző döntési architektúrák tükrében.
 
+% 2.5
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Felhasználói esetek (Use Cases)}
 
 A rendszer elsődleges felhasználója a kutató/hallgató, aki a következő műveleteket végzi:
 \begin{enumerate}
-	\item  \textbf{Konfiguráció:} A szimuláció indítása előtt beállítja a kezdőparamétereket.
-	\item \textbf{Megfigyelés:} Valós időben követi a vizuális térben zajló folyamatokat.
-	\item \textbf{Elemzés:} A futás után vagy alatt a generált grafikonok és statisztikák alapján következtetéseket von le a populáció életképességéről.
+	\item \textbf{Konfiguráció:} A szimuláció indítása előtt megválasztja a környezeti paramétereket, a kezdeti egyedszámokat és az ágensek által használt specifikus döntési modellt (FSM, Utility, FCM).
+
+	\textbf{Megfigyelés:} Valós időben, 3D-s környezetben követi a vizuális térben zajló populációdinamikai folyamatokat és egyedi interakciókat.
+
+	\item \textbf{Valós idejű elemzés:} A szimuláció futásával párhuzamosan, a külső Grafana dashboardon megjelenő valós idejű idősoros grafikonok és statisztikák (pl. átlagéletkor, elhullási okok aránya, genetikai értékek eloszlása) alapján kiértékeli a választott döntési rendszer stabilitását.
 \end{enumerate}
-% SF: ha ki tudod egészíteni kisebb al use case-ekkel a fentieket, akkor egy use case diagram is készíthető a fentiekből, egyébként mivel kevés use case van, nem szükséges
+
+% 2.6
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\section{Felhasznált technológiák}
+
+A szimulációs keretrendszer megvalósítása komplex szoftverarchitekturális döntéseket igényelt. Mivel a projekt célja nemcsak egy elméleti populációdinamikai modell felállítása, hanem egy vizuálisan is követhető, valós idejű telemetriával ellátott 3D környezet létrehozása volt, a fejlesztés során az iparágban elterjedt, nagy teljesítményű eszközök integrációjára volt szükség.
+
+\subsection{A Unity játékmotor és a komponens-alapú architektúra}
+
+A szimuláció vizuális és fizikai alapját a  \textit{Unity3D} motor biztosítja. A fejlesztés során kiemelt szempont volt, hogy a rendszer ne csak futási időben (\textit{runtime}) működjön autonóm módon, hanem a szerkesztőfelületen keresztül (\textit{editor scripting}) is rugalmasan konfigurálható és inicializálható legyen. A szoftver fejlesztői környezetét, a generált 3D-s ökoszisztémát, valamint a komponensek konfigurációs interfészét a \ref{fig:unity}. ábra szemlélteti.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/unity.png} 
+    \caption{A Unity rendszer felépítése}
+    \label{fig:unity}
+\end{figure}
+
+\paragraph{Az editor-szintű komponensvezérlés és ágens-generálás:}
+Amint a \ref{fig:unity}. ábrán megfigyelhető, a komplex szimulációs tér egy tagolt, szigetszerű topológiát formáz, amely megakadályozza az ágensek játéktérről történő lefutását, és természetes határokat szab az ökoszisztémának. A jobb oldali \textit{Inspector} ablakban látható egyedi szkript-komponensek (\texttt{Animal Spawner}, \texttt{Map Generator}) felelősek a futás előtti inicializálásért. 
+
+A rendszer az objektumorientált megközelítést követve a játéktérben lévő entitásokhoz dinamikusan rendeli hozzá a viselkedési és döntéshozatali logikát tartalmazó C\# szkripteket (mint az \texttt{Animal.cs}), miközben a grafikus felületen (\textit{UI Canvas}) keresztül real-time rendereli az egyedek feje felett megjelenő homeosztatikus állapotjelző sávokat (\textit{Stamina, Hunger, Thirst, Mating Urge}).
+
+A hagyományos objektumorientált programozás merev osztályhierarchiáival szemben a Unity a \textbf{Composition over Inheritance} elvét követi a \textbf{színterek (\textit{Scenes})} és \textbf{játékobjektumok (\textit{GameObjects})} szintjén. 
+
+\begin{itemize}
+    \item \textbf{GameObject:} A Unity színtér legkisebb atomi egysége, amely önmagában nem hordoz semmilyen specifikus viselkedést vagy vizuális reprezentációt. Egy üres konténerként funkcionál, amelynek egyetlen kötelező tulajdonsága a térbeli pozíciót, forgatást és skálázást leíró \texttt{Transform} komponens.
+    \item \textbf{Component:} Az objektumok funkcionalitását a hozzájuk csatolt komponensek határozzák meg. Egy ágens esetében külön komponens felel a vizuális megjelenítésért (\texttt{MeshRenderer}), a térbeli ütközések detektálásáért (\texttt{Collider}), valamint például a mesterséges intelligencia döntési logikájáért. Ez a moduláris felépítés rendkívül rugalmas fejlesztést tesz lehetővé, hiszen az ágensek tulajdonságai dinamikusan, futásidőben is változtathatók (pl. új komponens hozzáadásával vagy eltávolításával).
+\end{itemize}
+
+\paragraph{MonoBehaviour életciklus és működési mechanizmus}~\\
+
+A Unity-ben írt egyedi szkriptek mindegyike a natív \texttt{MonoBehaviour} alaposztályból öröklődik. Ez az osztály biztosítja a hidat a C\# kód és a Unity belső, C++ alapú motorja között. A \texttt{MonoBehaviour} alapú komponensek egy szigorúan meghatározott, eseményvezérelt életciklus-függvénymátrix alapján futnak, amelyet a Unity fő végrehajtási szála (\textit{Main Thread}) menedzsel.
+
+A szimuláció szempontjából a legfontosabb életciklus-fázisok a következők:
+\begin{itemize}
+    \item \textbf{\texttt{Awake()} és \texttt{Start()}:} Az objektum inicializálásakor, pontosan egyszer lefutó függvények. A rendszer itt építi fel a belső referenciákat (például az ágens itt kéri le a saját \texttt{Sensor} vagy \texttt{Eat} komponenseinek referenciáit).
+    \item \textbf{\texttt{Update()}:} Minden egyes renderelési képkockánál (\textit{frame}) egyszer meghívódó ciklus. Itt zajlanak a nem-fizikai kalkulációk, mint például az ágensek belső állapotának mintavételezése vagy a bemeneti perifériák kezelése. Futási gyakorisága hardverfüggő (változó FPS).
+    \item \textbf{\texttt{FixedUpdate()}:} A \texttt{Update()}-tal ellentétben ez a ciklus determinisztikus, fix időközönként hívódik meg (alapértelmezetten $0.02$ másodpercenként), teljesen függetlenül a renderelési képkockasebességtől. A szimuláció fizikai interakciói – mint a sugárkövetéses látómező-ellenőrzés (\texttt{Physics.Raycast}) és a mozgásvektorok kiszámítása – ebben a ciklusban futnak a konzisztens fizikai viselkedés biztosítása érdekében.
+\end{itemize}
+
+\subsection{C\# szkriptelés és menedzselt futtatókörnyezet}
+
+A Unity elsődleges programozási nyelve a \textit{C\#}, amely a modern, típusbiztos és nagy teljesítményű szoftverfejlesztés alapköve. A Unity a \textit{Mono} vagy az \textit{IL2CPP} (\textit{Intermediate Language to C++}) keresztfordító technológiát használja a kód futtatására. 
+
+A szimulációs szoftver tervezése során a C\# nyelv számos fejlett funkcióját ki kellett aknázni:
+\begin{itemize}
+    \item \textbf{Eseményvezérelt architektúra (\textit{Events, Actions}):} Az ágensek közötti és a belső rendszerek közötti kommunikáció leválasztott módon, C\# \texttt{event}-eken keresztül valósul meg.
+
+Például, amikor egy ágens éhsége eléri a kritikus szintet, az \texttt{Eat} komponens kivált egy \texttt{OnHungerCritical} eseményt, amelyre az \texttt{AnimalEventHandler} iratkozik fel, és módosítja az ágens globális állapotát. Ez megakadályozza a komponensek közötti káros szoros kötődést.
+
+    \item \textbf{Polimorfizmus és absztrakció:} Az ökoszisztéma különböző fajai (pl. \texttt{Bunny}, \texttt{Fox}) egy közös absztrakt \texttt{Animal} alaposztályból származnak, megosztva az alapvető létfenntartó logikákat, de egyedileg felüldefiniálva a specifikus tulajdonságokat, mint a préda-ragadozó maszkok vagy a fajspecifikus táplálkozási rétegek.
+    \item \textbf{Memóriakezelés és a Garbage Collector terhelése:} Mivel a szimuláció során folyamatosan ágensek születnek és halnak meg, a memóriafoglalások optimalizálása kritikus. A C\# menedzselt környezetéből adódó automatikus szemétgyűjtés futás közbeni mikroakadásokat (\textit{GC spike}) okozhat. Ennek elkerülésére a rendszer minimalizálja a futásidőben történő dinamikus memóriafoglalásokat (\textit{heap allocation}), előnyben részesítve a struktúrák használatát és a fix tömbméreteket.
+\end{itemize}
+
+\subsection{InfluxDB idősör-adatbázis}
+\label{subsec:influxdb}
+Az InfluxDB egy nyílt forráskódú, kifejezetten idősör-adatok (\textit{Time Series Data}) tárolására és elemzésére optimalizált NoSQL adatbázis-rendszer. A hagyományos relációs adatbázisokkal vagy a strukturálatlan CSV fájlokkal szemben az InfluxDB belső felépítése (\textit{Time-Structured Merge Tree}) úgy lett kialakítva, hogy másodpercenként akár több százezer írási műveletet is képes legyen feldolgozni minimális erőforrás-igénnyel. 
+
+Az adatbázis az adatokat egy REST API-n keresztül, HTTP POST kérések segítségével, úgynevezett \textit{Line Protocol} formátumban fogadja. Ez egy szigorúan meghatározott, szöveges alapú formátum, amely minimalizálja a hálózati overheadet. Egy rögzített adatpont elméleti szerkezete a következő elemekből áll:
+\begin{itemize}
+    \item \textbf{Measurement (Mérés):} A relációs adatbázisok táblaneveivel analóg strukturális elem, amely meghatározza a rögzíteni kívánt esemény vagy metrika alapvető kontextusát.
+    \item \textbf{Tag-ek (Címkék):} Kulcs-érték párok formájában megadott metaadatok, amelyeket az InfluxDB \textbf{automatikusan indexel}. Mivel az indexelés miatt ezeken a mezőkön a lekérdezések futási ideje konstans vagy logaritmikus, ide a diszkrét, kategorizálható tulajdonságokat érdemes helyezni. A tag-ek értékei mindig sztring típusúak.
+    \item \textbf{Field-ek (Mezők):} Kulcs-érték párok, amelyek a \textbf{ténylegesen mért, folyamatosan változó célértékeket} hordozzák. A mezők értékei nem indexeltek, de rajtuk matematikai és statisztikai aggregációk (átlagolás, minimum- és maximumkeresés) végezhetők. Értékük lehet lebegőpontos szám, egész szám, logikai érték vagy sztring.
+    \item \textbf{Timestamp (Időbélyeg):} Az esemény bekövetkezésének pontos ideje UNIX időbélyeg formátumban.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/line_protocol.png} 
+    \caption{Az InfluxDB Line Protocol felépítése \cite{InfluxData26}}
+    \label{fig:line_protocol}
+\end{figure}
+
+A szintaxis szempontjából kritikus pont a \textbf{szóköz karakterek} elhelyezkedése: az első szóköz választja el az indexelt metaadatokat (Measurement és Tag-ek) a nem indexelt értékektől (Field-ek), míg a második szóköz különíti el a mezőket a záró időbélyegtől. A Tag-ek és Field-ek listáján belüli elemeket vesszővel (\texttt{,}), a kulcs-érték párokat pedig egyenlőségjellel (\texttt{=}) kell elválasztani, szóközök nélkül.
+
+A Unity és az InfluxDB integrációját egy aszinkron, korutin-alapú (\texttt{IEnumerator}) hálózati kliens valósítja meg, amely a \texttt{UnityWebRequest} könyvtár segítségével, a háttérben küldi el az összegyűjtött adatokat, így az hálózati I/O műveletek nem blokkolják a Unity fő futási szálát (\textit{Main Thread}). A konkrét implementációt majd a \ref{subsec:tervezes_line_protocol}. fejezet mutatja be részletesebben.
+
+Az így kiküldött adatok közvetlenül az InfluxDB \texttt{bucket}-jébe\footnote{Az InfluxDB kontextusában a \textit{bucket} egy logikai adattároló egység (analóg a relációs adatbázisok adatbázis-fogalmával), amely meghatározott adatmegőrzési szabályokkal (\textit{Retention Policy}) rendelkezik, és idősoros adatok (\textit{time series data}) strukturált tárolására szolgál.} kerülnek, ahonnan a Grafana dashboardok valós időben, másodperces felbontással képesek kirajzolni a populáció túlélési és adaptációs grafikonjait.
+
+\subsection{Grafana analitikai és vizualizációs platform}
+
+Míg az InfluxDB a nagy sebességű adattárolásért felel, addig a gyűjtött adatok valós idejű monitorozását, aggregációját és vizuális elemzését a \textit{Grafana} biztosítja. A Grafana egy nyílt forráskódú, multiplatform analitikai és dashboard-tervező szoftver, amely natív módon, optimalizált lekérdezéseken keresztül képes kapcsolódni az InfluxDB adatforráshoz.
+
+A szimulációs keretrendszerben a Grafana alkalmazása több szempontból is kritikus mérnöki döntés volt:
+\begin{itemize}
+    \item \textbf{Valós idejű megfigyelés (\textit{Real-time Dashboards}):} A kutató vagy felhasználó anélkül követheti nyomon a populációk állapotát, az átlagos éhségszinteket vagy a mutációs ráták alakulását, hogy meg kellene szakítania a szimuláció futását. A Grafana automatikusan, előre definiált időközönként frissíti a grafikonokat.
+    \item \textbf{Komplex adatelemzés Flux lekérdezőnyelvvel:} A Grafana felületén az InfluxDB \textit{Flux} funkcionális adatlekérdező nyelve segítségével bonyolult aggregációk és matematikai statisztikák is kiszámíthatók futásidőben (például mozgóátlagok számítása az ágensek sebességére, vagy a halálokok százalékos megoszlása egy adott időablakban).
+    \item \textbf{Rendszerfüggetlen kiértékelés:} Mivel a Grafana egy böngészőből elérhető webes felületet biztosít, a szimuláció vizuális analizálása teljesen leválasztható a Unity-t futtató hardver erőforrásairól. Ez lehetővé teszi, hogy a szimuláció akár egy headless szerveren vagy külön szálon fusson, míg a kiértékelés egy külső monitoron vagy eszközön történik.
+\end{itemize}

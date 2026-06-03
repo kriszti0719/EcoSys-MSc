@@ -1,0 +1,46 @@
+﻿@startuml
+skinparam sequenceMessageAlign center
+skinparam monochrome true
+skinparam shadowing false
+
+title Szekvenciadiagram - Kritikus éhség szint kezelése
+
+autonumber "<b>[0]"
+
+box "Ágens keretrendszer" #F9F9F9
+actor "Unity Engine" as Engine
+participant "Animal" as A
+participant "AnimalEventHandler" as AEH
+end box
+
+box "Fiziológiai komponensek" #FFF
+participant "Eat" as E
+participant "Sensor" as S
+end box
+
+== Init (feliratkozás) ==
+A -> A : Subscribe()
+activate A
+A -> E : += OnHungerCritical
+A -> AEH : Delegálás: HandleHungerCritical
+deactivate A
+
+== Időléptetés és esemény triggerelés ==
+Engine -> A : Step()
+activate A
+A -> E : Step()
+activate E
+
+note over E: Éhség szint kritikus alá csökken...\n(currentHunger < critical)
+
+E -> A : OnHungerCritical.Invoke()
+activate A
+A -> AEH : HandleHungerCritical()
+activate AEH
+note over AEH: Logika lefutása\n(azonnal élelem keresésre vált)
+AEH --> A
+deactivate AEH
+deactivate A
+deactivate E
+deactivate A
+@enduml
