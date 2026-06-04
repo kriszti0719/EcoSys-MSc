@@ -2,10 +2,18 @@ using System;
 
 public class UtilityGenome
 {
-    public float hungerWeight = 1f;
-    public float thirstWeight = 1f;
-    public float energyWeight = 1f;
-    public float mateWeight = 1f;
+    public float hungerWeight;
+    public float thirstWeight;
+    public float energyWeight;
+    public float mateWeight;
+
+    public UtilityGenome()
+    {
+        hungerWeight = UnityEngine.Random.Range(0.5f, 1.5f);
+        thirstWeight = UnityEngine.Random.Range(0.5f, 1.5f);
+        energyWeight = UnityEngine.Random.Range(0.5f, 1.5f);
+        mateWeight = UnityEngine.Random.Range(0.5f, 1.5f);
+    }
 
     public UtilityGenome Clone()
     {

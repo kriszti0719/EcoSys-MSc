@@ -316,13 +316,13 @@ public class AnimalSpawner : Spawner
         {
             if (animal.species == Species.BUNNY)
             {
-                capsuleCollider.height = (float)(2.5 / currentAnimalSize);
-                capsuleCollider.radius = (float)(2.5 / currentAnimalSize);
+                capsuleCollider.height = (float)(0.7);
+                capsuleCollider.radius = (float)(0.7);
             }
             else if (animal.species == Species.FOX)
             {
-                capsuleCollider.height = (float)(8 / currentAnimalSize);
-                capsuleCollider.radius = (float)(8 / currentAnimalSize);
+                capsuleCollider.height = (float)(7);
+                capsuleCollider.radius = (float)(7);
             }
         }
         else

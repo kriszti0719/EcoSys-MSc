@@ -14,6 +14,8 @@ public static class DebugLogger
     private static string filePathDeath;
     private static string filePathPopulation;
     private static string filePathFood;
+    private static string filePathUtility;
+    private static string filePathFCM;
     private static string timestamp;
 
     public static void setLogPath()
@@ -28,7 +30,7 @@ public static class DebugLogger
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
-
+            
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
                 writer.WriteLine("Step;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
@@ -45,6 +47,26 @@ public static class DebugLogger
             Info(filePathPopulation);
             Info(filePathFood);
             Info(filePathDeath);
+
+            if (DecisionController.GlobalMode == DecisionMode.Utility)
+            {
+                filePathUtility = Path.Combine(dataDirectory, $"{timestamp}_Utility.csv");
+                using (StreamWriter writer = new StreamWriter(filePathUtility))
+                {
+                    writer.WriteLine("Animal;Hunger;Thirst;Energy;Mate");
+                }
+                Info(filePathUtility);
+            }
+
+            if (DecisionController.GlobalMode == DecisionMode.FCM)
+            {
+                filePathFCM = Path.Combine(dataDirectory, $"{timestamp}_FCM.csv");
+                using (StreamWriter writer = new StreamWriter(filePathFCM))
+                {
+                    writer.WriteLine("Animal;Weights");
+                }
+                Info(filePathFCM);
+            }
         }
     }
     public enum LogLevel { Off, Error, Warn, Notice, Info }
@@ -112,6 +134,31 @@ public static class DebugLogger
             writer.WriteLine(dataLine);
             
             // RegisterDeathToDb(step, animal);
+        }
+
+        if (DecisionController.GlobalMode == DecisionMode.Utility)
+        {
+            using (StreamWriter wirter = new StreamWriter(filePathUtility, true))
+            {
+                string dataLine = $"{animal.name};" +
+                                  $"{animal.utilityGenome.hungerWeight};" +
+                                  $"{animal.utilityGenome.thirstWeight};" +
+                                  $"{animal.utilityGenome.energyWeight};" +
+                                  $"{animal.utilityGenome.mateWeight}"
+                                  ;
+                wirter.WriteLine(dataLine);
+            }
+        }
+
+        if (DecisionController.GlobalMode == DecisionMode.FCM)
+        {
+            using (StreamWriter wirter = new StreamWriter(filePathFCM, true))
+            {
+                string dataLine = $"{animal.name};" +
+                                  $"{string.Join(",", animal.fcmGenome.weights)}"
+                                  ;
+                wirter.WriteLine(dataLine);
+            }
         }
 
     }
