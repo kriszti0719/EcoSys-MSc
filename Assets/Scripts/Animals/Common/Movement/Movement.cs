@@ -35,7 +35,10 @@ public class Movement : MonoBehaviour
             targetPosition = animal.targetRef.transform.position;
             hasTarget = true;
         }
-        else if (animal.status == Status.WANDER || animal.status == Status.SEARCH)
+        else if (animal.status == Status.WANDER || 
+                 animal.status == Status.SEARCH_FOOD || 
+                 animal.status == Status.SEARCH_DRINK || 
+                 animal.status == Status.SEARCH_MATE)
         {
             UpdateWander();
         }
@@ -73,7 +76,6 @@ public class Movement : MonoBehaviour
 
             if (distance > 0)
             {
-                // Weigh closer threats more (1/distance^2 or 1/distance)
                 weightedFleeVector += directionAway.normalized / distance;
             }
         }

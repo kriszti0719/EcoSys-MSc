@@ -25,11 +25,10 @@ public class UtilityDecision
 
         if (max == restU) return Status.REST;
 
-        if (max == eatU) a.setTargetLayerToEat();
-        else if (max == drinkU) a.sensor.targetMask = LayerMask.GetMask("Drink");
-        else a.setTargetLayerToMate();
-
-        return Status.SEARCH;
+        if (max == eatU) return Status.SEARCH_FOOD;
+        if (max == drinkU) return Status.SEARCH_DRINK;
+        
+        return Status.SEARCH_MATE;
     }
 
 }

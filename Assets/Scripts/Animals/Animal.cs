@@ -254,61 +254,56 @@ public abstract class Animal : MonoBehaviour
             }
         }
 
+        Status nextStatus = aiController.Decide(this);
+
+        if ((nextStatus == Status.REST || nextStatus == Status.FLEE) && status != nextStatus)
+        {
+            (prevStatus, status) = (status, nextStatus);
+            targetRef = null;
+            sensor.targetMask = LayerMask.GetMask("None");
+            return;
+        }
+
         switch (status)
         {
-            case Status.SEARCH:
+            case Status.SEARCH_FOOD:
+            case Status.SEARCH_DRINK:
+            case Status.SEARCH_MATE:
             case Status.WANDER:
+            case Status.REST:
                 {
-                    if (rest.ChanceToRest())
+                    if (nextStatus == Status.SEARCH_FOOD || nextStatus == Status.SEARCH_DRINK || nextStatus == Status.SEARCH_MATE)
                     {
-                        (prevStatus, status) = (status, Status.REST);
-                        return;
+                        status = nextStatus;
+                        if (status == Status.SEARCH_FOOD) setTargetLayerToEat();
+                        else if (status == Status.SEARCH_DRINK) sensor.targetMask = LayerMask.GetMask("Drink");
+                        else if (status == Status.SEARCH_MATE) setTargetLayerToMate();
+                    }
+                    else if (nextStatus == Status.WANDER)
+                    {
+                        status = Status.WANDER;
+                        sensor.targetMask = LayerMask.GetMask("None");
                     }
 
-                    if (status == Status.SEARCH && sensor.targetMask == getTargetLayerToMate())
+                    if (status == Status.SEARCH_MATE && targetRef != null)
                     {
-                        if (targetRef != null)
+                        Animal targetedMate = targetRef.GetComponent<Animal>();
+                        if (targetedMate == null || targetedMate.isMale == this.isMale || !targetedMate.mating.IsAcceptable(this))
                         {
-                            Animal targetedMate = targetRef.GetComponent<Animal>();
-                            if (targetedMate == null || targetedMate.isMale == this.isMale || !targetedMate.mating.IsAcceptable(this))
-                            {
-                                this.rejectedBy.Add(targetRef);
-                                targetRef = null;
-                            }
-                            else
-                            {
-                                reproduction.mate = targetedMate;
-                                targetedMate.reproduction.mate = this;
-
-                                targetRef = targetedMate.gameObject;
-                                (prevStatus, status) = (status, Status.MOVE_TOWARDS);
-
-                                targetedMate.setTargetLayerToMate();
-                                targetedMate.targetRef = this.gameObject;
-                                (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
-                                return;
-                            }
-                        }
-                    }
-
-                    if (sensor.targetMask == LayerMask.GetMask("None"))
-                    {
-                        if (eat.currentHunger < drink.currentThirst && eat.IsHungry())
-                        {
-                            setTargetLayerToEat();
-                            status = Status.SEARCH;
-                            return;
-                        }
-                        else if (!mating.enableMating || drink.IsThirsty())
-                        {
-                            sensor.targetMask = LayerMask.GetMask("Drink");
-                            status = Status.SEARCH;
-                            return;
+                            this.rejectedBy.Add(targetRef);
+                            targetRef = null;
                         }
                         else
                         {
-                            setTargetLayerToMate();
-                            status = Status.SEARCH;
+                            reproduction.mate = targetedMate;
+                            targetedMate.reproduction.mate = this;
+
+                            targetRef = targetedMate.gameObject;
+                            (prevStatus, status) = (status, Status.MOVE_TOWARDS);
+
+                            targetedMate.setTargetLayerToMate();
+                            targetedMate.targetRef = this.gameObject;
+                            (targetedMate.prevStatus, targetedMate.status) = (targetedMate.status, Status.MOVE_TOWARDS);
                             return;
                         }
                     }
@@ -322,11 +317,6 @@ public abstract class Animal : MonoBehaviour
                 }
             case Status.MOVE_TOWARDS:
                 {
-                    if (rest.ChanceToRest())
-                    {
-                        (prevStatus, status) = (status, Status.REST);
-                        return;
-                    }
                     if (targetRef != null)
                     {
                         float distanceToTarget = Vector3.Distance(transform.position, targetRef.transform.position);

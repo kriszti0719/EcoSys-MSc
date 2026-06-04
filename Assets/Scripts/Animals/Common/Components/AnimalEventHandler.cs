@@ -16,16 +16,18 @@ public class AnimalEventHandler : MonoBehaviour
     {
         animal.status = animal.prevStatus;
         
-        if (animal.status == Status.SEARCH || animal.status == Status.WANDER) animal.prevStatus = Status.WANDER;
-        else if (animal.status == Status.MOVE_TOWARDS) animal.prevStatus = Status.SEARCH;
+        if (animal.status == Status.SEARCH_FOOD || animal.status == Status.SEARCH_DRINK || animal.status == Status.SEARCH_MATE || animal.status == Status.WANDER) 
+            animal.prevStatus = Status.WANDER;
+        else if (animal.status == Status.MOVE_TOWARDS) 
+            animal.prevStatus = Status.SEARCH_MATE; // Alapértelmezett, majd a Decide korrigálja
 
     }
     public void HandleHungerCritical()
     {
-        if (animal.status == Status.SEARCH || animal.status == Status.REST)
+        if (IsSearchable(animal.status) || animal.status == Status.REST)
         {
             animal.setTargetLayerToEat();
-            animal.status = Status.SEARCH;
+            animal.status = Status.SEARCH_FOOD;
         }
     }
     public void HandleHungerDepleted()
@@ -34,10 +36,10 @@ public class AnimalEventHandler : MonoBehaviour
     }
     public void HandleThirstCritical()
     {
-        if (animal.status == Status.SEARCH || animal.status == Status.REST)
+        if (IsSearchable(animal.status) || animal.status == Status.REST)
         {
             animal.sensor.targetMask = LayerMask.GetMask("Drink");
-            animal.status = Status.SEARCH;
+            animal.status = Status.SEARCH_DRINK;
         }
     }
     public void HandleThirstDepleted()
@@ -50,9 +52,14 @@ public class AnimalEventHandler : MonoBehaviour
     }
     public void HandleTargetSpotted()
     {
-        if (animal.status == Status.SEARCH || animal.status == Status.WANDER)
+        if (IsSearchable(animal.status) || animal.status == Status.WANDER)
         {
             (animal.prevStatus, animal.status) = (animal.status, Status.MOVE_TOWARDS);
         }
+    }
+
+    private bool IsSearchable(Status s)
+    {
+        return s == Status.SEARCH_FOOD || s == Status.SEARCH_DRINK || s == Status.SEARCH_MATE;
     }
 }
