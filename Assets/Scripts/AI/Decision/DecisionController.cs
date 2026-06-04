@@ -1,13 +1,14 @@
 public class DecisionController
 {
-    public DecisionMode mode;
+    public static DecisionMode GlobalMode = DecisionMode.Utility; 
+
     public ClassicFSMDecision classic;
     public UtilityDecision utility;
     public FCMDecision fcm;
 
     public Status Decide(Animal a)
     {
-        switch (mode)
+        switch (GlobalMode) 
         {
             case DecisionMode.ClassicFSM: return classic.Decide(a);
             case DecisionMode.Utility: return utility.Decide(a);

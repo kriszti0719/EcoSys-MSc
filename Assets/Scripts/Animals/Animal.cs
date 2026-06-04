@@ -44,6 +44,10 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public Movement movement;
     [HideInInspector] public GameObject barsContainer;
     [HideInInspector] public AnimalEventHandler animalEventHandler;
+    
+    [HideInInspector] public DecisionController aiController;
+    [HideInInspector] public UtilityGenome utilityGenome;
+    [HideInInspector] public FCMGenome fcmGenome;
     public event Action OnDrowned;
     public Species getSpecies()
     {
@@ -92,6 +96,23 @@ public abstract class Animal : MonoBehaviour
         mating.charm = UnityEngine.Random.Range(20, 100);
         drink.critical = UnityEngine.Random.Range(25, 35);
         eat.critical = UnityEngine.Random.Range(15, 25);
+        
+        aiController = new DecisionController();
+    
+        if (DecisionController.GlobalMode == DecisionMode.Utility)
+        {
+            utilityGenome = new UtilityGenome();
+            aiController.utility = new UtilityDecision(utilityGenome);
+        }
+        else if (DecisionController.GlobalMode == DecisionMode.FCM)
+        {
+            fcmGenome = new FCMGenome(FCMFactory.GetLinkCount());
+            aiController.fcm = new FCMDecision(fcmGenome);
+        }
+        else
+        {
+            aiController.classic = new ClassicFSMDecision();
+        }
 
         setSpeciesSpecificTraits();
     }
@@ -120,6 +141,23 @@ public abstract class Animal : MonoBehaviour
         mating.enableMating = false;
         mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
 
+        aiController = new DecisionController();
+
+        if (DecisionController.GlobalMode == DecisionMode.Utility)
+        {
+            utilityGenome = Breeding.BreedUtility(mother.utilityGenome, father.utilityGenome);
+            aiController.utility = new UtilityDecision(utilityGenome);
+        }
+        else if (DecisionController.GlobalMode == DecisionMode.FCM)
+        {
+            fcmGenome = Breeding.BreedFCM(mother.fcmGenome, father.fcmGenome);
+            aiController.fcm = new FCMDecision(fcmGenome);
+        }
+        else
+        {
+            aiController.classic = new ClassicFSMDecision();
+        }
+        
         setSpeciesSpecificTraits();
     }
     protected float MutateTrait(float motherTrait, float fatherTrait)

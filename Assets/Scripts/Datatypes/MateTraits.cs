@@ -19,6 +19,8 @@ public class MateTraits
     public int camouflage;
     public int stealth;
     public int bravery;
+    public UtilityGenome utilityGenome;
+    public FCMGenome fcmGenome;
 
     public MateTraits(Animal animal)
     {
@@ -33,5 +35,7 @@ public class MateTraits
         this.camouflage = animal.sensor.camouflage;
         this.stealth = animal.sensor.stealth;
         this.bravery = animal.bravery;
+        this.utilityGenome = animal.utilityGenome;
+        this.fcmGenome = animal.fcmGenome;
     }
 }
