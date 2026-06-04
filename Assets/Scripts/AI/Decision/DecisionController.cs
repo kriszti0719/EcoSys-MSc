@@ -1,6 +1,6 @@
 public class DecisionController
 {
-    public static DecisionMode GlobalMode = DecisionMode.Utility; 
+    public static DecisionMode GlobalMode; 
 
     public ClassicFSMDecision classic;
     public UtilityDecision utility;

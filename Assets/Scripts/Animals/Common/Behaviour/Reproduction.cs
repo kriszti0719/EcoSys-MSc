@@ -53,7 +53,7 @@ public class Reproduction : MonoBehaviour
         {
             Species.FOX => Random.Range(1, 4),
             Species.BUNNY => Random.Range(1, 4),
-            _ => throw new System.ArgumentException($"Unhandled species: {animal.species}")
+            _ => throw new System.ArgumentException($"Unhandled species: {animal.species} a(z) [{animal.name}] nevű egyednél!")
         };
 
         spawner.SpawnBabies(null, rnd, animal, mateTraits);

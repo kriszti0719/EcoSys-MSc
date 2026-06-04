@@ -15,7 +15,7 @@ public abstract class Animal : MonoBehaviour
     public List<GameObject> rejectedBy = new List<GameObject>();
     public List<GameObject> spottedThreats = new List<GameObject>();
     
-    [HideInInspector] public Species species;
+    public Species species;
     [HideInInspector] public List<Species> predators = new List<Species>();
 
     [HideInInspector] public CauseOfDeath cause;
@@ -97,23 +97,6 @@ public abstract class Animal : MonoBehaviour
         drink.critical = UnityEngine.Random.Range(25, 35);
         eat.critical = UnityEngine.Random.Range(15, 25);
         
-        aiController = new DecisionController();
-    
-        if (DecisionController.GlobalMode == DecisionMode.Utility)
-        {
-            utilityGenome = new UtilityGenome();
-            aiController.utility = new UtilityDecision(utilityGenome);
-        }
-        else if (DecisionController.GlobalMode == DecisionMode.FCM)
-        {
-            fcmGenome = new FCMGenome(FCMFactory.GetLinkCount());
-            aiController.fcm = new FCMDecision(fcmGenome);
-        }
-        else
-        {
-            aiController.classic = new ClassicFSMDecision();
-        }
-
         setSpeciesSpecificTraits();
     }
     public void SetTraits(Animal mother, MateTraits father)
@@ -140,23 +123,6 @@ public abstract class Animal : MonoBehaviour
         );
         mating.enableMating = false;
         mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
-
-        aiController = new DecisionController();
-
-        if (DecisionController.GlobalMode == DecisionMode.Utility)
-        {
-            utilityGenome = Breeding.BreedUtility(mother.utilityGenome, father.utilityGenome);
-            aiController.utility = new UtilityDecision(utilityGenome);
-        }
-        else if (DecisionController.GlobalMode == DecisionMode.FCM)
-        {
-            fcmGenome = Breeding.BreedFCM(mother.fcmGenome, father.fcmGenome);
-            aiController.fcm = new FCMDecision(fcmGenome);
-        }
-        else
-        {
-            aiController.classic = new ClassicFSMDecision();
-        }
         
         setSpeciesSpecificTraits();
     }
@@ -202,8 +168,30 @@ public abstract class Animal : MonoBehaviour
 
         OnDrowned += animalEventHandler.HandleDrowning;
     }
+    
+    private void InitBrain()
+    {
+        aiController = new DecisionController();
+
+        if (DecisionController.GlobalMode == DecisionMode.Utility)
+        {
+            if (utilityGenome == null) utilityGenome = new UtilityGenome();
+            aiController.utility = new UtilityDecision(utilityGenome);
+        }
+        else if (DecisionController.GlobalMode == DecisionMode.FCM)
+        {
+            if (fcmGenome == null) fcmGenome = new FCMGenome(FCMFactory.GetLinkCount());
+            aiController.fcm = new FCMDecision(fcmGenome);
+        }
+        else
+        {
+            aiController.classic = new ClassicFSMDecision();
+        }
+    }
+    
     protected virtual void Start()
     {
+        InitBrain();
         Subscribe();
         cause = CauseOfDeath.NONE;
         status = Status.WANDER;

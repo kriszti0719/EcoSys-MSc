@@ -51,7 +51,7 @@ public class AnimalSpawner : Spawner
     public override void Generate()
     {
         Clear();
-
+        
         BunnyNameCntr = 0;
         FoxNameCntr = 0;
         GenerateAnimal animal = new GenerateAnimal(null, null, Species.FOX, animalSizeMin, animalSizeMax);
@@ -112,10 +112,12 @@ public class AnimalSpawner : Spawner
         animals.Clear();
         scheduledTasks.Clear();
     }
-    protected virtual void Start()
+    private void Awake()
     {
         DecisionController.GlobalMode = aiMode;
-
+    }
+    protected virtual void Start()
+    {
         FoxNameCntr = amount;
         BunnyNameCntr = amount2;
 
