@@ -37,6 +37,9 @@ public class AnimalSpawner : Spawner
     private int FoxCntr;
     private int BunnyCntr;
 
+    [Header("AI Settings")]
+    public DecisionMode aiMode = DecisionMode.Utility;
+
     public List<Animal> animals = new List<Animal>();
     public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
 
@@ -111,6 +114,8 @@ public class AnimalSpawner : Spawner
     }
     protected virtual void Start()
     {
+        DecisionController.GlobalMode = aiMode;
+
         FoxNameCntr = amount;
         BunnyNameCntr = amount2;
 
