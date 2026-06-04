@@ -32,6 +32,8 @@ public abstract class Animal : MonoBehaviour
     [HideInInspector] public int triedForBaby = 0;
     [HideInInspector] public int gaveBirth = 0;
     [HideInInspector] public int kids = 0;
+    [HideInInspector] public int generation;
+    
 
     [HideInInspector] public Sensor sensor;
     [HideInInspector] public Reproduction reproduction;
@@ -77,11 +79,16 @@ public abstract class Animal : MonoBehaviour
     public void SetTraits(float rnd)
     {
         SetComponents();
-        
+        setSpeciesSpecificTraits();
+
+        generation = 1;
         float randomLifeSpan = UnityEngine.Random.Range(4f, 6f);
         aging.setAging(UnityEngine.Random.Range(1f, randomLifeSpan - 0.5f), rnd, randomLifeSpan);
         bravery = UnityEngine.Random.Range(20, 40);
-        movement.moveSpeed = UnityEngine.Random.Range(1f, 10f);
+        if(species == Species.BUNNY)
+            movement.moveSpeed = UnityEngine.Random.Range(1f, 7f);
+        else if(species == Species.FOX)
+            movement.moveSpeed = UnityEngine.Random.Range(7f, 15f);
         movement.rotSpeed = movement.moveSpeed * 30;
         sensor.setSensor(
             _radius: UnityEngine.Random.Range(30, 70),
@@ -96,13 +103,12 @@ public abstract class Animal : MonoBehaviour
         mating.charm = UnityEngine.Random.Range(20, 100);
         drink.critical = UnityEngine.Random.Range(25, 35);
         eat.critical = UnityEngine.Random.Range(15, 25);
-        
-        setSpeciesSpecificTraits();
     }
     public void SetTraits(Animal mother, MateTraits father)
     {
         SetComponents();
-
+        
+        generation = mother.generation + 1;
         aging.setAging(
             _age: 0.01f,
             _size: (mother.aging.adultSize + father.size) / 2f,

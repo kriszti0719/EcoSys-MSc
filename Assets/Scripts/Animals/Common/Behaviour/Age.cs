@@ -48,7 +48,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         }
         private void Grow()
         {
-            if (animal.barsContainer == null) return;
+            if (animal == null || animal.barsContainer == null) return;
             animal.barsContainer.transform.SetParent(null);
             if (currentAge < 0.4)
                 animal.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);

@@ -33,7 +33,7 @@ public static class DebugLogger
             
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
-                writer.WriteLine("Step;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
+                writer.WriteLine("Step;Name;Generation;Species;IsMale;DeathCause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Status;Starving;Drying;triedForBaby;GaveBirth;Kids");
             }
             using (StreamWriter writer = new StreamWriter(filePathPopulation))
             {
@@ -53,7 +53,7 @@ public static class DebugLogger
                 filePathUtility = Path.Combine(dataDirectory, $"{timestamp}_Utility.csv");
                 using (StreamWriter writer = new StreamWriter(filePathUtility))
                 {
-                    writer.WriteLine("Animal;Hunger;Thirst;Energy;Mate");
+                    writer.WriteLine("Animal;Generation;Hunger;Thirst;Energy;Mate");
                 }
                 Info(filePathUtility);
             }
@@ -63,7 +63,7 @@ public static class DebugLogger
                 filePathFCM = Path.Combine(dataDirectory, $"{timestamp}_FCM.csv");
                 using (StreamWriter writer = new StreamWriter(filePathFCM))
                 {
-                    writer.WriteLine("Animal;Weights");
+                    writer.WriteLine("Animal;Generation;Weights");
                 }
                 Info(filePathFCM);
             }
@@ -115,22 +115,24 @@ public static class DebugLogger
         using (StreamWriter writer = new StreamWriter(filePathDeath, true))
         {
             string dataLine = $"{step};" +
-                $"{animal.species.ToString()};" +
-                $"{animal.isMale};" +
-                $"{animal.cause.ToString()};" +
-                $"{animal.aging.currentAge};" +
-                $"{animal.movement.moveSpeed};" +
-                $"{animal.sensor.radius};" +
-                $"{animal.aging.lifeSpan};" +
-                $"{animal.mating.charm};" +
-                $"{animal.reproduction.pregnancyDuration};" +
-                $"{animal.prevStatus};" +
-                $"{animal.eat.critical};" +
-                $"{animal.drink.critical};" +
-                $"{animal.triedForBaby};" +
-                $"{animal.gaveBirth};" +
-                $"{animal.kids}"
-                ;
+                              $"{animal.name};" +
+                              $"{animal.generation};" + 
+                              $"{animal.species.ToString()};" + 
+                              $"{animal.isMale};" + 
+                              $"{animal.cause.ToString()};" + 
+                              $"{animal.aging.currentAge};" + 
+                              $"{animal.movement.moveSpeed};" + 
+                              $"{animal.sensor.radius};" + 
+                              $"{animal.aging.lifeSpan};" + 
+                              $"{animal.mating.charm};" + 
+                              $"{animal.reproduction.pregnancyDuration};" + 
+                              $"{animal.prevStatus};" + 
+                              $"{animal.eat.critical};" + 
+                              $"{animal.drink.critical};" + 
+                              $"{animal.triedForBaby};" + 
+                              $"{animal.gaveBirth};" + 
+                              $"{animal.kids}"
+                              ;
             writer.WriteLine(dataLine);
             
             // RegisterDeathToDb(step, animal);
@@ -141,6 +143,7 @@ public static class DebugLogger
             using (StreamWriter wirter = new StreamWriter(filePathUtility, true))
             {
                 string dataLine = $"{animal.name};" +
+                                  $"{animal.generation};" +
                                   $"{animal.utilityGenome.hungerWeight};" +
                                   $"{animal.utilityGenome.thirstWeight};" +
                                   $"{animal.utilityGenome.energyWeight};" +
@@ -155,6 +158,7 @@ public static class DebugLogger
             using (StreamWriter wirter = new StreamWriter(filePathFCM, true))
             {
                 string dataLine = $"{animal.name};" +
+                                  $"{animal.generation};" +
                                   $"{string.Join(",", animal.fcmGenome.weights)}"
                                   ;
                 wirter.WriteLine(dataLine);

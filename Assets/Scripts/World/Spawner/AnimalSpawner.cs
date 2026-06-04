@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Serialization;
 using static UnityEditor.IMGUI.Controls.PrimitiveBoundsHandle;
 
 public class AnimalSpawner : Spawner
@@ -44,9 +45,9 @@ public class AnimalSpawner : Spawner
     public List<ScheduledTask> scheduledTasks = new List<ScheduledTask>();
 
     [Header("Counter")]
-    public int maxStepCnt;
-    public int maxDecideCnt;
-    public int maxAgeCnt;
+    public int StepCnt;
+    public int DecideCnt;
+    public int AgeCnt;
 
     public override void Generate()
     {
@@ -73,7 +74,7 @@ public class AnimalSpawner : Spawner
         scheduledTasks.Add(registerPopulation);
         ScheduledTask decide = new ScheduledTask(
             _name: "Decide",
-            _interval: maxDecideCnt,
+            _interval: DecideCnt,
             _timer: 0f,
             _action: () =>
             {
@@ -83,7 +84,7 @@ public class AnimalSpawner : Spawner
         scheduledTasks.Add(decide);
         ScheduledTask step = new ScheduledTask(
             _name: "Step",
-            _interval: maxStepCnt,
+            _interval: StepCnt,
             _timer: 0f,
             _action: () =>
             {
@@ -93,7 +94,7 @@ public class AnimalSpawner : Spawner
         scheduledTasks.Add(step);
         ScheduledTask age = new ScheduledTask(
             _name: "Age",
-            _interval: maxAgeCnt,
+            _interval: AgeCnt,
             _timer: 0f,
             _action: () =>
             {
@@ -312,31 +313,15 @@ public class AnimalSpawner : Spawner
     private void setCollider(GameObject instantiatedPrefab, GenerateAnimal animal)
     {
         CapsuleCollider capsuleCollider = instantiatedPrefab.AddComponent<CapsuleCollider>();
-        if (animal.mother == null)
+        if (animal.species == Species.BUNNY)
         {
-            if (animal.species == Species.BUNNY)
-            {
-                capsuleCollider.height = (float)(0.7);
-                capsuleCollider.radius = (float)(0.7);
-            }
-            else if (animal.species == Species.FOX)
-            {
-                capsuleCollider.height = (float)(7);
-                capsuleCollider.radius = (float)(7);
-            }
+            capsuleCollider.height = (float)(0.7);
+            capsuleCollider.radius = (float)(0.7);
         }
-        else
+        else if (animal.species == Species.FOX)
         {
-            if (animal.species == Species.BUNNY)
-            {
-                capsuleCollider.height = (float)(2.5 / animal.mother.transform.localScale.x);
-                capsuleCollider.radius = (float)(2.5 / animal.mother.transform.localScale.x);
-            }
-            else if (animal.species == Species.FOX)
-            {
-                capsuleCollider.height = (float)(8 / animal.mother.transform.localScale.x);
-                capsuleCollider.radius = (float)(8 / animal.mother.transform.localScale.x);
-            }
+            capsuleCollider.height = (float)(7);
+            capsuleCollider.radius = (float)(7);
         }
     }
     private void placeAnimal(GameObject instantiatedPrefab, GenerateAnimal animal)

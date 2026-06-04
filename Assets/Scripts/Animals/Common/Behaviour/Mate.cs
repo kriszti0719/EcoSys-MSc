@@ -16,7 +16,7 @@ namespace Assets.Scripts.Animals.Common.Behaviour
         public int charm;
         public int maxMatingUrge = 100;
         public int currentMatingUrge;
-        public int maxMatingCooldown = 150;
+        public int maxMatingCooldown = 300;
         public int matingCooldown = 0;
         void Start()
         {
@@ -43,12 +43,15 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 matingCooldown--;
             }
+            else
+            {
+                currentMatingUrge--;
+            }
 
             if (matingCooldown == 0 && animal.aging.currentAge >= 1 && !animal.reproduction.isPregnant)
             {
                 enableMating = true;
             }
-            currentMatingUrge--;
         }
         public void Mating(Animal mate)
         {
