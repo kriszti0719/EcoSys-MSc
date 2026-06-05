@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Globalization;
 
-
 public static class DebugLogger
 {
     private static string filePathDeath;
@@ -22,25 +21,26 @@ public static class DebugLogger
     
     private static string timestamp;
 
+    private static readonly string[] StandardStates = { "Wander", "Search", "Flee", "Rest", "MoveTowards", "Eat", "Drink", "Mating", "Idle" };
+
     public static void setLogPath()
     {
-        if(filePathDeath == null)   // TODO: This is just a quickfix, we're gonna need sg better than this --> SINGLETON-sg?
+        if(filePathDeath == null)   
         {
             string projectRoot = Directory.GetParent(Application.dataPath).FullName;
             string dataDirectory = Path.Combine(projectRoot, ".logs");
-            
             string influxDirectory = Path.Combine(dataDirectory, "InfluxDB");
 
             Directory.CreateDirectory(dataDirectory);
-            Directory.CreateDirectory(influxDirectory);
+            Directory.CreateDirectory(influxDirectory); 
             
             timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
             
-            filePathInfluxDeath = Path.Combine(influxDirectory, $"{timestamp}_Influx_Death.lp");
-            filePathInfluxSnapshot = Path.Combine(influxDirectory, $"{timestamp}_Influx_Snapshot.lp");
+            filePathInfluxDeath = Path.Combine(influxDirectory, $"{timestamp}_Influx_Death.csv");
+            filePathInfluxSnapshot = Path.Combine(influxDirectory, $"{timestamp}_Influx_Snapshot.csv");
             
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
@@ -58,7 +58,6 @@ public static class DebugLogger
             Info(filePathPopulation);
             Info(filePathFood);
             Info(filePathDeath);
-            
             Info(filePathInfluxDeath);
             Info(filePathInfluxSnapshot);
 
@@ -184,7 +183,6 @@ public static class DebugLogger
         string F(float v) => v.ToString(CultureInfo.InvariantCulture);
 
         StringBuilder sb = new StringBuilder();
-    
         sb.Append($"death,run_id={timestamp},ai_mode={DecisionController.GlobalMode.ToString()},species={animal.species.ToString()},cause={animal.cause.ToString()} ");
         sb.Append($"age={F(animal.aging.currentAge)},");
         sb.Append($"speed={F(animal.movement.moveSpeed)},");
@@ -199,7 +197,7 @@ public static class DebugLogger
         sb.Append($"kids={animal.kids},");
         sb.Append($"generation={animal.generation},");  
         sb.Append($"step={step}");
-
+        
         if (DecisionController.GlobalMode == DecisionMode.Utility && animal.utilityGenome != null)
         {
             sb.Append($",hungerWeight={F(animal.utilityGenome.hungerWeight)}");
@@ -209,29 +207,35 @@ public static class DebugLogger
         }
         else if (DecisionController.GlobalMode == DecisionMode.FCM && animal.fcmGenome != null)
         {
-            for (int i = 0; i < animal.fcmGenome.weights.Length; i++)
-            {
-                sb.Append($",fcm_w_{i}={F(animal.fcmGenome.weights[i])}");
-            }
+            for (int i = 0; i < animal.fcmGenome.weights.Length; i++) sb.Append($",fcm_w_{i}={F(animal.fcmGenome.weights[i])}");
         }
+        InfluxLogger.Log(sb.ToString());
 
-        string line = sb.ToString();
-
-        InfluxLogger.Log(line);
-        
-        if (!string.IsNullOrEmpty(filePathInfluxDeath))
+        if (!File.Exists(filePathInfluxDeath))
         {
-            using (StreamWriter writer = new StreamWriter(filePathInfluxDeath, true))
+            using (StreamWriter writer = new StreamWriter(filePathInfluxDeath, false, Encoding.UTF8))
             {
-                writer.WriteLine(line);
+                writer.WriteLine("Step;RunId;AiMode;Species;Cause;Age;Speed;Sight;LifeSpan;Charm;PregnancyDuration;Starving;Drying;TriedForBaby;GaveBirth;Kids;Generation;HungerWeight;ThirstWeight;EnergyWeight;MateWeight;FCM_Weights");
             }
         }
 
-        Info(line);
+        string utilityWeights = (DecisionController.GlobalMode == DecisionMode.Utility && animal.utilityGenome != null) 
+            ? $"{F(animal.utilityGenome.hungerWeight)};{F(animal.utilityGenome.thirstWeight)};{F(animal.utilityGenome.energyWeight)};{F(animal.utilityGenome.mateWeight)}" 
+            : "0;0;0;0";
+
+        string fcmWeights = (DecisionController.GlobalMode == DecisionMode.FCM && animal.fcmGenome != null) 
+            ? string.Join("/", animal.fcmGenome.weights.Select(w => F(w))) 
+            : "None";
+
+        using (StreamWriter writer = new StreamWriter(filePathInfluxDeath, true, Encoding.UTF8))
+        {
+            writer.WriteLine($"{step};{timestamp};{DecisionController.GlobalMode};{animal.species};{animal.cause};{F(animal.aging.currentAge)};{F(animal.movement.moveSpeed)};{F(animal.sensor.radius)};{F(animal.aging.lifeSpan)};{F(animal.mating.charm)};{F(animal.reproduction.pregnancyDuration)};{animal.eat.critical};{animal.drink.critical};{animal.triedForBaby};{animal.gaveBirth};{animal.kids};{animal.generation};{utilityWeights};{fcmWeights}");
+        }
     } 
-    public static void RegisterSnapshotToDb(int step, List<Animal> livingAnimals, Boolean influxDB) 
+    
+    public static void RegisterSnapshotToDb(int step, List<Animal> livingAnimals, Boolean influxDB)
     {
-        if (!influxDB) return;
+        if(!influxDB) return;
         
         string F(float v) => v.ToString(CultureInfo.InvariantCulture);
         
@@ -239,83 +243,86 @@ public static class DebugLogger
         var foxes = livingAnimals.Where(a => a.species == Species.FOX).ToList();
 
         StringBuilder sb = new StringBuilder();
-        
         sb.Append($"snapshot,run_id={timestamp},ai_mode={DecisionController.GlobalMode.ToString()} ");
-        sb.Append($"bunny_count={bunnies.Count},");
-        sb.Append($"fox_count={foxes.Count},");
-        sb.Append($"step={step}");
+        sb.Append($"bunny_count={bunnies.Count},fox_count={foxes.Count},step={step}");
 
-        foreach (var stateGroup in bunnies.GroupBy(b => b.prevStatus.ToString()))
-        {
-            sb.Append($",bunny_state_{stateGroup.Key}={stateGroup.Count()}");
-        }
-        foreach (var stateGroup in foxes.GroupBy(f => f.prevStatus.ToString()))
-        {
-            sb.Append($",fox_state_{stateGroup.Key}={stateGroup.Count()}");
-        }
+        var bunnyStateGroups = bunnies.GroupBy(b => b.prevStatus.ToString()).ToDictionary(g => g.Key, g => g.Count());
+        var foxStateGroups = foxes.GroupBy(f => f.prevStatus.ToString()).ToDictionary(g => g.Key, g => g.Count());
+
+        foreach (var kp in bunnyStateGroups) sb.Append($",bunny_state_{kp.Key}={kp.Value}");
+        foreach (var kp in foxStateGroups) sb.Append($",fox_state_{kp.Key}={kp.Value}");
 
         if (bunnies.Count > 0)
         {
-            sb.Append($",bunny_avg_age={F(bunnies.Average(b => b.aging.currentAge))}");
-            sb.Append($",bunny_avg_speed={F(bunnies.Average(b => b.movement.moveSpeed))}");
-            sb.Append($",bunny_max_generation={bunnies.Max(b => b.generation)}");
-
+            sb.Append($",bunny_avg_age={F(bunnies.Average(b => b.aging.currentAge))},bunny_avg_speed={F(bunnies.Average(b => b.movement.moveSpeed))},bunny_max_generation={bunnies.Max(b => b.generation)}");
             if (DecisionController.GlobalMode == DecisionMode.Utility)
             {
-                sb.Append($",bunny_avg_w_hunger={F(bunnies.Average(b => b.utilityGenome?.hungerWeight ?? 0))}");
-                sb.Append($",bunny_avg_w_thirst={F(bunnies.Average(b => b.utilityGenome?.thirstWeight ?? 0))}");
-                sb.Append($",bunny_avg_w_energy={F(bunnies.Average(b => b.utilityGenome?.energyWeight ?? 0))}");
-                sb.Append($",bunny_avg_w_mate={F(bunnies.Average(b => b.utilityGenome?.mateWeight ?? 0))}");
+                sb.Append($",bunny_avg_w_hunger={F(bunnies.Average(b => b.utilityGenome?.hungerWeight ?? 0))},bunny_avg_w_thirst={F(bunnies.Average(b => b.utilityGenome?.thirstWeight ?? 0))},bunny_avg_w_energy={F(bunnies.Average(b => b.utilityGenome?.energyWeight ?? 0))},bunny_avg_w_mate={F(bunnies.Average(b => b.utilityGenome?.mateWeight ?? 0))}");
             }
             else if (DecisionController.GlobalMode == DecisionMode.FCM && bunnies.Any(b => b.fcmGenome != null))
             {
                 int linkCount = bunnies.First(b => b.fcmGenome != null).fcmGenome.weights.Length;
-                for (int i = 0; i < linkCount; i++)
-                {
-                    int index = i;
-                    float avgWeight = bunnies.Average(b => b.fcmGenome.weights[index]);
-                    sb.Append($",bunny_avg_fcm_w_{index}={F(avgWeight)}");
-                }
+                for (int i = 0; i < linkCount; i++) sb.Append($",bunny_avg_fcm_w_{i}={F(bunnies.Average(b => b.fcmGenome.weights[i]))}");
             }
         }
-
         if (foxes.Count > 0)
         {
-            sb.Append($",fox_avg_age={F(foxes.Average(f => f.aging.currentAge))}");
-            sb.Append($",fox_avg_speed={F(foxes.Average(f => f.movement.moveSpeed))}");
-            sb.Append($",fox_max_generation={foxes.Max(f => f.generation)}");
-
+            sb.Append($",fox_avg_age={F(foxes.Average(f => f.aging.currentAge))},fox_avg_speed={F(foxes.Average(f => f.movement.moveSpeed))},fox_max_generation={foxes.Max(f => f.generation)}");
             if (DecisionController.GlobalMode == DecisionMode.Utility)
             {
-                sb.Append($",fox_avg_w_hunger={F(foxes.Average(f => f.utilityGenome?.hungerWeight ?? 0))}");
-                sb.Append($",fox_avg_w_thirst={F(foxes.Average(f => f.utilityGenome?.thirstWeight ?? 0))}");
-                sb.Append($",fox_avg_w_energy={F(foxes.Average(f => f.utilityGenome?.energyWeight ?? 0))}");
-                sb.Append($",fox_avg_w_mate={F(foxes.Average(f => f.utilityGenome?.mateWeight ?? 0))}");
+                sb.Append($",fox_avg_w_hunger={F(foxes.Average(f => f.utilityGenome?.hungerWeight ?? 0))},fox_avg_w_thirst={F(foxes.Average(f => f.utilityGenome?.thirstWeight ?? 0))},fox_avg_w_energy={F(foxes.Average(f => f.utilityGenome?.energyWeight ?? 0))},fox_avg_w_mate={F(foxes.Average(f => f.utilityGenome?.mateWeight ?? 0))}");
             }
             else if (DecisionController.GlobalMode == DecisionMode.FCM && foxes.Any(f => f.fcmGenome != null))
             {
                 int linkCount = foxes.First(f => f.fcmGenome != null).fcmGenome.weights.Length;
-                for (int i = 0; i < linkCount; i++)
-                {
-                    int index = i;
-                    float avgWeight = foxes.Average(f => f.fcmGenome.weights[index]);
-                    sb.Append($",fox_avg_fcm_w_{index}={F(avgWeight)}");
-                }
+                for (int i = 0; i < linkCount; i++) sb.Append($",fox_avg_fcm_w_{i}={F(foxes.Average(f => f.fcmGenome.weights[i]))}");
+            }
+        }
+        InfluxLogger.Log(sb.ToString());
+
+        if (!File.Exists(filePathInfluxSnapshot))
+        {
+            StringBuilder header = new StringBuilder("Step;RunId;AiMode;BunnyCount;FoxCount;BunnyAvgAge;BunnyAvgSpeed;BunnyMaxGen;FoxAvgAge;FoxAvgSpeed;FoxMaxGen");
+            foreach (var state in StandardStates) header.Append($";BunnyState_{state}");
+            foreach (var state in StandardStates) header.Append($";FoxState_{state}");
+            
+            if (DecisionController.GlobalMode == DecisionMode.Utility)
+            {
+                header.Append(";BunnyAvgW_Hunger;BunnyAvgW_Thirst;BunnyAvgW_Energy;BunnyAvgW_Mate;FoxAvgW_Hunger;FoxAvgW_Thirst;FoxAvgW_Energy;FoxAvgW_Mate");
+            }
+            else if (DecisionController.GlobalMode == DecisionMode.FCM && livingAnimals.Any(a => a.fcmGenome != null))
+            {
+                int fcmLen = livingAnimals.First(a => a.fcmGenome != null).fcmGenome.weights.Length;
+                for (int i = 0; i < fcmLen; i++) header.Append($";BunnyAvgFcmW_{i};FoxAvgFcmW_{i}");
+            }
+            using (StreamWriter writer = new StreamWriter(filePathInfluxSnapshot, false, Encoding.UTF8)) writer.WriteLine(header.ToString());
+        }
+
+        StringBuilder data = new StringBuilder($"{step};{timestamp};{DecisionController.GlobalMode};{bunnies.Count};{foxes.Count};");
+        data.Append(bunnies.Count > 0 ? $"{F(bunnies.Average(b => b.aging.currentAge))};{F(bunnies.Average(b => b.movement.moveSpeed))};{bunnies.Max(b => b.generation)};" : "0;0;0;");
+        data.Append(foxes.Count > 0 ? $"{F(foxes.Average(f => f.aging.currentAge))};{F(foxes.Average(f => f.movement.moveSpeed))};{foxes.Max(f => f.generation)}" : "0;0;0");
+
+        foreach (var state in StandardStates) data.Append($";{(bunnyStateGroups.ContainsKey(state) ? bunnyStateGroups[state] : 0)}");
+        foreach (var state in StandardStates) data.Append($";{(foxStateGroups.ContainsKey(state) ? foxStateGroups[state] : 0)}");
+
+        if (DecisionController.GlobalMode == DecisionMode.Utility)
+        {
+            data.Append(bunnies.Count > 0 ? $";{F(bunnies.Average(b => b.utilityGenome?.hungerWeight ?? 0))};{F(bunnies.Average(b => b.utilityGenome?.thirstWeight ?? 0))};{F(bunnies.Average(b => b.utilityGenome?.energyWeight ?? 0))};{F(bunnies.Average(b => b.utilityGenome?.mateWeight ?? 0))}" : ";0;0;0;0");
+            data.Append(foxes.Count > 0 ? $";{F(foxes.Average(f => f.utilityGenome?.hungerWeight ?? 0))};{F(foxes.Average(f => f.utilityGenome?.thirstWeight ?? 0))};{F(foxes.Average(f => f.utilityGenome?.energyWeight ?? 0))};{F(foxes.Average(f => f.utilityGenome?.mateWeight ?? 0))}" : ";0;0;0;0");
+        }
+        else if (DecisionController.GlobalMode == DecisionMode.FCM && livingAnimals.Any(a => a.fcmGenome != null))
+        {
+            int fcmLen = livingAnimals.First(a => a.fcmGenome != null).fcmGenome.weights.Length;
+            for (int i = 0; i < fcmLen; i++)
+            {
+                data.Append($";{(bunnies.Count > 0 ? F(bunnies.Average(b => b.fcmGenome.weights[i])) : "0")}");
+                data.Append($";{(foxes.Count > 0 ? F(foxes.Average(f => f.fcmGenome.weights[i])) : "0")}");
             }
         }
 
-        string line = sb.ToString();
-        InfluxLogger.Log(line);
-        if (!string.IsNullOrEmpty(filePathInfluxSnapshot))
-        {
-            using (StreamWriter writer = new StreamWriter(filePathInfluxSnapshot, true))
-            {
-                writer.WriteLine(line);
-            }
-        }
+        using (StreamWriter writer = new StreamWriter(filePathInfluxSnapshot, true, Encoding.UTF8)) writer.WriteLine(data.ToString());
     }
 }
-
 
 public static class Notifier
 {
