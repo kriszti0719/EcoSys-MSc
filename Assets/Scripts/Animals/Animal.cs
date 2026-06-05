@@ -107,6 +107,7 @@ public abstract class Animal : MonoBehaviour
     public void SetTraits(Animal mother, MateTraits father)
     {
         SetComponents();
+        setSpeciesSpecificTraits();
         
         generation = mother.generation + 1;
         aging.setAging(
@@ -130,7 +131,6 @@ public abstract class Animal : MonoBehaviour
         mating.enableMating = false;
         mating.charm = Mathf.RoundToInt(MutateTrait(mother.mating.charm, father.charm));
         
-        setSpeciesSpecificTraits();
     }
     protected float MutateTrait(float motherTrait, float fatherTrait)
     {

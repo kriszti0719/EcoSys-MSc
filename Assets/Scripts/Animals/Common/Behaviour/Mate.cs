@@ -48,7 +48,8 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 enableMating = true;
             }
-            currentMatingUrge--;
+            if (animal.aging.currentAge >= 1)
+                currentMatingUrge--;
         }
         public void Mating(Animal mate)
         {
