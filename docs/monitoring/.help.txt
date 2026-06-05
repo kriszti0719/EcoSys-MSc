@@ -37,3 +37,12 @@ $ influx delete   --bucket ecosys   --org EcoSys   --start 2026-04-26T00:00:00Z 
 Grafana
 
 docker run -d -p 3000:3000 --name=grafana grafana/grafana
+
+admin
+password
+
+Query Language: Flux !!!
+URL: http://host.docker.internal:8086
+Basic Auth: -
+
+

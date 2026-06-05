@@ -38,6 +38,9 @@ public class AnimalSpawner : Spawner
     private int FoxCntr;
     private int BunnyCntr;
 
+    [Header("Logging")]
+    public bool influxDB = false;
+    
     [Header("AI Settings")]
     public DecisionMode aiMode = DecisionMode.Utility;
 
@@ -368,11 +371,11 @@ public class AnimalSpawner : Spawner
         if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
 
         DebugLogger.RegisterPopulationNumbers(step, BunnyCntr, FoxCntr);
-        DebugLogger.RegisterSnapshotToDb(step, animals);
+        if(influxDB) DebugLogger.RegisterSnapshotToDb(step, animals);
     }
     public void RemoveAnimal(Animal animal) 
     {
-        DebugLogger.RegisterDeath(step: step, animal: animal);
+        DebugLogger.RegisterDeath(step: step, animal: animal, influxDB);
         animals.Remove(animal);
     }
 }
