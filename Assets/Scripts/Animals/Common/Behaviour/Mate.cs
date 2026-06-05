@@ -43,15 +43,12 @@ namespace Assets.Scripts.Animals.Common.Behaviour
             {
                 matingCooldown--;
             }
-            else
-            {
-                currentMatingUrge--;
-            }
 
             if (matingCooldown == 0 && animal.aging.currentAge >= 1 && !animal.reproduction.isPregnant)
             {
                 enableMating = true;
             }
+            currentMatingUrge--;
         }
         public void Mating(Animal mate)
         {

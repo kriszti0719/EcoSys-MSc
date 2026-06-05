@@ -11,10 +11,10 @@ public class UtilityDecision
 
     public Status Decide(Animal a)
     {
-        float hungerNormalized = 1f - (a.eat.currentHunger / 100f);     
-        float thirstNormalized = 1f - (a.drink.currentThirst / 100f);   
+        float hungerNormalized = 1f - (a.eat.currentHunger / (float)a.eat.maxHunger);     
+        float thirstNormalized = 1f - (a.drink.currentThirst / (float)a.drink.maxThirst);   
         float energyNormalized = 1f - (a.rest.currentStamina / a.rest.maxStamina); 
-        float mateNormalized = 1f - (a.mating.currentMatingUrge / 100f);  
+        float mateNormalized = 1f - (a.mating.currentMatingUrge / (float)a.mating.maxMatingUrge);  
 
         float eatU = genome.hungerWeight * hungerNormalized;
         float drinkU = genome.thirstWeight * thirstNormalized;

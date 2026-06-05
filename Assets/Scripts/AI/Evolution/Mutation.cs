@@ -1,7 +1,7 @@
 public static class Mutation
 {
     public static float rate = 0.1f;
-    public static float strength = 0.2f;
+    public static float strength = 0.05f;
 
     public static void MutateUtility(UtilityGenome g)
     {
