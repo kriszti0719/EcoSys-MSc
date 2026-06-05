@@ -371,7 +371,7 @@ public class AnimalSpawner : Spawner
         if (FoxCntr + BunnyCntr == 0) DebugLogger.ShowNotification("Everyone died :(");
 
         DebugLogger.RegisterPopulationNumbers(step, BunnyCntr, FoxCntr);
-        if(influxDB) DebugLogger.RegisterSnapshotToDb(step, animals);
+        DebugLogger.RegisterSnapshotToDb(step, animals, influxDB);
     }
     public void RemoveAnimal(Animal animal) 
     {

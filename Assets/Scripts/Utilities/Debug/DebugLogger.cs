@@ -16,6 +16,10 @@ public static class DebugLogger
     private static string filePathFood;
     private static string filePathUtility;
     private static string filePathFCM;
+    
+    private static string filePathInfluxDeath;
+    private static string filePathInfluxSnapshot;
+    
     private static string timestamp;
 
     public static void setLogPath()
@@ -24,12 +28,19 @@ public static class DebugLogger
         {
             string projectRoot = Directory.GetParent(Application.dataPath).FullName;
             string dataDirectory = Path.Combine(projectRoot, ".logs");
+            
+            string influxDirectory = Path.Combine(dataDirectory, "InfluxDB");
 
             Directory.CreateDirectory(dataDirectory);
+            Directory.CreateDirectory(influxDirectory);
+            
             timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
             filePathDeath = Path.Combine(dataDirectory, $"{timestamp}_DeathData.csv");
             filePathPopulation = Path.Combine(dataDirectory, $"{timestamp}_PopulationData.csv");
             filePathFood = Path.Combine(dataDirectory, $"{timestamp}_FoodData.csv");
+            
+            filePathInfluxDeath = Path.Combine(influxDirectory, $"{timestamp}_Influx_Death.lp");
+            filePathInfluxSnapshot = Path.Combine(influxDirectory, $"{timestamp}_Influx_Snapshot.lp");
             
             using (StreamWriter writer = new StreamWriter(filePathDeath))
             {
@@ -47,6 +58,9 @@ public static class DebugLogger
             Info(filePathPopulation);
             Info(filePathFood);
             Info(filePathDeath);
+            
+            Info(filePathInfluxDeath);
+            Info(filePathInfluxSnapshot);
 
             if (DecisionController.GlobalMode == DecisionMode.Utility)
             {
@@ -164,7 +178,6 @@ public static class DebugLogger
                 wirter.WriteLine(dataLine);
             }
         }
-
     }
     public static void RegisterDeathToDb(int step, Animal animal)
     {
@@ -205,10 +218,21 @@ public static class DebugLogger
         string line = sb.ToString();
 
         InfluxLogger.Log(line);
+        
+        if (!string.IsNullOrEmpty(filePathInfluxDeath))
+        {
+            using (StreamWriter writer = new StreamWriter(filePathInfluxDeath, true))
+            {
+                writer.WriteLine(line);
+            }
+        }
+
         Info(line);
     } 
-    public static void RegisterSnapshotToDb(int step, List<Animal> livingAnimals) 
+    public static void RegisterSnapshotToDb(int step, List<Animal> livingAnimals, Boolean influxDB) 
     {
+        if (!influxDB) return;
+        
         string F(float v) => v.ToString(CultureInfo.InvariantCulture);
         
         var bunnies = livingAnimals.Where(a => a.species == Species.BUNNY).ToList();
@@ -282,6 +306,13 @@ public static class DebugLogger
 
         string line = sb.ToString();
         InfluxLogger.Log(line);
+        if (!string.IsNullOrEmpty(filePathInfluxSnapshot))
+        {
+            using (StreamWriter writer = new StreamWriter(filePathInfluxSnapshot, true))
+            {
+                writer.WriteLine(line);
+            }
+        }
     }
 }
 
