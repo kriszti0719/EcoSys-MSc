@@ -40,6 +40,8 @@ public class AnimalSpawner : Spawner
 
     [Header("Logging")]
     public bool influxDB = false;
+    [Header("CSV Import")]
+    public string csvFileNameToUpload;
     
     [Header("AI Settings")]
     public DecisionMode aiMode = DecisionMode.Utility;
@@ -377,5 +379,15 @@ public class AnimalSpawner : Spawner
     {
         DebugLogger.RegisterDeath(step: step, animal: animal, influxDB);
         animals.Remove(animal);
+    }
+    public void UploadCsvToInflux()
+    {
+        if (string.IsNullOrEmpty(csvFileNameToUpload))
+        {
+            Debug.LogError("[InfluxImport] Kérlek adj meg egy érvényes fájlnevet!");
+            return;
+        }
+
+        InfluxLogger.UploadCsvInEditMode(csvFileNameToUpload);
     }
 }
