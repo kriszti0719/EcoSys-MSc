@@ -67,7 +67,17 @@ public static class InfluxLogger
             return;
         }
 
-        string[] lines = File.ReadAllLines(filePath, Encoding.UTF8);
+        List<string> lineList = new List<string>();
+        using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        using (var sr = new StreamReader(fs, Encoding.UTF8))
+        {
+            while (!sr.EndOfStream)
+            {
+                lineList.Add(sr.ReadLine());
+            }
+        }
+        string[] lines = lineList.ToArray();
+
         if (lines.Length <= 1)
         {
             Debug.LogError("[InfluxImport] A fájl üres vagy csak fejlécet tartalmaz.");
@@ -138,7 +148,7 @@ public static class InfluxLogger
                 {
                     if (j == stepIdx || j == runIdIdx || j == aiModeIdx || j == speciesIdx || j == causeIdx) continue;
                     string header = headers[j];
-                    string val = cols[j];
+                    string val = cols[j].Trim();
 
                     if (header == "FCM_Weights")
                     {
@@ -171,7 +181,7 @@ public static class InfluxLogger
             }
 
             fields.Add($"step={rowStep}");
-            lpPayload.AppendLine($"{measurement},{string.Join(",", tags)} {string.Join(",", fields)} {epochSeconds}");
+            lpPayload.Append($"{measurement},{string.Join(",", tags)} {string.Join(",", fields)} {epochSeconds}\n");
         }
 
         string writeUrl = $"{baseUrl}/api/v2/write?org={org}&bucket={targetBucket}&precision=s";

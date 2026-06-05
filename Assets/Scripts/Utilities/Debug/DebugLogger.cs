@@ -21,7 +21,7 @@ public static class DebugLogger
     
     private static string timestamp;
 
-    private static readonly string[] StandardStates = { "Wander", "Search", "Flee", "Rest", "MoveTowards", "Eat", "Drink", "Mating", "Idle" };
+    private static readonly string[] StandardStates = { "WANDER", "SEARCH_FOOD", "SEARCH_DRINK", "SEARCH_MATE", "MOVE_TOWARDS", "FLEE", "REST" };
 
     public static void setLogPath()
     {
