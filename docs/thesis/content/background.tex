@@ -86,11 +86,25 @@ Szoftverarchitekturális szempontból a legfontosabb különbség az ágensek k�
 
 Emellett a szimuláció megfigyelhetősége is szintet lépett: a statisztikai adatok gyűjtése nem egyszerű lokális fájlba írással történik, hanem egy professzionális idősoros adatbázisba (InfluxDB) továbbítódik HTTP protokollon keresztül. Ez lehetővé tette a Grafana alapú dashboardok használatát, ahol a populációdinamikai mutatók valós időben, interaktív módon elemezhetők, messze túlmutatva a hivatkozott munka vizualizációs lehetőségein.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/SL_19.png}
+    \caption{Sebastian Lague - Ecosystem projektje}
+    \label{fig:sl}
+\end{figure}
+
 \subsection{VAV: Evolúciós devlog}
 
-VAV fejlesztése \cite{VAV23} Lague alapjaira építve mutat be egy továbbfejlesztett modellt. Ebben a megoldásban kiemelkedő a morfológiai jellemzők — például az állatok nyakhosszának — öröklődése és környezethez való adaptációja. 
+VAV fejlesztése \cite{VAV23} Lague alapjaira építve mutat be egy továbbfejlesztett modellt. Ebben a megoldásban kiemelkedő a morfológiai jellemzők öröklődése és környezethez való adaptációja  (például az állatok nyakhosszának öröklődése, igazodva a fák magasságához, ahogy az a \ref{fig:vav} ábrán is jól látható) . 
 
 Jelen munka szempontjából ezen projekt tanulsága az volt, hogy a vizuális jegyek és a funkcionális tulajdonságok közötti kapcsolat (például a testfelépítés és az elért táplálék viszonya) jelentősen növeli a szimuláció biológiai hűségét. Noha a jelenlegi fázisban a hangsúly inkább a populációgenetikai adatok statisztikai elemzésén és a szoftverarchitektúrán van, a VAV által bemutatott morfológiai diverzitás a későbbi továbbfejlesztési irányok egyik alapkövét jelenti.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/VAV_23.png}
+    \caption{VAV - Evolúciós megoldása}
+    \label{fig:vav}
+\end{figure}
 
 \subsection{Fun Master Ed}
 
@@ -98,13 +112,20 @@ Fun Master Ed munkái számomra külön kiemelkednek az ökoszisztéma-szimulác
 
 Első munkájában \cite{Fun20} a hangsúly a szociális és érzelmi alapú viselkedésmodellezésen van. A szimuláció olyan változókat vezet be, mint a „boldogság”, valamint a passzív és agresszív viselkedési attitűdök, vizsgálva ezek hatását a populáció stabilitására és a ragadozó-préda interakciókra. Bár az én fejlesztésem elsősorban a túlélési és reprodukciós stratégiákra fókuszál az érzelmi alapú állapotok helyett, ez a megközelítés rávilágított arra, hogy a döntési folyamatokat érdemes belső, rejtett paraméterekkel is befolyásolni, ami némiképp rokonítható a nálam alkalmazott Fuzzy Cognitive Map belső állapotaival.
 
-A szerző későbbi projektje \cite{Fun22} egy másik kritikus irányba, a morfológiai adaptáció felé mutat. Ebben a szimulációban az ágensek testfelépítése (például a lábak száma vagy a nyak magassága) közvetlenül a környezeti változásokra adott válaszként, az evolúció útján alakul ki. Jó példa erre a zsiráfok evolúciója: a magasabban elérhető táplálékforrás szelekciós nyomást gyakorolt a nyakhossz növekedésére. 
+A szerző későbbi projektje \cite{Fun22} egy másik kritikus irányba, a morfológiai adaptáció felé mutat (\ref{fig:fun} ábrán remekül látható). Ebben a szimulációban az ágensek testfelépítése (például a lábak száma vagy a nyak magassága) közvetlenül a környezeti változásokra adott válaszként, az evolúció útján alakul ki. Jó példa erre a zsiráfok evolúciója: a magasabban elérhető táplálékforrás szelekciós nyomást gyakorolt a nyakhossz növekedésére. 
 
 Bár a jelen szimuláció ragadozó-préda modellje (rókák és nyulak) konkrét biológiai analógiákra épít, a hivatkozott munkák rávilágítottak az absztrakt modellezés előnyeire és a környezethez való fizikai/mentális alkalmazkodás fontosságára. Ezen inspirációk hatására alakítottam ki a döntéshozatali logikát moduláris módon: a rendszeremben az ágensek „gondolkodásmódja” (FSM, Utility vagy FCM) és a hozzájuk tartozó genetikai paraméterek (\texttt{Genome}) elválnak a fizikai reprezentációtól. Ez a struktúra biztosítja, hogy a jövőben ne csak előre rögzített fajok, hanem dinamikusan változó viselkedésmintájú és testfelépítésű ágensek is benépesíthessék a szimulációs teret.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/Fun_22.png}
+    \caption{Fun Master Ed - Szabadon testreszabható állatai}
+    \label{fig:fun}
+\end{figure}
+
 \subsection{Primer}
 
-A technikai implementációk mellett Primer youtube csatorna videósorozata \cite{Primer18} nyújtott jelentős elméleti hátteret a szimuláció biológiai szabályrendszerének kialakításához. Primer munkásságának fő fókusza nem a vizuális komplexitás, hanem az evolúciós folyamatok matematikai és játékelméleti modellezése. Szimulációiban az ágensek (úgynevezett „Blob”-ok) egyszerű szabályok szerint mozognak, azonban a mutációk révén kialakuló tulajdonságok — mint a sebesség vagy a méret — közvetlen hatással vannak az energiafelhasználásra és a túlélési esélyekre.
+A technikai implementációk mellett Primer youtube csatorna videósorozata \cite{Primer18} nyújtott jelentős elméleti hátteret a szimuláció biológiai szabályrendszerének kialakításához. Primer munkásságának fő fókusza nem a vizuális komplexitás, hanem az evolúciós folyamatok matematikai és játékelméleti modellezése. Szimulációiban az ágensek (úgynevezett „Blob”-ok) egyszerű szabályok szerint mozognak, azonban a mutációk révén kialakuló tulajdonságok, mint a sebesség vagy a méret, közvetlen hatással vannak az energiafelhasználásra és a túlélési esélyekre.
 
 Az ő megközelítése segített validálni a saját modellmben alkalmazott „trade-off” mechanizmusokat. Primer rávilágított arra, hogy egy sikeres szimulációban minden előnyös tulajdonságnak (pl. nagyobb sebesség) rendelkeznie kell egy hátránnyal is (pl. magasabb alapanyagcsere-igény), különben a populáció instabillá válik. Bár Primer megoldásai absztrakt, rácsalapú vagy egyszerűsített 2D-s tereken futnak, a tőle átvett elméleti összefüggéseket én egy komplex, 3D-s Unity környezetbe ültettem át. Ez a váltás lehetővé tette, hogy az ő statisztikai alapú következtetéseit egy sokkal dinamikusabb, fizikai alapú interakciókkal (pl. tényleges ütközések, domborzati viszonyok) rendelkező rendszerben vizsgáljam tovább.
 

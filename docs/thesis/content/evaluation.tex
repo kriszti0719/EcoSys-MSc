@@ -53,14 +53,98 @@ A szimulációk során tapasztalt egyik legfontosabb anomália, hogy bizonyos fu
 
 Biológiai szempontból ez ellentmond a klasszikus Lotka-Volterra oszcillációnak. A jelenség elemzése során megállapítható, hogy a hiba a genetikai algoritmus mutációs rátájának és a tulajdonságok közötti kompromisszumok (trade-off) egyensúlyának hiányára vezethető vissza. Ha a mutációk során a préda sebessége vagy látótávolsága úgy növekszik meg, hogy az nem jár arányosan magasabb alapenergia-felhasználással (anyagcsere-igény), a préda "szuper-ágenssé" válik. Ekkor a ragadozók képtelenek kifejteni a szükséges szelekciós nyomást, ami a préda korlátlan dominanciájához, majd a táplálék teljes elfogyása után a rendszer hirtelen, kaotikus összeomlásához vezet.
 
-% 5.2
+% 5.3
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{A döntési modellek kísérleti összehasonlítása}
-	Melyik gondolkodásmód bizonyult a legstabilabbnak?
 
-	A genetikai drift elemzése: hogyan változtak a populáció átlagértékei X generáció után
+\subsection{Adatgyűjtési és monitorozási módszertan}
 
-% 5.3
+A szimulációs környezetben zajló események és az ágensek döntéshozatali mechanizmusainak pontos nyomon követése érdekében egy központosított mérési architektúrát alakítottam ki. A szimuláció minden releváns eseményt, legyen az populációszámlálás vagy egyedi ágens-halál, idősoros adatként továbbít egy \textit{InfluxDB} adatbázisba. Ez az adatbázis-alapú megközelítés lehetővé teszi a futások közötti összehasonlíthatóságot, valamint a szimuláció teljes időbeli lefolyásának utólagos, nagy felbontású elemzését.
+
+A rögzített nyers adatok megjelenítésére és interpretálására a \textit{Grafana} vizualizációs keretrendszerét alkalmaztam. Az általam kialakított dashboard (lásd \ref{fig:dashboard}) átfogó képet ad a szimuláció állapotáról, amely az alábbi panelekre tagolódik:
+
+\begin{itemize}
+    \item \textbf{Populációdinamikai panel (bal felső):} A nyúl és róka populációk számának időbeli változását mutatja. A görbék segítségével nyomon követhető a ragadozó-préda arányok alakulása, ami az ökológiai egyensúly vizsgálatához elengedhetetlen.
+    \item \textbf{Átlagéletkor panel (jobb felső):} Fajonként ábrázolja az egyedek átlagos életkorát. Ez a mutató az ágensek túlélési stratégiáinak sikerességét jelzi; az emelkedő trendek az algoritmus adaptációs képességére utalnak.
+    \item \textbf{Mortalitási (halálozási) statisztikai panelek (alsó sor):} Két tortadiagramon keresztül szemlélteti a nyulak és rókák halálokainak (pl. éhezés, végelgyengülés...) százalékos megoszlását. Ez az ágens-intelligencia "gyenge pontjainak" azonosításához nyújtott objektív mérőszámot.
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/grafana_dashboard.png}
+    \caption{Az általános monitorozási dashboard a szimulációs adatokkal}
+    \label{fig:dashboard}
+\end{figure}
+
+\paragraph{Megjegyzés:} A dashboard bal felső sarkában található \texttt{run\_id} változó segítségével a különböző szimulációs futások között egy legördülő menüből válogathatunk, így az egyes modellek összehasonlítása közvetlenül, ugyanazon vizuális keretrendszeren belül történhet meg.
+
+A fent említett általános monitorozási keretrendszeren felül, az egyes döntési modellek (Utility, FCM) vizsgálatakor kiegészítő, specifikus paneleket alkalmaztam a belső súlyozások és kognitív kapcsolatok valós idejű alakulásának elemzésére, amelyeket a következő alfejezetekben részletezek.
+
+\subsection{A populációs stabilitás és a döntési architektúrák összehasonlítása}
+
+A szimulációs kísérletek során a populációszámlálás idősoros adatai világos különbségeket mutattak a három implementált döntési architektúra hatékonyságában. 
+
+A \textit{ClassicFSM} modell esetében a determinisztikus, merev szabályrendszer egy tipikus "predátor-préda összeomlást" eredményezett: a ragadozók populációja a rendelkezésre álló források kontrollálatlan felélése után végzetes csökkenést mutatott, ami a szimuláció teljes ökológiai egyensúlyának felborulásához és a ragadozók kihalásához, majd értelemszerűen a préda állatok elszaporodásához vezetett (lásd \ref{fig:FSM_pop}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/FSM_population.png}
+    \caption{Populációdinamika ClassicFSM modell esetén}
+    \label{fig:FSM_pop}
+\end{figure}
+
+Ezzel szemben a \textit{Utility AI} modell egy fokkal kifinomultabb, súlyozott prioritási rendszer segítségével képes volt elnyújtani a rendszer élettartamát, ugyanakkor a rövid távú optimalizáció csapdájába esett: az ágensek hatékony vadászati stratégiája a környezet túlzott kimerítéséhez, majd a populáció lassú, de elkerülhetetlen lecsengéséhez vezetett (lásd \ref{fig:utility_pop}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/Utility_population.png}
+    \caption{Populációdinamika Utility AI modell esetén}
+    \label{fig:utility_pop}
+\end{figure}
+
+A stabilitás vizsgálatában a legkiemelkedőbb eredményeket az \textit{FCM} (Fuzzy Cognitive Map) modell biztosította, amely az asszociatív kapcsolatrendszer révén képes volt egy dinamikus, hosszabb távon fenntartható ökoszisztémát létrehozni (lásd \ref{fig:FCM}). Az FCM-alapú ágensek a környezeti nyomásra adott rugalmas válaszreakcióik, például a vadászati intenzitás önkorlátozása préda-hiány esetén, révén hosszabb távon elkerülték az ökológiai összeomlást, és egy stabil, egymást közel kompenzáló egyensúlyi állapotot értek el.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/FCM_population.png}
+    \caption{Populációdinamika FCM modell esetén}
+    \label{fig:FCM_pop}
+\end{figure}
+
+Összegzésként megállapítható, hogy míg az FSM-alapú rendszer instabilitása a merev szabályokból, a Utility AI kimerülése pedig a globális előretekintés hiányából fakadt, az FCM bizonyította, hogy a kognitív alapú, asszociatív döntéshozatal a legalkalmasabb a komplex, dinamikusan változó ökológiai környezetek kezelésére.
+
+\subsection{Halálozási okok és populációs adaptáció}
+
+A halálozási adatok vizsgálata rávilágít az egyes döntési architektúrák alapvető ökológiai hatékonyságára. Az adatok alapján egyértelmű tendencia figyelhető meg a fiziológiai hiányállapotok (éhség, szomjúság) és a természetes elöregedés arányának eltolódásában, ahogy a modellek a determinisztikus szabályrendszertől az asszociatív kognitív tér felé fejlődnek.
+
+A \textit{ClassicFSM} modell esetében a halálozások döntő többségét (nyulaknál $\approx80$\%, rókáknál $\approx90$\% együttesen éhség és szomjúság) a fiziológiai hiányállapotok okozták. Rókáknál nagy valószínűséggel ez a szám azért is magasabb, mert nekik kergetni kell a táplálékforrásukat, szóval egy fokkal még nagyobb prioritást kellene jelentsen az éhség megszüntetése, mint például nyulak esetén, akik számára egyszerűbb a táplálékszerzés. Ezek együttesen a modell merevségét igazolják: az ágensek képtelenek a környezeti dinamikákhoz igazodva prioritásokat váltani, így a mortalitás forrása a környezeti forráshiány és a szabályalapú "beszorulás" (lásd \ref{fig:FSM_death}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/FSM_death_rates.png}
+    \caption{FSM halálozási okok}
+    \label{fig:FSM_death}
+\end{figure}
+
+Ezzel szemben a \textit{Utility AI} már kiegyensúlyozottabb képet mutat. A nyúlpopulációnál az éhség és szomjúság miatti halálozások aránya $\approx40$\%-ra mérséklődött, míg az életkor és a ragadozók általi fogyasztás növekedése a túlélési stratégiák javulását jelzi. A rókák esetében az éhség aránya $\approx50$\%-ra esett vissza, ami a súlyozott döntéshozatal hatékonyságát bizonyítja (lásd \ref{fig:utility_death}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/Utility_death_rates.png}
+    \caption{Utility halálozási okok}
+    \label{fig:utility_death}
+\end{figure}
+
+A legfejlettebb, az \textit{FCM} alapú modellben tapasztalható eloszlás a leginkább természetes ökológiai folyamatokat tükrözi. Ekkor a mortalitás fő okává mindkét fajnál az életkor vált, miközben a fiziológiai hiányállapotok miatti halálozások minimálisra csökkentek. Ez az eredmény igazolja, hogy az asszociatív visszacsatolások révén az ágensek képesek voltak elkerülni a "fiziológiai csapdákat", és a populáció fenntarthatósága az ökológiai egyensúly állapotához közelít (lásd \ref{fig:FCM_death}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/FCM_death_rates.png}
+    \caption{FCM halálozási okok}
+    \label{fig:FCM_death}
+\end{figure}
+
+% 5.4
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \section{Továbbfejlesztési lehetőségek}
 
